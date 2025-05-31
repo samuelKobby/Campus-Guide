@@ -1,24 +1,31 @@
 import React, { useState } from 'react';
-import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock, FaAmbulance } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaPhone, FaEnvelope } from 'react-icons/fa';
+
+interface FormData {
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+}
 
 export const Contact: React.FC = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
-    subject: '',
+    phone: '',
     message: ''
   });
 
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // TODO: Implement contact form submission
     console.log('Form submitted:', formData);
     setIsSubmitted(true);
     setTimeout(() => {
       setIsSubmitted(false);
-      setFormData({ name: '', email: '', subject: '', message: '' });
+      setFormData({ name: '', email: '', phone: '', message: '' });
     }, 3000);
   };
 
@@ -31,160 +38,294 @@ export const Contact: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="bg-blue-600 text-white py-20">
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center">Contact Us</h1>
-          <p className="text-xl text-center max-w-3xl mx-auto">
-            We're here to help with any questions about Campus Pharmacy Finder
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-orange-400 to-orange-600">
+      {/* Wave Header */}
+      <div className="relative bg-gradient-to-r from-orange-400 to-orange-600 text-white py-20">
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <h1 className="text-4xl font-bold mb-4">Contact</h1>
+          <p className="text-lg opacity-90">Let's talk about how we can help you find what you need</p>
+        </div>
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden">
+          <svg
+            viewBox="0 0 1200 120"
+            preserveAspectRatio="none"
+            className="relative block w-full h-[60px]"
+            style={{ transform: 'rotate(180deg)' }}
+          >
+            <path
+              d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
+              className="fill-white"
+            />
+          </svg>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12">
-            {/* Contact Information */}
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-3xl font-bold mb-6 text-gray-800">Get in Touch</h2>
-                <p className="text-gray-600 mb-8">
-                  Have questions, suggestions, or encountered any issues? We're here to help! 
-                  Our team is dedicated to improving your experience with Campus Pharmacy Finder.
-                </p>
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-12 bg-white -mt-1">
+        <div className="grid md:grid-cols-2 gap-12">
+          {/* Contact Information */}
+          <div className="space-y-8">
+            <h2 className="text-2xl font-bold mb-6">Get in touch</h2>
+            
+            <div className="space-y-4">
+              <div className="flex items-center space-x-4">
+                <div className="bg-orange-100 p-3 rounded-full">
+                  <FaPhone className="text-orange-600 w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Phone</h3>
+                  <p className="text-gray-600">+233 (0) 24 123 4567</p>
+                </div>
               </div>
 
-              {/* Contact Cards */}
-              <div className="space-y-6">
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <div className="flex items-center mb-4">
-                    <FaMapMarkerAlt className="text-blue-600 text-2xl mr-4" />
-                    <h3 className="text-xl font-semibold">Project Office</h3>
-                  </div>
-                  <p className="text-gray-600 ml-10">
-                    Department of Computer Science<br />
-                    University of Ghana, Legon<br />
-                    Greater Accra Region
-                  </p>
+              <div className="flex items-center space-x-4">
+                <div className="bg-orange-100 p-3 rounded-full">
+                  <FaEnvelope className="text-orange-600 w-5 h-5" />
                 </div>
-
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <div className="flex items-center mb-4">
-                    <FaEnvelope className="text-blue-600 text-2xl mr-4" />
-                    <h3 className="text-xl font-semibold">Email Us</h3>
-                  </div>
-                  <div className="text-gray-600 ml-10 space-y-2">
-                    <p>Technical Support: support@campuspharmacy.ug.edu.gh</p>
-                    <p>Pharmacy Partners: pharmacies@campuspharmacy.ug.edu.gh</p>
-                  </div>
+                <div>
+                  <h3 className="font-semibold">Email</h3>
+                  <p className="text-gray-600">contact@campusguide.com</p>
                 </div>
+              </div>
 
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <div className="flex items-center mb-4">
-                    <FaClock className="text-blue-600 text-2xl mr-4" />
-                    <h3 className="text-xl font-semibold">Working Hours</h3>
-                  </div>
-                  <div className="text-gray-600 ml-10 space-y-2">
-                    <p>Monday - Friday: 8:00 AM - 5:00 PM</p>
-                    <p>Weekend support available via email</p>
-                  </div>
+              <div className="flex items-center space-x-4">
+                <div className="bg-orange-100 p-3 rounded-full">
+                  <FaMapMarkerAlt className="text-orange-600 w-5 h-5" />
                 </div>
-
-                <div className="bg-red-50 rounded-lg shadow-md p-6">
-                  <div className="flex items-center mb-4">
-                    <FaAmbulance className="text-red-600 text-2xl mr-4" />
-                    <h3 className="text-xl font-semibold text-red-600">Emergency Contacts</h3>
-                  </div>
-                  <div className="text-gray-600 ml-10 space-y-2">
-                    <p>University Hospital: +233 20 000 0002</p>
-                    <p>Campus Security: +233 20 000 0003</p>
-                  </div>
+                <div>
+                  <h3 className="font-semibold">Location</h3>
+                  <p className="text-gray-600">University of Ghana, Legon</p>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Contact Form */}
-            <div className="bg-white rounded-lg shadow-lg p-8">
-              <h2 className="text-2xl font-bold mb-6 text-gray-800">Send Us a Message</h2>
-              
+          {/* Contact Form */}
+          <div className="bg-white rounded-lg p-6 shadow-lg">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="message" className="block text-sm font-medium text-gray-700">Message</label>
+                <textarea
+                  id="message"
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  rows={4}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-orange-600 text-white py-2 px-4 rounded-md hover:bg-orange-700 transition-colors duration-200"
+              >
+                Send
+              </button>
+
               {isSubmitted && (
-                <div className="mb-6 p-4 bg-green-50 text-green-600 rounded-lg">
+                <div className="mt-4 p-4 bg-green-100 text-green-700 rounded-md">
                   Thank you for your message! We'll get back to you soon.
                 </div>
               )}
+            </form>
+          </div>
+        </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label htmlFor="name" className="block text-gray-700 font-medium mb-2">Name</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="email" className="block text-gray-700 font-medium mb-2">Email</label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
+        {/* Map Section */}
+        <div className="mt-12 h-[400px] rounded-lg overflow-hidden shadow-lg">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3970.6307423602997!2d-0.1870645!3d5.6502232!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNcKwMzknMDAuOCJOIDDCsDExJzEzLjQiVw!5e0!3m2!1sen!2sgh!4v1625136234567!5m2!1sen!2sgh"
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </div>
+      </div>
+    <div className="min-h-screen bg-gradient-to-br from-orange-400 to-orange-600">
+      {/* Wave Header */}
+      <div className="relative bg-gradient-to-r from-orange-400 to-orange-600 text-white py-20">
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <h1 className="text-4xl font-bold mb-4">Contact</h1>
+          <p className="text-lg opacity-90">Let's talk about how we can help you find what you need</p>
+        </div>
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden">
+          <svg
+            viewBox="0 0 1200 120"
+            preserveAspectRatio="none"
+            className="relative block w-full h-[60px]"
+            style={{ transform: 'rotate(180deg)' }}
+          >
+            <path
+              d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
+              className="fill-white"
+            />
+          </svg>
+        </div>
+      </div>
 
-                <div>
-                  <label htmlFor="subject" className="block text-gray-700 font-medium mb-2">Subject</label>
-                  <input
-                    type="text"
-                    id="subject"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-12 bg-white -mt-1">
+        <div className="grid md:grid-cols-2 gap-12">
+          {/* Contact Information */}
+          <div className="space-y-8">
+            <h2 className="text-2xl font-bold mb-6">Get in touch</h2>
+            
+            <div className="space-y-4">
+              <div className="flex items-center space-x-4">
+                <div className="bg-orange-100 p-3 rounded-full">
+                  <FaPhone className="text-orange-600 w-5 h-5" />
                 </div>
-
                 <div>
-                  <label htmlFor="message" className="block text-gray-700 font-medium mb-2">Message</label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    rows={6}
-                    className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
+                  <h3 className="font-semibold">Phone</h3>
+                  <p className="text-gray-600">+233 (0) 24 123 4567</p>
                 </div>
+              </div>
 
-                <button
-                  type="submit"
-                  className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                >
-                  Send Message
-                </button>
-              </form>
+              <div className="flex items-center space-x-4">
+                <div className="bg-orange-100 p-3 rounded-full">
+                  <FaEnvelope className="text-orange-600 w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Email</h3>
+                  <p className="text-gray-600">contact@campusguide.com</p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-4">
+                <div className="bg-orange-100 p-3 rounded-full">
+                  <FaMapMarkerAlt className="text-orange-600 w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Location</h3>
+                  <p className="text-gray-600">University of Ghana, Legon</p>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Feedback Section */}
-          <div className="mt-16 bg-gray-50 rounded-lg p-8 text-center">
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">We Value Your Feedback</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              As a student-led project, we're constantly working to improve Campus Pharmacy Finder. 
-              Your feedback helps us better serve the University of Ghana community.
-            </p>
+          {/* Contact Form */}
+          <div className="bg-white rounded-lg p-6 shadow-lg">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="message" className="block text-sm font-medium text-gray-700">Message</label>
+                <textarea
+                  id="message"
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  rows={4}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-orange-600 text-white py-2 px-4 rounded-md hover:bg-orange-700 transition-colors duration-200"
+              >
+                Send
+              </button>
+
+              {isSubmitted && (
+                <div className="mt-4 p-4 bg-green-100 text-green-700 rounded-md">
+                  Thank you for your message! We'll get back to you soon.
+                </div>
+              )}
+            </form>
           </div>
+        </div>
+
+        {/* Map Section */}
+        <div className="mt-12 h-[400px] rounded-lg overflow-hidden shadow-lg">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3970.6307423602997!2d-0.1870645!3d5.6502232!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNcKwMzknMDAuOCJOIDDCsDExJzEzLjQiVw!5e0!3m2!1sen!2sgh!4v1625136234567!5m2!1sen!2sgh"
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
         </div>
       </div>
     </div>
