@@ -1,5 +1,4 @@
 // Follow Deno and Supabase Edge Function conventions
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.48.1";
 
 // Initialize Supabase client using environment variables
@@ -69,7 +68,7 @@ function processQuery(query: string): { keywords: string[], type: LocationType |
 }
 
 // Main handler function
-serve(async (req: Request) => {
+Deno.serve(async (req: Request) => {
   try {
     // Set up CORS headers
     const corsHeaders = {
