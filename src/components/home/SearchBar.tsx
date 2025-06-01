@@ -85,32 +85,41 @@ export const SearchBar: React.FC = () => {
   return (
     <div>
       <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
-        <div className="relative">
+        <div className="relative flex items-center">
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search locations..."
-            className="w-full p-4 pl-12 text-lg border rounded-lg focus:outline-none focus:border-blue-500"
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              // Update search results in real-time as user types
+              if (!e.target.value.trim()) {
+                setSearchResults([]);
+                return;
+              }
+              const results = searchLocations(e.target.value);
+              setSearchResults(results);
+            }}
+            placeholder="Search for a location..."
+            className="w-full px-6 py-4 text-lg text-gray-900 bg-white bg-opacity-95 backdrop-blur-sm rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-xl border border-white/20"
           />
-          <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <button
             type="submit"
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 focus:outline-none"
+            className="absolute right-4 p-2 text-blue-600 hover:text-blue-800 transition-colors"
+            aria-label="Search"
           >
-            Search
+            <FaSearch size={20} />
           </button>
         </div>
       </form>
       
       {/* Show instant search results only when there's a query */}
-      {searchQuery.trim() && searchResults.length > 0 && (
+      {searchQuery.trim() && (
         <div className="max-w-2xl mx-auto mt-2">
           {loading ? (
             <div className="bg-white rounded-lg shadow-lg p-4 text-center text-gray-600">
               Loading...
             </div>
-          ) : (
+          ) : searchResults.length > 0 ? (
             <div className="bg-white rounded-lg shadow-lg p-4 max-h-96 overflow-y-auto">
               <h3 className="text-sm font-semibold text-gray-700 mb-2">Quick Results:</h3>
               {searchResults.map((location: SearchResult) => (
@@ -125,6 +134,10 @@ export const SearchBar: React.FC = () => {
                   </span>
                 </div>
               ))}
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow-lg p-4 text-center text-gray-600">
+              No locations found
             </div>
           )}
         </div>
