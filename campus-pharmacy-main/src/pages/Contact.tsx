@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Mail, Phone, Clock, Send, User, MessageSquare, Star, Sparkles, Navigation } from 'lucide-react';
 
-export const Contact: React.FC = () => {
+export const Contact: FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -257,5 +257,8 @@ export const Contact: React.FC = () => {
         }
       `}</style>
     </div>
+       
+
+
   );
 };
