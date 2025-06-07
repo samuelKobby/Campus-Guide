@@ -122,7 +122,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
 
         {/* Dropdown for location sub-items */}
         {hasSubItems && (
-          <div className={`absolute left-14 top-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg py-2 border border-gray-100 min-w-[200px] transition-all duration-200 z-[9999] ${
+          <div className={`absolute left-14 top-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg py-2 border border-gray-100 min-w-[200px] transition-all duration-200 z-z[9999] ${
             showLocations 
               ? 'opacity-100 visible translate-x-0' 
               : 'opacity-0 invisible translate-x-[-10px]'

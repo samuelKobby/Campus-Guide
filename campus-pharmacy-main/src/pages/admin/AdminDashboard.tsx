@@ -161,8 +161,8 @@ const DashboardContent: React.FC = () => {
           isVisible={!isModalOpen}
         />
         
-        <main className="flex-1 overflow-x-hidden overflow-y-auto">
-          <div className="container mx-auto px-6 py-8 relative z-0">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto z-0">
+          <div className="container mx-auto px-6 py-8 relative ">
             <Routes>
               <Route path="/" element={<DashboardHome />} />
               <Route path="/analytics" element={<Analytics />} />

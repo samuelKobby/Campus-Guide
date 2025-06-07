@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
+import { stringSimilarity } from '../utils/stringUtils';
+import { useLocationTranslations } from '../hooks/useLocationTranslations';
 
 // Initialize Supabase client
 const supabaseUrl = 'https://ayzkwwgwkbsbxdkloide.supabase.co';
@@ -37,7 +39,10 @@ interface SearchResult {
 export const SearchResults: React.FC = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const query = searchParams.get('q')?.toLowerCase() || '';
+  const query = searchParams.get('q') || '';
+  
+  // Initialize with English as default language
+  const { findMatchingLocations } = useLocationTranslations({ name: 'English', code: 'en-US' });
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -72,13 +77,23 @@ export const SearchResults: React.FC = () => {
 
         if (pharmacyError) throw pharmacyError;
 
-        // Combine the data
+        // Get location matches for the query
+        const locationMatches = findMatchingLocations(query);
+        const locationScores = new Map(locationMatches.map(match => [match.location, match.score]));
+
+        // Combine and sort the data based on location relevance
         const results = pharmacies.map(pharmacy => ({
+          locationScore: locationScores.get(pharmacy.location) || 0,
           pharmacy,
           medicines: medicines.filter(m => m.pharmacy_id === pharmacy.id)
         }));
 
-        setSearchResults(results);
+        // Sort results by location score (closest match first)
+        const sortedResults = results
+          .sort((a, b) => b.locationScore - a.locationScore)
+          .map(({ pharmacy, medicines }) => ({ pharmacy, medicines }));
+
+        setSearchResults(sortedResults);
       } catch (err) {
         console.error('Search error:', err);
         setError(err instanceof Error ? err.message : 'An unexpected error occurred');

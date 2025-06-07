@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from 'react';
+import { Clock, MapPin, ShieldCheck, User } from 'lucide-react';
+import { ParallaxProvider, Parallax } from 'react-scroll-parallax';
 
 export const About: React.FC = () => {
   const parallaxRef = useRef<HTMLDivElement>(null);
@@ -16,141 +18,167 @@ export const About: React.FC = () => {
   }, []);
 
   const teamMembers = [
-    { name: 'Smith Duncan Hawa Micha', role: 'Team Lead & Frontend Developer' },
     { name: 'Samuel Gyasi Fordjour', role: 'Backend Developer' },
-    { name: 'Kabutey Samuel Edem', role: 'Database Administrator' },
-    { name: 'Baffah Matilda', role: 'UI/UX Designer' },
-    { name: 'Julia Ofori-Mensah', role: 'Quality Assurance' },
-    { name: 'James Tinkorang', role: 'Frontend Developer' },
-    { name: 'Terrence Kedzi', role: 'Backend Developer' },
-    { name: 'Owusu Ansah', role: 'Mobile Developer' },
-    { name: 'Larry Dapaah', role: 'System Analyst' },
-    { name: 'Neequaye Solomon', role: 'Content Manager' }
+    
   ];
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Section with Parallax */}
-      <div className="relative h-[50vh] overflow-hidden">
-        <div 
-          ref={parallaxRef}
-          className="absolute inset-0"
-          style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1576671081837-49000212a370?auto=format&fit=crop&q=80)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            zIndex: -1
-          }}
-        />
-        <div className="absolute inset-0 bg-black bg-opacity-50" />
-        <div className="relative h-full flex items-center justify-center text-white">
-          <div className="text-center">
-            <h1 className="text-5xl font-bold mb-4">About Us</h1>
-            <p className="text-xl">Making Healthcare Accessible on Campus</p>
+    <ParallaxProvider>
+      <div className="min-h-screen bg-gradient-to-b from-[#F2ECFD] to-white">
+        {/* Hero Section with Video Background */}
+        <div className="relative h-[770px] overflow-hidden ">
+          <div className="absolute inset-0  h-full z-0">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover"
+            >
+              <source src="/images/vid.mp4" type="video/mp4" />
+            </video>
+          </div>
+          
+          
+        </div>
+
+        {/* Main Content */}
+        <div className="bg-[#F2ECFD]">
+          <div className="container mx-auto px-4 py-12 md:py-16">
+            
+            <Parallax translateY={[-20, 20]}>
+              {/* Value Propositions */}
+              <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                {[
+                  { 
+                    icon: <Clock className="w-8 h-8" />,
+                    title: 'Real-Time Updates',
+                    description: 'Instant medication availability and pricing information'
+                  },
+                  { 
+                    icon: <MapPin className="w-8 h-8" />,
+                    title: 'Easy Navigation',
+                    description: 'Turn-by-turn directions to nearest pharmacies'
+                  },
+                  { 
+                    icon: <ShieldCheck className="w-8 h-8" />,
+                    title: 'Verified Information',
+                    description: 'All pharmacies and medications are thoroughly verified'
+                  }
+                ].map((item, index) => (
+                  <div key={index} className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                    <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
+                      {item.icon}
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
+                    <p className="text-gray-600">{item.description}</p>
+                  </div>
+                ))}
+              </section>
+            </Parallax>
+
+            <Parallax scale={[0.9, 1]}>
+              {/* Mission Statement */}
+              <section className="mb-16 bg-white rounded-2xl p-8 md:p-12 shadow-sm">
+                <div className="max-w-4xl mx-auto text-center">
+                  <h2 className="text-3xl font-bold mb-6">Our Mission</h2>
+                  <p className="text-lg text-gray-700 mb-8">
+                    We're dedicated to ensuring students have immediate access to accurate medication availability information, creating a seamless experience that eliminates the hassle of pharmacy searches.
+                  </p>
+                  <div className="bg-gray-100 rounded-xl p-6 text-left">
+                    <p className="text-gray-700 italic">
+                      "Our goal is to save students valuable time and reduce stress by providing real-time medication availability at campus pharmacies."
+                    </p>
+                  </div>
+                </div>
+              </section>
+            </Parallax>
+
+            <Parallax translateY={[20, -20]}>
+              {/* How It Works */}
+              <section className="mb-16">
+                <h2 className="text-3xl font-bold mb-8 text-center">How It Works</h2>
+                <div className="relative">
+                  <div className="absolute h-full w-0.5 bg-gray-200 left-1/2 transform -translate-x-1/2 hidden md:block"></div>
+                  <div className="grid md:grid-cols-4 gap-8">
+                    {[
+                      { step: 1, title: 'Search', description: 'Find your medication' },
+                      { step: 2, title: 'Locate', description: 'See nearby pharmacies' },
+                      { step: 3, title: 'Navigate', description: 'Get directions' },
+                      { step: 4, title: 'Purchase', description: 'Get your medication' }
+                    ].map((item, index) => (
+                      <div key={item.step} className="flex flex-col items-center text-center relative">
+                        <div className="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center mb-4 text-lg font-bold z-10">
+                          {item.step}
+                        </div>
+                        <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
+                        <p className="text-gray-600">{item.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            </Parallax>
+
+            <Parallax scale={[0.95, 1]}>
+              {/* Testimonials */}
+              <section className="mb-16">
+                <h2 className="text-3xl font-bold mb-8 text-center">Student Experiences</h2>
+                <div className="grid md:grid-cols-2 gap-8">
+                  {[
+                    {
+                      quote: "This app saved me so much time finding my prescription. No more running between pharmacies!",
+                      author: "Sarah, Medical Student",
+                      icon: <User className="w-6 h-6" />
+                    },
+                    {
+                      quote: "The real-time availability feature is a game-changer. Found my medication in seconds!",
+                      author: "Michael, Graduate Student",
+                      icon: <User className="w-6 h-6" />
+                    }
+                  ].map((testimonial, index) => (
+                    <div key={index} className="bg-white rounded-xl p-8 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-start mb-4">
+                        <div className="bg-indigo-100 p-2 rounded-lg mr-4">
+                          {testimonial.icon}
+                        </div>
+                        <p className="text-gray-600 italic flex-1">
+                          "{testimonial.quote}"
+                        </p>
+                      </div>
+                      <p className="font-semibold text-right">{testimonial.author}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </Parallax>
+
+            <Parallax translateY={[-10, 10]}>
+              {/* Team Section */}
+              <section className="mb-16">
+                <h2 className="text-3xl font-bold mb-8 text-center">Our Team</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {[
+                    { name: "Alex Johnson", role: "Founder & CEO" },
+                    { name: "Taylor Kim", role: "Product Designer" },
+                    { name: "Jordan Smith", role: "Lead Developer" }
+                  ].map((member, index) => (
+                    <div key={index} className="bg-white rounded-xl p-6 text-center hover:shadow-md transition-shadow">
+                      <div className="w-24 h-24 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-indigo-600 text-2xl font-bold">
+                          {member.name.split(' ').map(n => n[0]).join('')}
+                        </span>
+                      </div>
+                      <h3 className="text-xl font-semibold mb-1">{member.name}</h3>
+                      <p className="text-gray-600">{member.role}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </Parallax>
           </div>
         </div>
       </div>
-
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-16">
-        {/* Who We Are Section */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold mb-6">Who We Are</h2>
-          <p className="text-lg text-gray-700">
-            We are a team dedicated to making it easier for students to find the medications 
-            they need quickly and easily at campus pharmacies. Our goal is to streamline the 
-            process of locating medications, saving time and effort for students on the go.
-          </p>
-        </section>
-
-        {/* Mission Statement */}
-        <section className="mb-16 bg-blue-50 p-8 rounded-lg">
-          <h2 className="text-3xl font-bold mb-6">Our Mission</h2>
-          <p className="text-lg text-gray-700">
-            Our mission is to ensure that students always have access to accurate and up-to-date 
-            information about medication availability at their campus pharmacies. We aim to create 
-            a seamless experience where students can find and access the medications they need 
-            without the hassle.
-          </p>
-        </section>
-
-        {/* How It Works */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold mb-6">How It Works</h2>
-          <div className="grid md:grid-cols-4 gap-8">
-            {[
-              { step: 1, title: 'Search', description: 'Search for your medication' },
-              { step: 2, title: 'Find', description: 'View available pharmacies' },
-              { step: 3, title: 'Locate', description: 'Get directions and contact details' },
-              { step: 4, title: 'Purchase', description: 'Buy directly from the pharmacy' }
-            ].map(item => (
-              <div key={item.step} className="text-center">
-                <div className="w-16 h-16 bg-blue-500 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-                  {item.step}
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                <p className="text-gray-600">{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Team Section */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold mb-8 text-center">Meet Our Team</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {teamMembers.map((member, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-                <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-blue-600 text-2xl font-bold">
-                    {member.name.split(' ').map(n => n[0]).join('')}
-                  </span>
-                </div>
-                <h3 className="text-lg font-semibold text-center mb-2">{member.name}</h3>
-                <p className="text-gray-600 text-center">{member.role}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Why Choose Us */}
-        <section className="mb-16 bg-gray-50 p-8 rounded-lg">
-          <h2 className="text-3xl font-bold mb-6">Why Choose Us?</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <h3 className="text-xl font-semibold mb-3">Real-Time Updates</h3>
-              <p className="text-gray-600">Get instant updates on medication availability and pricing</p>
-            </div>
-            <div className="text-center">
-              <h3 className="text-xl font-semibold mb-3">Easy Navigation</h3>
-              <p className="text-gray-600">Find the nearest pharmacy with turn-by-turn directions</p>
-            </div>
-            <div className="text-center">
-              <h3 className="text-xl font-semibold mb-3">Verified Information</h3>
-              <p className="text-gray-600">All listed pharmacies and medications are verified</p>
-            </div>
-          </div>
-        </section>
-
-        {/* Testimonials */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold mb-8 text-center">What Our Users Are Saying</h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <p className="text-gray-600 italic mb-4">
-                "I saved so much time by using this app to find the medication I needed at the campus pharmacy. It's so easy to use!"
-              </p>
-              <p className="font-semibold">- Sarah, Medical Student</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <p className="text-gray-600 italic mb-4">
-                "The real-time availability feature is a game-changer. No more walking to multiple pharmacies to find what I need."
-              </p>
-              <p className="font-semibold">- Michael, Graduate Student</p>
-            </div>
-          </div>
-        </section>
-      </div>
-    </div>
+    </ParallaxProvider>
   );
 };
