@@ -25,6 +25,13 @@ interface Pharmacy {
   name: string;
 }
 
+interface PharmacyUser {
+  id: string;
+  pharmacy: {
+    email: string;
+  } | null;
+}
+
 export const Users: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [pharmacies, setPharmacies] = useState<Pharmacy[]>([]);
@@ -113,10 +120,11 @@ export const Users: React.FC = () => {
 
       for (const pharmacy of pharmacies) {
         // Check if user already exists
-        const { data: existingUsers } = await supabase
+        const { data } = await supabase
           .from('pharmacy_users')
           .select('id, pharmacy:pharmacies(email)')
           .eq('pharmacy_id', pharmacy.id);
+        const existingUsers = data as PharmacyUser[] | null;
 
         if (existingUsers && existingUsers.length > 0) continue;
 
