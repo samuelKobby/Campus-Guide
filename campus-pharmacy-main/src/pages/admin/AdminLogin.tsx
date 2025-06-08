@@ -33,16 +33,27 @@ export const AdminLogin: React.FC = () => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
+  
     try {
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
-
+  
       if (authError) throw authError;
-
+  
       if (authData.user) {
+        // Log the login activity
+       try {
+         console.log('Inserting activity log:', {
+           action_type: 'login',
+           entity_type: 'admin_user',
+           entity_id: authData.user.id,
+           details: { email: authData.user.email }
+         });
+       } catch (logError) {
+         console.error('Error logging activity:', logError);
+       }
         // Store user data
         const adminData = {
           id: authData.user.id,
@@ -50,12 +61,12 @@ export const AdminLogin: React.FC = () => {
           full_name: authData.user.email?.split('@')[0] || 'Admin User',
           role: 'Admin'
         };
-        
+  
         localStorage.setItem('adminUser', JSON.stringify(adminData));
         localStorage.setItem('sb-access-token', authData.session?.access_token || '');
         localStorage.setItem('sb-refresh-token', authData.session?.refresh_token || '');
-
-        // Redirect to admin dashboard with the correct path
+  
+        // Redirect to admin dashboard
         const from = (location.state as any)?.from?.pathname || '/admin';
         navigate(from, { replace: true });
       }

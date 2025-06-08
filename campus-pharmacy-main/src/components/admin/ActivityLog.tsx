@@ -18,6 +18,7 @@ interface ActivityLog {
 export const ActivityLog: React.FC = () => {
   const [activities, setActivities] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     fetchActivities();
@@ -26,14 +27,19 @@ export const ActivityLog: React.FC = () => {
   const fetchActivities = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const query = supabase
         .from('activity_logs')
         .select(`
           *,
           admin:admin_users(full_name)
         `)
-        .order('created_at', { ascending: false })
-        .limit(10);
+        .order('created_at', { ascending: false });
+
+      if (!showAll) {
+        query.limit(5);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setActivities(data || []);
@@ -67,6 +73,11 @@ export const ActivityLog: React.FC = () => {
     const entity = activity.entity_type.toLowerCase().replace('_', ' ');
     
     return `${adminName} ${action} a ${entity}`;
+  };
+
+  const toggleShowAll = () => {
+    setShowAll(!showAll);
+    fetchActivities();
   };
 
   if (loading) {
@@ -115,6 +126,13 @@ export const ActivityLog: React.FC = () => {
             </div>
           ))}
         </div>
+        {activities.length > 5 && (
+          <div className="text-center py-4">
+            <button onClick={toggleShowAll} className="text-blue-500 hover:underline">
+              {showAll ? 'Show Less' : 'Show More'}
+            </button>
+          </div>
+        )}
       </div>
       {activities.length === 0 && (
         <div className="text-center py-6 text-gray-500">

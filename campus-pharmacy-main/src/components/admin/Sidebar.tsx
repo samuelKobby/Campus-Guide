@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   FaHome,
@@ -18,6 +18,7 @@ import {
   FaMapMarkedAlt
 } from 'react-icons/fa';
 import { supabase } from '../../lib/supabase';
+import { createPortal } from 'react-dom';
 
 interface SidebarProps {
   onClose?: () => void;
@@ -33,18 +34,44 @@ interface NavItem {
 export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
   const location = useLocation();
   const [showLocations, setShowLocations] = useState(false);
-  const locationsRef = useRef<HTMLDivElement>(null);
+  const locationsButtonRef = useRef<HTMLButtonElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
 
+  // Update dropdown position when opened
+  const updateDropdownPosition = useCallback(() => {
+    if (locationsButtonRef.current) {
+      const rect = locationsButtonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.top,
+        left: rect.right + 8, // 8px gap to the right
+      });
+    }
+  }, []);
+
+  // Handle outside click to close dropdown
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (locationsRef.current && !locationsRef.current.contains(event.target as Node)) {
+    if (!showLocations) return;
+    const handleClickOutside = (event: PointerEvent) => {
+      if (
+        locationsButtonRef.current &&
+        !locationsButtonRef.current.contains(event.target as Node) &&
+        !document.getElementById('locations-dropdown')?.contains(event.target as Node)
+      ) {
         setShowLocations(false);
       }
     };
+    document.addEventListener('pointerdown', handleClickOutside);
+    return () => document.removeEventListener('pointerdown', handleClickOutside);
+  }, [showLocations]);
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  // Update position when dropdown opens or window resizes
+  useEffect(() => {
+    if (showLocations) {
+      updateDropdownPosition();
+      window.addEventListener('resize', updateDropdownPosition);
+      return () => window.removeEventListener('resize', updateDropdownPosition);
+    }
+  }, [showLocations, updateDropdownPosition]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -58,9 +85,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
     { name: 'Inventory', to: '/admin/inventory', icon: <FaBoxes /> },
     { name: 'Notifications', to: '/admin/notifications', icon: <FaBell /> },
     { name: 'Users', to: '/admin/users', icon: <FaUsers /> },
-    { 
-      name: 'Locations', 
-      to: '#', 
+    {
+      name: 'Locations',
+      to: '#',
       icon: <FaMapMarkedAlt />,
       subItems: [
         { name: 'Academic Buildings', to: '/admin/locations/academic', icon: <FaUniversity /> },
@@ -74,29 +101,36 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
     { name: 'Settings', to: '/admin/settings', icon: <FaCog /> },
   ];
 
-  const NavItem = ({ item }: { item: NavItem }) => {
-    const isActive = location.pathname === item.to || (item.subItems && item.subItems.some(subItem => location.pathname === subItem.to));
+  // NavItem component for each nav item
+  const NavItemComponent: React.FC<{ item: NavItem }> = ({ item }) => {
+    const isActive =
+      location.pathname === item.to ||
+      (item.subItems && item.subItems.some((subItem) => location.pathname === subItem.to));
     const hasSubItems = item.subItems && item.subItems.length > 0;
 
     const handleClick = (e: React.MouseEvent) => {
       if (hasSubItems) {
         e.preventDefault();
-        setShowLocations(!showLocations);
+        setShowLocations((prev) => !prev);
       } else if (onClose) {
         onClose();
       }
     };
 
     return (
-      <div className="relative" ref={hasSubItems ? locationsRef : undefined}>
+      <div className="relative">
         {hasSubItems ? (
           <button
+            ref={locationsButtonRef}
             onClick={handleClick}
             className={`flex items-center justify-center p-3 text-sm font-medium rounded-full transition-colors duration-200 group relative w-full ${
               isActive || showLocations
                 ? 'bg-blue-100 text-blue-700'
                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
             }`}
+            aria-haspopup="true"
+            aria-expanded={showLocations}
+            aria-controls="locations-dropdown"
           >
             <span className="text-2xl">{item.icon}</span>
             <span className="absolute left-14 bg-white px-2 py-1 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap border border-gray-200 z-[9999]">
@@ -119,31 +153,49 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             </span>
           </Link>
         )}
-
-        {/* Dropdown for location sub-items */}
-        {hasSubItems && (
-          <div className={`absolute left-14 top-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg py-2 border border-gray-100 min-w-[200px] transition-all duration-200 z-z[9999] ${
-            showLocations 
-              ? 'opacity-100 visible translate-x-0' 
-              : 'opacity-0 invisible translate-x-[-10px]'
-          }`}>
-            {item.subItems?.map((subItem) => (
-              <Link
-                key={subItem.to}
-                to={subItem.to}
-                onClick={() => {
-                  setShowLocations(false);
-                  onClose?.();
-                }}
-                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50/80"
-              >
-                <span className="text-lg mr-2">{subItem.icon}</span>
-                {subItem.name}
-              </Link>
-            ))}
-          </div>
-        )}
       </div>
+    );
+  };
+
+  // Dropdown rendered via Portal
+  const LocationsDropdown = () => {
+    if (!showLocations) return null;
+    const locationsItem = mainNavItems.find((item) => item.name === 'Locations');
+    return createPortal(
+      <div
+        id="locations-dropdown"
+        role="menu"
+        aria-label="Locations submenu"
+        className="bg-white rounded-lg shadow-lg py-2 border border-gray-100 min-w-[200px] transition-all duration-200"
+        style={{
+          position: 'fixed',
+          top: dropdownPosition.top,
+          left: dropdownPosition.left,
+          zIndex: 99999,
+        }}
+      >
+        {locationsItem?.subItems?.map((subItem) => {
+          const isActive = location.pathname === subItem.to;
+          return (
+            <Link
+              key={subItem.to}
+              to={subItem.to}
+              onClick={() => {
+                setShowLocations(false);
+                onClose?.();
+              }}
+              className={`flex items-center px-4 py-2 text-sm ${
+                isActive ? 'text-blue-700 font-semibold' : 'text-gray-700'
+              } hover:bg-gray-50/80 whitespace-nowrap`}
+              role="menuitem"
+            >
+              <span className="text-lg mr-2">{subItem.icon}</span>
+              {subItem.name}
+            </Link>
+          );
+        })}
+      </div>,
+      document.body
     );
   };
 
@@ -153,7 +205,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
         <nav className="flex-1 flex items-center justify-center">
           <div className="flex flex-col gap-1 bg-white rounded-full p-2 border border-gray-200">
             {mainNavItems.map((item) => (
-              <NavItem key={item.to} item={item} />
+              <NavItemComponent key={item.to} item={item} />
             ))}
           </div>
         </nav>
@@ -170,6 +222,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           </button>
         </div>
       </div>
+      {/* Render dropdown portal */}
+      <LocationsDropdown />
     </div>
   );
 };

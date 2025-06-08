@@ -71,6 +71,12 @@ export const Analytics: React.FC = () => {
     searchesChange: '',
   });
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [showAllActivities, setShowAllActivities] = useState(false);
+
+  const toggleShowAllActivities = () => {
+    setShowAllActivities(!showAllActivities);
+    fetchStats();
+  };
 
   const fetchStats = async () => {
     try {
@@ -126,11 +132,12 @@ export const Analytics: React.FC = () => {
       });
 
       // Fetch recent activity
+      const limit = showAllActivities ? undefined : 5;
       const { data: activities } = await supabase
         .from('activity_logs')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(5);
+        .limit(limit!);
 
       setRecentActivity(activities || []);
     } catch (error) {
@@ -213,8 +220,15 @@ export const Analytics: React.FC = () => {
             ))
           ) : (
             <p className="text-gray-600">No recent activity</p>
+          )}{recentActivity.length > 0 && (
+            <div className="text-center py-4">
+              <button onClick={toggleShowAllActivities} className="text-blue-500 hover:underline">
+                {showAllActivities ? 'Show More' : 'Show Less'}
+              </button>
+            </div>
           )}
         </div>
+        
       </div>
     </div>
   );
