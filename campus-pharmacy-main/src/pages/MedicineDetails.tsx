@@ -4,6 +4,7 @@ import { MapPin, Clock, Phone, Package, Navigation } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { locationImages } from '../utils/imageUrls';
 import { toast } from 'react-hot-toast';
+import VoiceAgent from '../components/VoiceAgent';
 
 interface Medicine {
   id: string;
@@ -223,6 +224,7 @@ export const MedicineDetails = () => {
           </div>
         )}
       </div>
+      <VoiceAgent />
     </div>
   );
 };

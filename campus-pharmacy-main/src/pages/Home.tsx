@@ -7,6 +7,7 @@ import {
   ArrowDown, Play, Globe, Target, Smartphone, ChevronRight, Clock, Shield, Award, Utensils, Hospital
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import VoiceAgent from '../components/VoiceAgent';  
 
 
 
@@ -76,7 +77,7 @@ export const Home: React.FC = () => {
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
-    const handleMouseMove = (e) => setMousePosition({ x: e.clientX, y: e.clientY });
+    const handleMouseMove = (e: MouseEvent) => setMousePosition({ x: e.clientX, y: e.clientY });
     
     window.addEventListener('scroll', handleScroll);
     window.addEventListener('mousemove', handleMouseMove);
@@ -343,6 +344,7 @@ export const Home: React.FC = () => {
                 </div>
               </div>
             </div>
+            <VoiceAgent />
           </section>
     
           
@@ -372,4 +374,4 @@ export const Home: React.FC = () => {
           `}</style>
         </div>
   );
-};
+};  

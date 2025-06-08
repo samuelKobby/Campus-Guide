@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, FC, ChangeEvent, FormEvent, MouseEvent } from 'react';
 import { MapPin, Mail, Phone, Clock, Send, User, MessageSquare, Star, Sparkles, Navigation } from 'lucide-react';
-
+import VoiceAgent from '../components/VoiceAgent';
 export const Contact: FC = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -12,21 +12,21 @@ export const Contact: FC = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
+    const handleMouseMove = (e: globalThis.MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitted(true);
     setTimeout(() => setIsSubmitted(false), 3000);
@@ -256,6 +256,7 @@ export const Contact: FC = () => {
           animation: fade-in 0.6s ease-out;
         }
       `}</style>
+      <VoiceAgent />
     </div>
        
 
