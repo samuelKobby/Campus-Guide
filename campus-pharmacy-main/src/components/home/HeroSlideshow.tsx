@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 
 const images = [
   './images/campus-illustration.jpg',
-  './images/3d1.avif',
-  './images/3d4.avif',
+  './images/3d1.png',
+  './images/3d4.png',
   './images/3d5.png',
 
 ];
@@ -41,10 +41,10 @@ export const HeroSlideshow: React.FC = () => {
             className="absolute inset-0"
             style={{
               backgroundImage: `url("${image}")`,
-              backgroundSize: 'cover',
+              backgroundSize: image === './images/campus-illustration.jpg' ? 'cover' : 'cover',
               backgroundPosition: 'center',
-              filter: 'blur(8px)',
-              transform: 'scale(1.1)',
+              filter: image === './images/campus-illustration.jpg' ? 'none' : 'blur(8px)',
+              transform: image === './images/campus-illustration.jpg' ? 'none' : 'scale(1.1)',
             }}
           >
             <div className="absolute inset-0 bg-black/30" />
@@ -55,7 +55,7 @@ export const HeroSlideshow: React.FC = () => {
             className="absolute inset-0"
             style={{
               backgroundImage: `url("${image}")`,
-              backgroundSize: 'contain',
+              backgroundSize: image === './images/campus-illustration.jpg' ? 'cover' : 'contain',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
             }}

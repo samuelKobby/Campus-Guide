@@ -11,7 +11,7 @@ interface DatabaseSportsFacility {
   name: string;
   description: string;
   address: string;
-  image_url: string;
+  image: string;
   contact_number: string;
   email: string;
   website_url: string;
@@ -97,7 +97,7 @@ export const SportsFacilities = () => {
           building: facility.name,
           floor: facility.sports_facilities?.indoor_courts ? 'Indoor & Outdoor' : 'Outdoor',
           openingHours: formatOpeningHours(facility.sports_facilities?.opening_hours || null),
-          image: facility.image_url || heroBackgrounds.sportsFacilities,
+          image: facility.image, // Use the image column from the database for sports facilities
           tags: facility.sports_facilities?.facilities || [],
           getDirections: facility.latitude && facility.longitude ? () => {
             const url = getDirectionsUrl(facility.latitude, facility.longitude);

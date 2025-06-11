@@ -118,7 +118,7 @@ export const HealthServices = () => {
           building: pharmacy.location,
           floor: 'Ground Floor',
           openingHours: pharmacy.hours,
-          image: pharmacy.image || locationImages.pharmacy,
+          image: pharmacy.image, // Use the image column from the database for health services
           tags: ['Pharmacies'],
           type: 'pharmacy',
           getDirections: () => {
@@ -151,7 +151,7 @@ export const HealthServices = () => {
       building: pharmacy.location,
       floor: 'Ground Floor',
       openingHours: pharmacy.hours,
-      image: pharmacy.image || locationImages.pharmacy,
+      image: pharmacy.image, // Use the image column from the database for health services
       tags: ['Pharmacies'],
       type: 'pharmacy',
       getDirections: () => window.open(getDirectionsUrl(pharmacy), '_blank')

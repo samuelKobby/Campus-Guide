@@ -11,6 +11,7 @@ interface DatabaseBuilding {
   name: string;
   description: string;
   address: string;
+  image: string;
   image_url: string;
   contact_number: string;
   email: string;
@@ -98,7 +99,7 @@ export const AcademicBuildings = () => {
           building: building.name,
           floor: `${building.academic_buildings?.floor_count || 1} Floor${building.academic_buildings?.floor_count !== 1 ? 's' : ''}`,
           openingHours: formatOpeningHours(building.academic_buildings?.opening_hours || null),
-          image: building.image_url || heroBackgrounds.academicBuildings,
+          image: building.image, // Use the image column from the database for academic buildings
           tags: building.academic_buildings?.facilities || [],
           getDirections: building.latitude && building.longitude ? () => {
             const url = getDirectionsUrl(building.latitude, building.longitude);

@@ -27,7 +27,6 @@ interface HealthFacility {
       [key: string]: { open: string; close: string };
     };
     insurance_accepted: string[];
-    bed_capacity?: number;
   };
   created_at: string;
 }
@@ -51,7 +50,6 @@ interface NewHealthFacility {
     [key: string]: { open: string; close: string };
   };
   insurance_accepted: string[];
-  bed_capacity?: number;
 }
 
 export const HealthServicesManagement = () => {
@@ -79,8 +77,7 @@ export const HealthServicesManagement = () => {
     emergency_services: false,
     accessibility_features: [],
     operating_hours: {},
-    insurance_accepted: [],
-    bed_capacity: undefined
+    insurance_accepted: []
   });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -89,6 +86,13 @@ export const HealthServicesManagement = () => {
   useEffect(() => {
     fetchFacilities();
   }, []);
+
+  useEffect(() => {
+    setNewFacility((prev) => ({
+      ...prev,
+      facility_type: activeTab
+    }));
+  }, [activeTab]);
 
   const fetchFacilities = async () => {
     try {
@@ -119,21 +123,31 @@ export const HealthServicesManagement = () => {
     }
   };
 
-  const handleSubmit = async (formData: any) => {
+  const handleSubmit = async () => {
     try {
       setLoading(true);
 
+      // Basic validation
+      if (!newFacility.name || !newFacility.address) {
+        throw new Error('Please fill in all required fields');
+      }
+
+      // Validate coordinates
+      if (isNaN(newFacility.latitude) || isNaN(newFacility.longitude)) {
+        throw new Error('Please enter valid coordinates');
+      }
+
       const locationData = {
-        name: formData.name,
-        description: formData.description,
-        address: formData.address,
-        latitude: formData.latitude,
-        longitude: formData.longitude,
-        contact_number: formData.contact_number,
-        email: formData.email,
-        website_url: formData.website_url,
-        image: formData.image || null,
-        building_type: formData.facility_type
+        name: newFacility.name,
+        description: newFacility.description,
+        address: newFacility.address,
+        latitude: newFacility.latitude,
+        longitude: newFacility.longitude,
+        contact_number: newFacility.contact_number,
+        email: newFacility.email,
+        website_url: newFacility.website_url,
+        image: newFacility.image || null,
+        building_type: newFacility.facility_type
       };
 
       let facilityId;
@@ -160,13 +174,12 @@ export const HealthServicesManagement = () => {
       const healthData = {
         id: facilityId,
         facility_type: activeTab,
-        services: formData.services,
-        specialties: formData.specialties,
-        emergency_services: formData.emergency_services,
-        accessibility_features: formData.accessibility_features,
-        operating_hours: formData.operating_hours,
-        insurance_accepted: formData.insurance_accepted,
-        bed_capacity: parseInt(formData.bed_capacity) || null
+        services: newFacility.services,
+        specialties: newFacility.specialties,
+        emergency_services: newFacility.emergency_services,
+        accessibility_features: newFacility.accessibility_features,
+        operating_hours: newFacility.operating_hours,
+        insurance_accepted: newFacility.insurance_accepted
       };
 
       if (selectedFacility) {
@@ -186,6 +199,28 @@ export const HealthServicesManagement = () => {
       setShowAddModal(false);
       setSelectedFacility(null);
       toast.success(`Health service ${selectedFacility ? 'updated' : 'added'} successfully`);
+
+      // Reset form
+      setNewFacility({
+        name: '',
+        description: '',
+        address: '',
+        latitude: 0,
+        longitude: 0,
+        contact_number: '',
+        email: '',
+        website_url: '',
+        image: '',
+        facility_type: 'clinic',
+        services: [],
+        specialties: [],
+        emergency_services: false,
+        accessibility_features: [],
+        operating_hours: {},
+        insurance_accepted: []
+      });
+      setPreviewImage(null);
+
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -285,8 +320,7 @@ export const HealthServicesManagement = () => {
       emergency_services: false,
       accessibility_features: [],
       operating_hours: {},
-      insurance_accepted: [],
-      bed_capacity: undefined
+      insurance_accepted: []
     });
     setPreviewImage(null);
   };
@@ -348,25 +382,7 @@ export const HealthServicesManagement = () => {
 
       {activeTab === 'hospital' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Bed Capacity</label>
-            <input
-              type="number"
-              name="bed_capacity"
-              value={selectedFacility?.health_services?.bed_capacity || ''}
-              onChange={(e) => {
-                if (!selectedFacility) return;
-                setSelectedFacility({
-                  ...selectedFacility,
-                  health_services: {
-                    ...selectedFacility.health_services,
-                    bed_capacity: parseInt(e.target.value)
-                  }
-                });
-              }}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            />
-          </div>
+          
           <div>
             <label className="block text-sm font-medium text-gray-700">Insurance Accepted</label>
             <input
@@ -418,6 +434,41 @@ export const HealthServicesManagement = () => {
     </div>
   );
 
+  const handleEditClick = (facility: HealthFacility) => {
+    setNewFacility({
+      name: facility.name,
+      description: facility.description || '',
+      address: facility.address,
+      latitude: facility.latitude,
+      longitude: facility.longitude,
+      contact_number: facility.contact_number || '',
+      email: facility.email || '',
+      website_url: facility.website_url || '',
+      image: facility.image || '',
+      facility_type: facility.building_type,
+      services: facility.health_services.services || [],
+      specialties: facility.health_services.specialties || [],
+      emergency_services: facility.health_services.emergency_services || false,
+      accessibility_features: facility.health_services.accessibility_features || [],
+      operating_hours: facility.health_services.operating_hours || {},
+      insurance_accepted: facility.health_services.insurance_accepted || []
+      
+    });
+    setSelectedFacility(facility);
+    setShowAddModal(true);
+    setEditMode(true);
+  };
+
+  const handleAddClick = () => {
+    setSelectedFacility(null);
+    setEditMode(false);
+    setShowAddModal(true);
+    setNewFacility((prev) => ({
+      ...prev,
+      facility_type: activeTab
+    }));
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -431,15 +482,7 @@ export const HealthServicesManagement = () => {
             className="px-4 py-2 border rounded-md"
           />
           <button
-            onClick={() => {
-              setSelectedFacility(null);
-              setEditMode(false);
-              setShowAddModal(true);
-              setNewFacility({
-                ...newFacility,
-                facility_type: activeTab
-              });
-            }}
+            onClick={handleAddClick}
             className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
             <Plus size={20} />
@@ -492,15 +535,7 @@ export const HealthServicesManagement = () => {
           <p className="mt-1 text-sm text-gray-500">Get started by adding a new {activeTab === 'clinic' ? 'clinic' : 'hospital'}.</p>
           <div className="mt-6">
             <button
-              onClick={() => {
-                setSelectedFacility(null);
-                setEditMode(false);
-                setShowAddModal(true);
-                setNewFacility({
-                  ...newFacility,
-                  facility_type: activeTab
-                });
-              }}
+              onClick={handleAddClick}
               className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
             >
               <Plus className="-ml-1 mr-2 h-5 w-5" />
@@ -554,18 +589,16 @@ export const HealthServicesManagement = () => {
                       <div className="text-sm text-gray-500">{facility.email || 'N/A'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {facility.health_services.emergency_services ? (
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                          Yes
-                        </span>
-                      ) : (
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                          No
-                        </span>
-                      )}
+                      {selectedFacility?.health_services?.emergency_services ? 'Yes' : 'No'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">
+                        <button
+                          onClick={() => handleEditClick(facility)}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          <Pencil className="h-5 w-5" />
+                        </button>
                         <button
                           onClick={() => {
                             setSelectedFacility(facility);
@@ -574,16 +607,6 @@ export const HealthServicesManagement = () => {
                           className="text-blue-600 hover:text-blue-900"
                         >
                           <Eye size={18} />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedFacility(facility);
-                            setEditMode(true);
-                            setShowAddModal(true);
-                          }}
-                          className="text-yellow-600 hover:text-yellow-900"
-                        >
-                          <Pencil size={18} />
                         </button>
                         <button
                           onClick={() => handleDelete(facility.id)}
@@ -803,18 +826,7 @@ export const HealthServicesManagement = () => {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Bed Capacity
-                </label>
-                <input
-                  type="number"
-                  value={newFacility.bed_capacity || ''}
-                  onChange={(e) => setNewFacility({ ...newFacility, bed_capacity: parseInt(e.target.value) || undefined })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter bed capacity"
-                />
-              </div>
+              
 
               <div className="flex justify-end space-x-3 mt-5">
                 <button
@@ -870,7 +882,7 @@ export const HealthServicesManagement = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-700">Emergency Services</h3>
-                  <p>{selectedFacility.health_services.emergency_services ? 'Yes' : 'No'}</p>
+                  <p>{selectedFacility?.health_services?.emergency_services ? 'Yes' : 'No'}</p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-700">Address</h3>
@@ -901,63 +913,57 @@ export const HealthServicesManagement = () => {
                     )}
                   </p>
                 </div>
-                {selectedFacility.health_services.bed_capacity && (
-                  <div>
-                    <h3 className="font-semibold text-gray-700">Bed Capacity</h3>
-                    <p>{selectedFacility.health_services.bed_capacity}</p>
-                  </div>
-                )}
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-700 mb-2">Services</h3>
-                <div className="flex flex-wrap gap-2">
-                  {selectedFacility.health_services.services?.map((service, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
-                    >
-                      {service}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-700 mb-2">Specialties</h3>
-                <div className="flex flex-wrap gap-2">
-                  {selectedFacility.health_services.specialties?.map((specialty, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
-                    >
-                      {specialty}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-700 mb-2">Insurance Accepted</h3>
-                <div className="flex flex-wrap gap-2">
-                  {selectedFacility.health_services.insurance_accepted?.map((insurance, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm"
-                    >
-                      {insurance}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-700 mb-2">Operating Hours</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {Object.entries(selectedFacility.health_services.operating_hours || {}).map(([day, hours]) => (
-                    <div key={day} className="flex justify-between">
-                      <span className="capitalize">{day}:</span>
-                      <span>
-                        {hours.open} - {hours.close}
+                <div>
+                  <h3 className="font-semibold text-gray-700 mb-2">Services</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedFacility.health_services.services?.map((service, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                      >
+                        {service}
                       </span>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-700 mb-2">Specialties</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedFacility.health_services.specialties?.map((specialty, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
+                      >
+                        {specialty}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-700 mb-2">Insurance Accepted</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedFacility.health_services.insurance_accepted?.map((insurance, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm"
+                      >
+                        {insurance}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-700 mb-2">Operating Hours</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {Object.entries(selectedFacility.health_services.operating_hours || {}).map(([day, hours]) => (
+                      <div key={day} className="flex justify-between">
+                        <span className="capitalize">{day}:</span>
+                        <span>
+                          {hours.open} - {hours.close}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

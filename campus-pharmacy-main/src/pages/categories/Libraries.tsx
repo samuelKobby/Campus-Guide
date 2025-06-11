@@ -11,7 +11,7 @@ interface DatabaseLibrary {
   name: string;
   description: string;
   address: string;
-  image_url: string;
+  image: string;
   contact_number: string;
   email: string;
   website_url: string;
@@ -73,7 +73,7 @@ export const Libraries = () => {
           id,
           name,
           description,
-          image_url,
+          image,
           opening_hours,
           building_type,
           latitude,
@@ -92,7 +92,7 @@ export const Libraries = () => {
           building: library.name,
           floor: 'All Floors',
           openingHours: formatOpeningHours(library.opening_hours),
-          image: library.image_url || heroBackgrounds.libraries,
+          image: library.image, // Use the image column from the database for libraries
           tags: ['Study Spaces', 'Books', 'Research'],
           getDirections: library.latitude && library.longitude ? () => {
             const url = getDirectionsUrl(library.latitude, library.longitude);

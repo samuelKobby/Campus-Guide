@@ -147,11 +147,9 @@ export const Home: React.FC = () => {
                 Find Your Way Around Campus
               </h1>
               
-              <p className="text-2xl md:text-3xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed">
-                Never get lost again. Discover the smartest way to navigate your university 
-                with <span className="text-cyan-400 font-semibold">real-time directions</span>, 
-                <span className="text-purple-400 font-semibold"> AR guidance</span>, and 
-                <span className="text-pink-400 font-semibold"> intelligent routing</span>.
+              <p className="text-2xl md:text-3xl text-gray-300 mb-20 max-w-4xl mx-auto leading-relaxed">
+                Never get lost again. Discover the smartest way to navigate your university. 
+                
               </p>
     
               <SearchBar />
@@ -168,11 +166,7 @@ export const Home: React.FC = () => {
               </div>
             </div>
 
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-              <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
-                <div className="w-1 h-3 bg-white/60 rounded-full mt-2 animate-pulse"></div>
-              </div>
-          </div>
+            
 
           </section>
     

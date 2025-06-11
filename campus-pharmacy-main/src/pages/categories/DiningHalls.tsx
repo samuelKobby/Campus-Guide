@@ -15,7 +15,7 @@ interface DatabaseLocation {
   id: string;
   name: string;
   description: string | null;
-  image_url: string | null;
+  image: string | null;
   opening_hours: OpeningHours | null;
   building_type: string;
   latitude: number;
@@ -56,7 +56,7 @@ export const DiningHalls = () => {
           id,
           name,
           description,
-          image_url,
+          image,
           opening_hours,
           building_type,
           latitude,
@@ -74,7 +74,7 @@ export const DiningHalls = () => {
           description: hall.description || 'Campus dining location offering fresh, delicious meals.',
           building: hall.name,
           openingHours: formatOpeningHours(hall.opening_hours),
-          image: hall.image_url || heroBackgrounds.diningHalls,
+          image: hall.image, // Use the image column from the database for dining halls
           tags: ['Dining', 'Cafeteria', 'Food Court'],
           getDirections: hall.latitude && hall.longitude ? () => {
             const url = getDirectionsUrl(hall.latitude, hall.longitude);

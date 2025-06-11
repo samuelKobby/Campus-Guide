@@ -11,7 +11,7 @@ interface DatabaseStudentCenter {
   name: string;
   description: string;
   address: string;
-  image_url: string;
+  image: string;
   contact_number: string;
   email: string;
   website_url: string;
@@ -80,7 +80,7 @@ export const StudentCenters = () => {
           building: center.name,
           floor: `${center.student_centers?.floor_count || 1} Floor${center.student_centers?.floor_count !== 1 ? 's' : ''}`,
           openingHours: center.student_centers?.opening_hours || '7:00 AM - 11:00 PM',
-          image: center.image_url || heroBackgrounds.studentCenters,
+          image: center.image, // Use the image column from the database for student centers
           tags: center.student_centers?.facilities || [],
           getDirections: center.latitude && center.longitude ? () => {
             const url = getDirectionsUrl(center.latitude, center.longitude);
