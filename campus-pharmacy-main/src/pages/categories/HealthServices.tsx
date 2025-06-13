@@ -31,41 +31,7 @@ interface Location {
   getDirections?: () => void;
 }
 
-const healthLocations: Location[] = [
-  {
-    id: '1',
-    name: 'Student Health Center',
-    description: 'Primary healthcare facility offering medical services and consultations.',
-    building: 'Health Services Building',
-    floor: '1',
-    openingHours: '8:00 AM - 6:00 PM',
-    image: locationImages.healthCenter,
-    tags: ['Clinics'],
-    type: 'clinic'
-  },
-  {
-    id: '2',
-    name: 'Campus Hospital',
-    description: 'Full-service hospital providing emergency and specialized care.',
-    building: 'Medical Center',
-    floor: '1-5',
-    openingHours: '24/7',
-    image: locationImages.healthCenter,
-    tags: ['Hospitals'],
-    type: 'hospital'
-  },
-  {
-    id: '3',
-    name: 'Medical Supply Store',
-    description: 'Medical equipment and supplies for students and staff.',
-    building: 'Health Services Building',
-    floor: '1',
-    openingHours: '9:00 AM - 5:00 PM',
-    image: locationImages.wellnessCenter,
-    tags: ['Medicines'],
-    type: 'medicine'
-  }
-];
+const healthLocations: Location[] = [];
 
 const stats = [
   {
@@ -86,6 +52,7 @@ const filterOptions = ['Pharmacies', 'Clinics', 'Hospitals', 'Medicines'];
 
 export const HealthServices = () => {
   const [pharmacies, setPharmacies] = useState<Pharmacy[]>([]);
+  const [hospitalsAndClinics, setHospitalsAndClinics] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
@@ -94,6 +61,8 @@ export const HealthServices = () => {
 
   useEffect(() => {
     fetchPharmacies();
+    fetchHospitalsAndClinics();
+    setLoading(false); // Ensure loading state is reset after both fetches
   }, []);
 
   const fetchPharmacies = async () => {
@@ -132,7 +101,52 @@ export const HealthServices = () => {
     } catch (err) {
       console.error('Error fetching pharmacies:', err);
     } finally {
-      setLoading(false);
+      setLoading(false); // Ensure loading state is reset after fetching pharmacies
+    }
+  };
+
+  const fetchHospitalsAndClinics = async () => {
+    try {
+      setLoading(true);
+      // Fetch hospitals and clinics
+      const { data: facilitiesData, error } = await supabase
+        .from('locations')
+        .select('*')
+        .in('building_type', ['hospital', 'clinic'])
+        .order('name');
+
+      // console.log('Fetched facilities data:', facilitiesData);
+      // console.log('Error fetching facilities:', error);
+
+      if (error) throw error;
+
+      if (facilitiesData) {
+        const formattedFacilities: Location[] = (facilitiesData as any[]).map(facility => ({
+          id: facility.id,
+          name: facility.name,
+          description: facility.description || '',
+          building: facility.name,
+          floor: facility.floor || 'Unknown Floor',
+          openingHours: facility.opening_hours || 'Unknown Hours',
+          image: facility.image, // Use the image column from the database for health services
+          tags: [facility.building_type === 'hospital' ? 'Hospitals' : 'Clinics'],
+          type: 'hospital',
+          getDirections: () => {
+            const coordinates = `${facility.latitude},${facility.longitude}`;
+            const query = encodeURIComponent(`${facility.name} ${facility.location}`);
+            window.open(`https://www.google.com/maps/search/${query}/@${coordinates},17z`, '_blank');
+          }
+        }));
+
+        setHospitalsAndClinics(formattedFacilities);
+        setHealthLocations([...healthLocations, ...formattedFacilities]);
+      } else {
+        console.log('No facilities data returned from the query.');
+      }
+    } catch (err) {
+      console.error('Error fetching hospitals and clinics:', err);
+    } finally {
+      setLoading(false); // Ensure loading state is reset after fetching hospitals and clinics
     }
   };
 
@@ -143,7 +157,6 @@ export const HealthServices = () => {
   };
 
   const allLocations = [
-    ...healthLocations,
     ...pharmacies.map(pharmacy => ({
       id: pharmacy.id,
       name: pharmacy.name,
@@ -151,23 +164,35 @@ export const HealthServices = () => {
       building: pharmacy.location,
       floor: 'Ground Floor',
       openingHours: pharmacy.hours,
-      image: pharmacy.image, // Use the image column from the database for health services
+      image: pharmacy.image,
       tags: ['Pharmacies'],
       type: 'pharmacy',
       getDirections: () => window.open(getDirectionsUrl(pharmacy), '_blank')
-    }))
+    })),
+    ...hospitalsAndClinics,
+    ...healthLocations
   ];
 
   const filteredLocations = allLocations.filter(location => {
-    const matchesSearch = 
-      location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      location.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      location.building.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      location.description.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesFilter = !selectedFilter || location.tags?.includes(selectedFilter);
+    const matchesFilter = selectedFilter
+      ? (selectedFilter === 'Pharmacies' && location.type === 'pharmacy') ||
+        (selectedFilter === 'Hospitals' && location.tags?.includes('Hospitals')) ||
+        (selectedFilter === 'Clinics' && location.tags?.includes('Clinics')) ||
+        (selectedFilter === 'Medicines' && location.tags?.includes('Medicines'))
+      : true;
 
     return matchesSearch && matchesFilter;
   });
+
+  // console.log('Filtered locations:', filteredLocations);
+
+  useEffect(() => {
+    // console.log('Component mounted or updated');
+    // console.log('Current filtered locations:', filteredLocations);
+  }, [filteredLocations]);
 
   const handleFilterClick = (filter: string) => {
     if (filter === 'Medicines') {
@@ -220,7 +245,7 @@ export const HealthServices = () => {
         </div>
 
         {/* Location Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {loading ? (
             // Loading skeletons
             [...Array(3)].map((_, i) => (
@@ -239,10 +264,10 @@ export const HealthServices = () => {
             filteredLocations.map((location) => (
               <div
                 key={location.id}
-                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                className="bg-white rounded-lg p-5 shadow-md overflow-hidden hover:shadow-lg transition-shadow"
               >
                 <img
-                  className="h-48 w-full object-cover"
+                  className="h-48 w-full object-stretch rounded-2xl"
                   src={location.image}
                   alt={location.name}
                 />
@@ -275,7 +300,7 @@ export const HealthServices = () => {
                       ))}
                     </div>
                   )}
-                  {location.type === 'pharmacy' && location.getDirections && (
+                  {location.getDirections && (
                     <button
                       onClick={location.getDirections}
                       className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"

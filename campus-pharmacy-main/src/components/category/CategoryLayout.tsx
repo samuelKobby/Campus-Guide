@@ -123,19 +123,21 @@ export const CategoryLayout: React.FC<CategoryLayoutProps> = ({
         ) : (
           <>
             {/* Locations Grid */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               {filteredLocations.map((location) => (
                 <motion.div
                   key={location.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                  className="bg-white rounded-lg p-5 shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                 >
-                  <img
-                    className="h-48 w-full object-cover"
-                    src={location.image}
-                    alt={location.name}
-                  />
+                  <div className='relative w-full h-[230px]'>
+                    <img
+                      className="w-full h-full object-cover rounded-2xl"
+                      src={location.image}
+                      alt={location.name}
+                    />
+                  </div>
                   <div className="p-4">
                     <h2 className="text-xl font-bold mb-2">{location.name}</h2>
                     <p className="text-gray-600 mb-4">{location.description}</p>

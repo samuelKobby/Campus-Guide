@@ -95,7 +95,6 @@ export const Header: React.FC<HeaderProps> = ({ adminName, onMenuClick, isVisibl
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-      console.log('Fetching notifications...');
       
       const { data, error } = await supabase
         .from('notifications')
@@ -104,8 +103,6 @@ export const Header: React.FC<HeaderProps> = ({ adminName, onMenuClick, isVisibl
 
       if (error) throw error;
 
-      console.log('Notifications fetched:', data);
-      
       // Get read notifications from localStorage
       const readNotifications = JSON.parse(localStorage.getItem('readNotifications') || '[]');
       
@@ -120,7 +117,6 @@ export const Header: React.FC<HeaderProps> = ({ adminName, onMenuClick, isVisibl
       // Count unread notifications
       const unreadCount = formattedNotifications.filter(n => !n.read).length;
       setUnreadCount(unreadCount);
-      console.log('Unread count:', unreadCount);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
