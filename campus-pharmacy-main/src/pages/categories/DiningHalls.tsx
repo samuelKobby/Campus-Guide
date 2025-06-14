@@ -73,8 +73,8 @@ export const DiningHalls = () => {
           name: hall.name,
           description: hall.description || 'Campus dining location offering fresh, delicious meals.',
           building: hall.name,
-          openingHours: formatOpeningHours(hall.opening_hours),
-          image: hall.image, // Use the image column from the database for dining halls
+          openingHours: hall.opening_hours ? formatOpeningHours(hall.opening_hours) : 'Not available',
+          image: hall.image || 'default-image-path',
           tags: ['Dining', 'Cafeteria', 'Food Court'],
           getDirections: hall.latitude && hall.longitude ? () => {
             const url = getDirectionsUrl(hall.latitude, hall.longitude);

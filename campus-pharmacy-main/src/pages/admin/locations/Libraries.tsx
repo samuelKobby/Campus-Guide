@@ -126,12 +126,19 @@ export const LibrariesManagement = () => {
         data = insertData;
 
         // Insert library details
+        const locationId = data[0].id;
+        if (!locationId) {
+          throw new Error('Location ID is missing');
+        }
+        
+        const libraryData = {
+          location_id: locationId,
+          opening_hours: newLibrary.opening_hours || '' // Default to empty string
+        };
+        
         const { error: libraryError } = await supabase
           .from('libraries')
-          .insert([{
-            location_id: data[0].id,
-            opening_hours: newLibrary.opening_hours
-          }]);
+          .insert(libraryData);
 
         if (libraryError) throw libraryError;
       }
@@ -298,7 +305,7 @@ export const LibrariesManagement = () => {
                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64"
               />
             </div>
-            <select
+            {/* <select
               value={filter}
               onChange={(e) => setFilter(e.target.value as 'all' | 'active' | 'inactive')}
               className="bg-white border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -306,7 +313,7 @@ export const LibrariesManagement = () => {
               <option value="all">All Libraries</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
-            </select>
+            </select> */}
           </div>
           <button
             onClick={fetchLibraries}
