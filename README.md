@@ -1,104 +1,106 @@
-# Campus Pharmacy Management System
+# Campus Guide
 
-A comprehensive pharmacy management system designed for campus pharmacies, allowing users to view and search for medicines across different campus pharmacy locations.
+A comprehensive campus navigation and information system designed to help students, staff, and visitors easily find and access various locations and services across the university campus.
 
 ## Features
 
-- View 7 different campus pharmacy locations
-- Browse medicines by pharmacy
-- Search for specific medicines
-- View medicine details including prices and availability
-- Modern and responsive user interface
-- Secure authentication system
+- **Interactive Location Search**: Find any campus location using natural language queries
+- **AI-Powered Search**: Advanced search functionality that understands context and intent
+- **Category Browsing**: Explore locations by category (Academic Buildings, Libraries, Dining Halls, etc.)
+- **Real-time Directions**: Get turn-by-turn directions to any campus location
+- **Pharmacy Finder**: Locate campus pharmacies and check medicine availability
+- **Medicine Search**: Find specific medications across all campus pharmacies
+- **Multi-language Support**: Voice search in multiple languages including English, French, and local languages
+- **Admin Dashboard**: Comprehensive management system for administrators
+- **Pharmacy Portal**: Dedicated portal for pharmacy staff to manage inventory
 
-## Database Structure
+## Technology Stack
 
-### Tables
+- **Frontend**: React with TypeScript, Vite, Tailwind CSS
+- **Backend**: Supabase (PostgreSQL database)
+- **Authentication**: Supabase Auth
+- **Serverless Functions**: Supabase Edge Functions
+- **Maps Integration**: Google Maps API
+- **UI Components**: Lucide React, Framer Motion, React Icons
+- **State Management**: React Context API
+- **Voice Recognition**: Web Speech API with multi-language support
 
-1. **Pharmacies**
-   - Stores information about 7 campus pharmacies
-   - Fields: id, name, location, hours, phone, available, image
-   - Each pharmacy has its own unique set of medicines
+## Project Structure
 
-2. **Medicines**
-   - Contains 35 medicines (5 unique medicines per pharmacy)
-   - Fields: id, name, description, category, unit, price, available, image, pharmacy_id
-   - Linked to pharmacies through pharmacy_id
-   - Includes high-quality images from Unsplash
+The project is organized into several key components:
 
-3. **Users**
-   - Manages user authentication
-   - Roles: admin, staff
-   - Secure password storage
+- **Home**: Main landing page with search functionality and category navigation
+- **Categories**: Dedicated pages for each location type (Academic, Libraries, Dining, etc.)
+- **Medicines**: Browse and search for medications across campus pharmacies
+- **Pharmacies**: View all campus pharmacies with detailed information
+- **Admin Dashboard**: Comprehensive management interface for administrators
+- **Pharmacy Dashboard**: Inventory management for pharmacy staff
 
-4. **Inventory**
-   - Tracks medicine quantities
-   - Manages batch numbers and expiry dates
+## Database Schema
 
-## Security Features
+The database includes several interconnected tables:
 
-- Row Level Security (RLS) implemented
-- Role-based access control
-- Secure authentication using Supabase
-- Protected API endpoints
+- **locations**: Base table for all campus locations
+- **academic_buildings**, **libraries**, **dining_halls**, etc.: Specialized tables for each location type
+- **pharmacies**: Information about campus pharmacies
+- **medicines**: Details about available medications
+- **medicine_pharmacies**: Junction table linking medicines to pharmacies
+- **users** and **admin_users**: User authentication and management
+- **notifications**: System notifications for users
+
+## AI Search Functionality
+
+The system includes an AI-powered search function that:
+
+1. Processes natural language queries
+2. Identifies location types and keywords
+3. Performs context-aware database searches
+4. Returns relevant results with coordinates
+5. Provides directions via Google Maps integration
 
 ## Setup Instructions
 
-1. **Database Setup**
+1. **Clone the repository**
    ```bash
-   # 1. Create a new Supabase project
-   # 2. Copy your project URL and anon key to .env file
-   # 3. Run the SQL scripts in this order:
-   src/supabase/create_pharmacy.sql
+   git clone https://github.com/yourusername/campus-guide.git
+   cd campus-guide
    ```
 
-2. **Environment Variables**
-   Create a `.env` file with:
-   ```
-   VITE_SUPABASE_URL=your_supabase_project_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   ```
-
-3. **Install Dependencies**
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-4. **Run Development Server**
+3. **Set up environment variables**
+   Create a `.env` file with:
+   ```
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+4. **Run the development server**
    ```bash
    npm run dev
    ```
 
-## Sample Data
+5. **Build for production**
+   ```bash
+   npm run build
+   ```
 
-The system comes pre-configured with:
-- 7 campus pharmacies with detailed information
-- 35 medicines (5 unique medicines per pharmacy)
-- High-quality images for all pharmacies and medicines
-- Sample user roles and permissions
+## Deployment
 
-## Tech Stack
+The project is configured for deployment on Netlify:
 
-- Frontend: React + Vite
-- Database: Supabase (PostgreSQL)
-- Authentication: Supabase Auth
-- Styling: Tailwind CSS
-- Image Hosting: Unsplash
+```bash
+# Deploy to Netlify
+netlify deploy --prod
+```
 
 ## Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- Images provided by Unsplash
-- Database hosting by Supabase
-- Icons from Heroicons
