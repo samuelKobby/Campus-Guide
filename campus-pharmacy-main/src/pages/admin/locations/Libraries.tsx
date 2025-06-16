@@ -43,6 +43,8 @@ interface NewLibrary {
   website_url: string;
   image: string;
   opening_hours: string;
+  building_type?: string;
+  status?: 'active' | 'inactive';
 }
 
 export const LibrariesManagement = () => {
@@ -67,7 +69,9 @@ export const LibrariesManagement = () => {
     email: '',
     website_url: '',
     image: '',
-    opening_hours: ''
+    opening_hours: '',
+    building_type: 'library',
+    status: 'active'
   });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
@@ -91,7 +95,8 @@ export const LibrariesManagement = () => {
         email: newLibrary.email,
         website_url: newLibrary.website_url,
         image: newLibrary.image || null,
-        building_type: 'library'
+        building_type: newLibrary.building_type,
+        status: newLibrary.status
       };
 
       let data;
@@ -158,7 +163,9 @@ export const LibrariesManagement = () => {
         email: '',
         website_url: '',
         image: '',
-        opening_hours: ''
+        opening_hours: '',
+        building_type: 'library',
+        status: 'active'
       });
       setPreviewImage(null);
     } catch (error: any) {
@@ -428,11 +435,11 @@ export const LibrariesManagement = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Latitude</label>
-                      <p className="mt-1 text-sm text-gray-900">{selectedLibrary.latitude || 'N/A'}</p>
+                      <p className="mt-1 text-sm text-gray-900">{selectedLibrary.latitude}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Longitude</label>
-                      <p className="mt-1 text-sm text-gray-900">{selectedLibrary.longitude || 'N/A'}</p>
+                      <p className="mt-1 text-sm text-gray-900">{selectedLibrary.longitude}</p>
                     </div>
                   </div>
                 </div>

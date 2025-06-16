@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
 import toast from 'react-hot-toast';
 import { useModal } from '../../../contexts/ModalContext';
-import { MapPin, ImageIcon, XCircle, BuildingIcon } from 'lucide-react';
+import { MapPin, ImageIcon, XCircle, BuildingIcon, Plus, Eye, Pencil, Trash2 } from 'lucide-react';
 
 interface StudentCenter {
   id: string;
@@ -174,11 +174,30 @@ export const StudentCentersManagement = () => {
       email: center.email || '',
       website_url: center.website_url || '',
       image: center.image || '',
-      facilities: center.student_centers.facilities,
-      capacity: center.student_centers.capacity,
-      operating_hours: center.student_centers.operating_hours
+      facilities: center.student_centers?.facilities || [],
+      capacity: center.student_centers?.capacity || 0,
+      operating_hours: center.student_centers?.operating_hours || ''
     });
     setShowAddModal(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('locations')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast.success('Student center deleted successfully!');
+      fetchCenters(); // Refresh the list
+    } catch (error: any) {
+      toast.error(error.message || 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -249,8 +268,10 @@ export const StudentCentersManagement = () => {
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-2 transition-colors duration-200"
           >
+            <Plus className="w-5 h-5" />
+            Add Student Center
           </button>
         </div>
       </div>
@@ -310,15 +331,24 @@ export const StudentCentersManagement = () => {
                       setSelectedCenter(center);
                       setShowDetailsModal(true);
                     }}
-                    className="text-blue-600 hover:text-blue-900 mx-2"
+                    className="text-blue-600 hover:text-blue-900 mx-2 p-1 rounded-full hover:bg-blue-50 transition-colors"
                     title="View Details"
                   >
+                    <Eye className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => handleEdit(center)}
-                    className="text-blue-600 hover:text-blue-900 mx-2"
+                    className="text-blue-600 hover:text-blue-900 mx-2 p-1 rounded-full hover:bg-blue-50 transition-colors"
                     title="Edit Center"
                   >
+                    <Pencil className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(center.id)}
+                    className="text-red-600 hover:text-red-900 mx-2 p-1 rounded-full hover:bg-red-50 transition-colors"
+                    title="Delete Center"
+                  >
+                    <Trash2 className="w-5 h-5" />
                   </button>
                 </td>
               </tr>

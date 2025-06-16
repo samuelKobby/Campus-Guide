@@ -16,11 +16,7 @@ interface SportsFacility {
   email?: string;
   website_url?: string;
   image?: string;
-  sports_facilities: {
-    sports_type: string[];
-    capacity: number;
-    operating_hours: string;
-  };
+  building_type: 'sports';
   created_at: string;
 }
 
@@ -34,9 +30,6 @@ interface NewSportsFacility {
   email: string;
   website_url: string;
   image: string;
-  sports_type: string[];
-  capacity: number;
-  operating_hours: string;
 }
 
 interface ActivityLog {
@@ -71,10 +64,7 @@ export const SportsFacilitiesManagement = () => {
     contact_number: '',
     email: '',
     website_url: '',
-    image: '',
-    sports_type: [],
-    capacity: 0,
-    operating_hours: ''
+    image: ''
   });
 
   useEffect(() => {
@@ -92,15 +82,12 @@ export const SportsFacilitiesManagement = () => {
       
       const { data, error } = await supabase
         .from('locations')
-        .select(`
-          *,
-          sports_facilities(*)
-        `)
+        .select('*')
         .eq('building_type', 'sports')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setFacilities(data || []);
+      if (data) setFacilities(data as SportsFacility[]);
     } catch (error: any) {
       setError(error.message);
       console.error('Error fetching sports facilities:', error);
@@ -134,7 +121,7 @@ export const SportsFacilitiesManagement = () => {
       setError(null);
       const { error } = await supabase
         .from('locations')
-        .update({ available: status })
+        .update({ status: status ? 'active' : 'inactive' })
         .eq('id', facilityId);
 
       if (error) throw error;
@@ -202,7 +189,7 @@ export const SportsFacilitiesManagement = () => {
       }
 
       // Format the data for locations table
-      const locationData = {
+      const locationData: any = {
         name: newFacility.name,
         description: newFacility.description || '',
         address: newFacility.address,
@@ -212,8 +199,7 @@ export const SportsFacilitiesManagement = () => {
         email: newFacility.email || null,
         website_url: newFacility.website_url || null,
         image: newFacility.image || null,
-        building_type: 'sports_facility',
-        status: 'active'
+        building_type: 'sports'
       };
 
       let data;
@@ -234,7 +220,10 @@ export const SportsFacilitiesManagement = () => {
           .insert([locationData])
           .select();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase error details:', error);
+          throw error;
+        }
         data = insertData;
       }
 
@@ -252,10 +241,7 @@ export const SportsFacilitiesManagement = () => {
         contact_number: '',
         email: '',
         website_url: '',
-        image: '',
-        sports_type: [],
-        capacity: 0,
-        operating_hours: ''
+        image: ''
       });
       setPreviewImage(null);
     } catch (error: any) {
@@ -269,17 +255,14 @@ export const SportsFacilitiesManagement = () => {
     setEditMode(facility.id);
     setNewFacility({
       name: facility.name,
-      description: facility.description || '',
+      description: facility.description ?? '',
       address: facility.address,
       latitude: facility.latitude,
       longitude: facility.longitude,
-      contact_number: facility.contact_number || '',
-      email: facility.email || '',
-      website_url: facility.website_url || '',
-      image: facility.image || '',
-      sports_type: facility.sports_facilities.sports_type,
-      capacity: facility.sports_facilities.capacity,
-      operating_hours: facility.sports_facilities.operating_hours
+      contact_number: facility.contact_number ?? '',
+      email: facility.email ?? '',
+      website_url: facility.website_url ?? '',
+      image: facility.image ?? ''
     });
     setShowAddModal(true);
   };
@@ -355,9 +338,6 @@ export const SportsFacilitiesManagement = () => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Contact
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Sports
-              </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
@@ -388,10 +368,6 @@ export const SportsFacilitiesManagement = () => {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">{facility.contact_number}</div>
                   <div className="text-sm text-gray-500">{facility.email}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">Sports Facility</div>
-                  <div className="text-sm text-gray-500">Capacity: N/A</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
@@ -664,10 +640,7 @@ export const SportsFacilitiesManagement = () => {
                         contact_number: '',
                         email: '',
                         website_url: '',
-                        image: '',
-                        sports_type: [],
-                        capacity: 0,
-                        operating_hours: ''
+                        image: ''
                       });
                       setPreviewImage(null);
                     }}
@@ -718,7 +691,7 @@ export const SportsFacilitiesManagement = () => {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-500">Description</p>
-                      <p className="text-base text-gray-900">{selectedFacility.description || 'N/A'}</p>
+                      <p className="text-base text-gray-900">{selectedFacility.description ?? 'N/A'}</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-500">Location</p>
@@ -750,11 +723,11 @@ export const SportsFacilitiesManagement = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm font-medium text-gray-500">Phone</p>
-                      <p className="text-base text-gray-900">{selectedFacility.contact_number || 'N/A'}</p>
+                      <p className="text-base text-gray-900">{selectedFacility.contact_number ?? 'N/A'}</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-500">Email</p>
-                      <p className="text-base text-gray-900">{selectedFacility.email || 'N/A'}</p>
+                      <p className="text-base text-gray-900">{selectedFacility.email ?? 'N/A'}</p>
                     </div>
                     <div className="col-span-2">
                       <p className="text-sm font-medium text-gray-500">Website</p>
