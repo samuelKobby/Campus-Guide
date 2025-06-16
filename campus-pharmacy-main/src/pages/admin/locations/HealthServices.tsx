@@ -60,7 +60,31 @@ export const HealthServicesManagement = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editingFacility, setEditingFacility] = useState<HealthFacility | null>(null);
+  const [editingFacility, setEditingFacility] = useState<{
+    id: string;
+    name: string;
+    description?: string;
+    address: string;
+    latitude: number;
+    longitude: number;
+    contact_number?: string;
+    email?: string;
+    website_url?: string;
+    image?: string;
+    building_type: 'clinic' | 'hospital';
+    health_services: {
+      facility_type: 'clinic' | 'hospital';
+      services: string[];
+      specialties: string[];
+      emergency_services: boolean;
+      accessibility_features: string[];
+      operating_hours: {
+        [key: string]: { open: string; close: string };
+      };
+      insurance_accepted: string[];
+    };
+    created_at: string;
+  } | null>(null);
   const [activeTab, setActiveTab] = useState<'clinic' | 'hospital'>('clinic');
   const [newFacility, setNewFacility] = useState<NewHealthFacility>({
     name: '',
@@ -90,7 +114,7 @@ export const HealthServicesManagement = () => {
   }, []);
 
   useEffect(() => {
-    setNewFacility((prev) => ({
+    setNewFacility((prev: NewHealthFacility) => ({
       ...prev,
       facility_type: activeTab
     }));
@@ -284,13 +308,12 @@ export const HealthServicesManagement = () => {
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `health-services/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
+      const uploadResult = await supabase.storage
         .from('pharmacy-images')
         .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadResult.error) throw uploadResult.error;
 
-      // Get public URL
       const { data } = supabase.storage
         .from('pharmacy-images')
         .getPublicUrl(filePath);
@@ -406,7 +429,7 @@ export const HealthServicesManagement = () => {
   const handleAddClick = () => {
     setSelectedFacility(null);
     setShowAddModal(true);
-    setNewFacility((prev) => ({
+    setNewFacility((prev: NewHealthFacility) => ({
       ...prev,
       facility_type: activeTab
     }));
@@ -639,10 +662,10 @@ export const HealthServicesManagement = () => {
                     onChange={(e) => {
                       const coords = e.target.value.split(',').map(c => parseFloat(c.trim()));
                       if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
-                        setNewFacility(prev => ({
+                        setNewFacility((prev: NewHealthFacility) => ({
                           ...prev,
-                          latitude: coords[0],
-                          longitude: coords[1]
+                          latitude: Number(coords[0]),
+                          longitude: Number(coords[1])
                         }));
                       }
                     }}
@@ -863,11 +886,13 @@ export const HealthServicesManagement = () => {
                     onChange={(e) => {
                       const coords = e.target.value.split(',').map(c => parseFloat(c.trim()));
                       if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
-                        setEditingFacility(prev => ({
-                          ...prev,
-                          latitude: coords[0],
-                          longitude: coords[1]
-                        }));
+                        if (editingFacility) {
+                          setEditingFacility({
+                            ...editingFacility,
+                            latitude: Number(coords[0]),
+                            longitude: Number(coords[1])
+                          });
+                        }
                       }
                     }}
                     placeholder="Enter coordinates (e.g., 5.6505, -0.1962) or select from map"
@@ -940,7 +965,7 @@ export const HealthServicesManagement = () => {
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => {
+                    onChange={async (e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
 
@@ -957,13 +982,12 @@ export const HealthServicesManagement = () => {
                         const fileName = `${Math.random()}.${fileExt}`;
                         const filePath = `health-services/${fileName}`;
 
-                        const { error: uploadError } = supabase.storage
+                        const uploadResult = await supabase.storage
                           .from('pharmacy-images')
                           .upload(filePath, file);
 
-                        if (uploadError) throw uploadError;
+                        if (uploadResult.error) throw uploadResult.error;
 
-                        // Get public URL
                         const { data } = supabase.storage
                           .from('pharmacy-images')
                           .getPublicUrl(filePath);
