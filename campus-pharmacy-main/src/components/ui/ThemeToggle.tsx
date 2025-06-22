@@ -15,7 +15,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
       className={`p-2 rounded-full transition-colors ${
         theme === 'dark' 
           ? 'text-yellow-300 hover:bg-gray-700' 
-          : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+          : ' text-gray-800 hover:bg-gray-300'
       } ${className}`}
       aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
     >
