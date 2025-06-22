@@ -23,7 +23,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
       <Lightbulb 
         className={`h-5 w-5 ${
           theme === 'dark' 
-            ? 'text-gray-600'
+            ? 'text-gray-600 fill-gray-600'
             : 'text-yellow-300 fill-yellow-300' 
         }`} 
       />
