@@ -19,11 +19,13 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
       } ${className}`}
       aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
     >
-      {theme === 'dark' ? (
-        <Sun className="h-5 w-5" />
-      ) : (
-        <Moon className="h-5 w-5" />
-      )}
+      <Lightbulb 
+        className={`h-5 w-5 ${
+          theme === 'dark' 
+            ? 'text-yellow-300 fill-yellow-300' 
+            : 'text-gray-600'
+        }`} 
+      />
     </button>
   );
 };
