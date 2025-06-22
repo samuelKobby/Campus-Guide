@@ -14,8 +14,8 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
       onClick={toggleTheme}
       className={`p-2 rounded-full transition-colors ${
         theme === 'dark' 
-          ? 'text-yellow-300 hover:bg-gray-700' 
-          : ' text-gray-800 hover:bg-gray-300'
+          ?  ' text-gray-800 hover:bg-gray-300'
+          : 'text-yellow-300 hover:bg-gray-700'
       } ${className}`}
       aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
     >
@@ -23,8 +23,8 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
       <Lightbulb 
         className={`h-5 w-5 ${
           theme === 'dark' 
-            ? 'text-yellow-300 fill-yellow-300' 
-            : 'text-gray-600'
+            ? 'text-gray-600'
+            : 'text-yellow-300 fill-yellow-300' 
         }`} 
       />
     </button>
