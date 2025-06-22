@@ -132,11 +132,11 @@ export const Home: React.FC = () => {
     
           {/* Hero Section */}
           <section className="relative pt-32 pb-20 md:pt-40 md:pb-32">
-            <Link to="https://bolt.new" className="absolute top-8 right-8 z-10" target="_blank" rel="noopener noreferrer">
+            <Link to="https://bolt.new" className="absolute top-16 right-8 z-10" target="_blank" rel="noopener noreferrer">
               <img 
                 src="/images/black_circle_360x360.png" 
                 alt="Campus Guide Logo" 
-                className="w-16 h-16 hover:scale-110 transition-transform duration-300"
+                className="w-28 h-28 hover:scale-110 transition-transform duration-300"
               />
             </Link>
             <div 
