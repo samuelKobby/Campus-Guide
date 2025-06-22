@@ -43,64 +43,52 @@ export const Settings: React.FC = () => {
   });
 
   useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('settings')
+          .select('*')
+          .single();
+        
+        if (error) throw error;
+        
+        if (data) {
+          setSettings(data);
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
     fetchSettings();
   }, []);
 
-  const fetchSettings = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('admin_settings')
-        .select('*')
-        .single();
-
-      if (error) throw error;
-      if (data) {
-        setSettings(data);
-      }
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSave = async () => {
+    setSaving(true);
     try {
-      setSaving(true);
       const { error } = await supabase
-        .from('admin_settings')
-        .upsert([settings]);
-
+        .from('settings')
+        .upsert(settings, { onConflict: 'id' });
+      
       if (error) throw error;
-
-      // Log the activity
-      await supabase
-        .from('activity_logs')
-        .insert({
-          action_type: 'update',
-          entity_type: 'settings',
-          details: { updated_sections: [activeTab] }
-        });
-
+      
+      alert('Settings saved successfully!');
     } catch (error) {
       console.error('Error saving settings:', error);
-      alert('Error saving settings. Please try again.');
+      alert('Failed to save settings');
     } finally {
       setSaving(false);
     }
   };
 
-  const updateSettings = (
-    section: keyof Settings,
-    key: string,
-    value: any
-  ) => {
-    setSettings((prev) => ({
+  const handleChange = (section: keyof Settings, field: string, value: any) => {
+    setSettings(prev => ({
       ...prev,
       [section]: {
         ...prev[section],
-        [key]: value
+        [field]: value
       }
     }));
   };
@@ -180,85 +168,72 @@ export const Settings: React.FC = () => {
       {/* Settings Content */}
       <div className="bg-white shadow-sm rounded-lg p-6">
         {activeTab === 'notifications' && (
-          <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900">Notification Settings</h3>
-            <div className="space-y-4">
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Notification Settings</h3>
+            
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Email Notifications
                   </label>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs text-gray-500">
                     Receive important updates via email
                   </p>
                 </div>
-                <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                  <input
-                    type="checkbox"
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
                     checked={settings.notification_settings.email_notifications}
-                    onChange={(e) =>
-                      updateSettings(
-                        'notification_settings',
-                        'email_notifications',
-                        e.target.checked
-                      )
-                    }
-                    className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+                    onChange={(e) => handleChange('notification_settings', 'email_notifications', e.target.checked)}
+                    className="sr-only peer"
                   />
-                  <label className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
-                </div>
+                  <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+                </label>
               </div>
+            </div>
 
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Low Stock Alerts
                   </label>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs text-gray-500">
                     Get notified when medicine stock is running low
                   </p>
                 </div>
-                <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                  <input
-                    type="checkbox"
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
                     checked={settings.notification_settings.low_stock_alerts}
-                    onChange={(e) =>
-                      updateSettings(
-                        'notification_settings',
-                        'low_stock_alerts',
-                        e.target.checked
-                      )
-                    }
-                    className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+                    onChange={(e) => handleChange('notification_settings', 'low_stock_alerts', e.target.checked)}
+                    className="sr-only peer"
                   />
-                  <label className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
-                </div>
+                  <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+                </label>
               </div>
+            </div>
 
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     New Pharmacy Alerts
                   </label>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs text-gray-500">
                     Get notified when new pharmacies register
                   </p>
                 </div>
-                <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                  <input
-                    type="checkbox"
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
                     checked={settings.notification_settings.new_pharmacy_alerts}
-                    onChange={(e) =>
-                      updateSettings(
-                        'notification_settings',
-                        'new_pharmacy_alerts',
-                        e.target.checked
-                      )
-                    }
-                    className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+                    onChange={(e) => handleChange('notification_settings', 'new_pharmacy_alerts', e.target.checked)}
+                    className="sr-only peer"
                   />
-                  <label className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
-                </div>
+                  <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+                </label>
               </div>
             </div>
           </div>
@@ -268,66 +243,50 @@ export const Settings: React.FC = () => {
           <div className="space-y-6">
             <h3 className="text-lg font-medium text-gray-900">Security Settings</h3>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">
-                    Two-Factor Authentication
+              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Two-Factor Authentication
+                    </label>
+                    <p className="text-xs text-gray-500">
+                      Enable 2FA for enhanced security
+                    </p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={settings.security_settings.two_factor_auth}
+                      onChange={(e) => handleChange('security_settings', 'two_factor_auth', e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
                   </label>
-                  <p className="text-sm text-gray-500">
-                    Enable 2FA for enhanced security
-                  </p>
-                </div>
-                <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                  <input
-                    type="checkbox"
-                    checked={settings.security_settings.two_factor_auth}
-                    onChange={(e) =>
-                      updateSettings(
-                        'security_settings',
-                        'two_factor_auth',
-                        e.target.checked
-                      )
-                    }
-                    className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-                  />
-                  <label className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
                 </div>
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-gray-700">
+              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Session Timeout (minutes)
                 </label>
                 <input
                   type="number"
                   value={settings.security_settings.session_timeout}
-                  onChange={(e) =>
-                    updateSettings(
-                      'security_settings',
-                      'session_timeout',
-                      parseInt(e.target.value)
-                    )
-                  }
+                  onChange={(e) => handleChange('security_settings', 'session_timeout', parseInt(e.target.value))}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   min="5"
                   max="120"
                 />
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-gray-700">
+              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Password Expiry (days)
                 </label>
                 <input
                   type="number"
                   value={settings.security_settings.password_expiry_days}
-                  onChange={(e) =>
-                    updateSettings(
-                      'security_settings',
-                      'password_expiry_days',
-                      parseInt(e.target.value)
-                    )
-                  }
+                  onChange={(e) => handleChange('security_settings', 'password_expiry_days', parseInt(e.target.value))}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   min="30"
                   max="365"
@@ -341,72 +300,58 @@ export const Settings: React.FC = () => {
           <div className="space-y-6">
             <h3 className="text-lg font-medium text-gray-900">System Settings</h3>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">
-                    Maintenance Mode
+              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Maintenance Mode
+                    </label>
+                    <p className="text-xs text-gray-500">
+                      Enable maintenance mode to prevent user access
+                    </p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={settings.system_settings.maintenance_mode}
+                      onChange={(e) => handleChange('system_settings', 'maintenance_mode', e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
                   </label>
-                  <p className="text-sm text-gray-500">
-                    Enable maintenance mode to prevent user access
-                  </p>
-                </div>
-                <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                  <input
-                    type="checkbox"
-                    checked={settings.system_settings.maintenance_mode}
-                    onChange={(e) =>
-                      updateSettings(
-                        'system_settings',
-                        'maintenance_mode',
-                        e.target.checked
-                      )
-                    }
-                    className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-                  />
-                  <label className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">
-                    Debug Mode
+              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Debug Mode
+                    </label>
+                    <p className="text-xs text-gray-500">
+                      Enable detailed error messages and logging
+                    </p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={settings.system_settings.debug_mode}
+                      onChange={(e) => handleChange('system_settings', 'debug_mode', e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
                   </label>
-                  <p className="text-sm text-gray-500">
-                    Enable detailed error messages and logging
-                  </p>
-                </div>
-                <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                  <input
-                    type="checkbox"
-                    checked={settings.system_settings.debug_mode}
-                    onChange={(e) =>
-                      updateSettings(
-                        'system_settings',
-                        'debug_mode',
-                        e.target.checked
-                      )
-                    }
-                    className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-                  />
-                  <label className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
                 </div>
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-gray-700">
+              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Cache Duration (seconds)
                 </label>
                 <input
                   type="number"
                   value={settings.system_settings.cache_duration}
-                  onChange={(e) =>
-                    updateSettings(
-                      'system_settings',
-                      'cache_duration',
-                      parseInt(e.target.value)
-                    )
-                  }
+                  onChange={(e) => handleChange('system_settings', 'cache_duration', parseInt(e.target.value))}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   min="300"
                   max="86400"
