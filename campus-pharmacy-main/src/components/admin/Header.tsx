@@ -290,8 +290,7 @@ export const Header: React.FC<HeaderProps> = ({ adminName, onMenuClick, isVisibl
         </div>
         
         <div className="flex items-center space-x-4">
-          {/* Theme Toggle */}
-          <ThemeToggle />
+         
           
           {/* Notifications */}
           <div className="relative" ref={notificationsRef}>
