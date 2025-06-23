@@ -26,25 +26,29 @@ import VoiceAgent from '../components/VoiceAgent';
       icon: Navigation2,
       title: 'Instant Directions',
       description: 'Get turn-by-turn navigation to any location on campus in seconds',
-      color: 'from-cyan-500 to-blue-600'
+      color: 'from-cyan-500 to-blue-600',
+      link: '/category/academic'
     },
     {
-      icon: Smartphone,
-      title: 'AR Wayfinding',
-      description: 'Use augmented reality to see directions overlaid on your camera view',
-      color: 'from-purple-500 to-pink-600'
+      icon: Shield,
+      title: 'Medications Availability',
+      description: 'Instant medication availability and pricing information',
+      color: 'from-purple-500 to-pink-600',
+      link: '/medicines'
     },
     {
-      icon: Clock,
-      title: 'Live Schedules',
-      description: 'Real-time updates on building hours, events, and room availability',
-      color: 'from-green-500 to-emerald-600'
+      icon: Compass,
+      title: 'Easy Navigation',
+      description: 'Turn-by-turn directions to nearest pharmacies',
+      color: 'from-green-500 to-emerald-600',
+      link: '/pharmacies'
     },
     {
-      icon: Target,
-      title: 'Smart Suggestions',
-      description: 'AI-powered recommendations based on your schedule and preferences',
-      color: 'from-orange-500 to-red-600'
+      icon: Hospital,
+      title: 'Pharmacies Information',
+      description: 'All pharmacies and medications are thoroughly verified',
+      color: 'from-orange-500 to-red-600',
+      link: '/pharmacies'
     }
   ];
 
@@ -227,13 +231,7 @@ export const Home: React.FC = () => {
     
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 {features.map((feature, index) => (
-                  <div
-                    key={index}
-                    className="group relative"
-                    style={{
-                      animation: `slideInLeft 0.8s ease-out ${index * 0.2}s both`
-                    }}
-                  >
+                  <Link to={feature.link} key={index} className="group relative">
                     <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-3xl blur-xl"
                          style={{background: `linear-gradient(to right, ${feature.color.split(' ')[1]}, ${feature.color.split(' ')[3]})`}} />
                     
@@ -244,13 +242,8 @@ export const Home: React.FC = () => {
                       
                       <h3 className="text-3xl font-bold text-white mb-4">{feature.title}</h3>
                       <p className="text-gray-400 text-lg leading-relaxed">{feature.description}</p>
-                      
-                      <div className="mt-8 flex items-center text-cyan-400 group-hover:text-white transition-colors duration-300">
-                        <span className="font-semibold">Learn More</span>
-                        <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform duration-300" />
-                      </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -337,10 +330,12 @@ export const Home: React.FC = () => {
                       <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     </button>
                     
-                    <button className="group text-white text-2xl font-semibold hover:text-cyan-300 transition-colors duration-300 flex items-center">
-                      Download App
-                      <ChevronRight className="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-                    </button>
+                    <a href="https://drive.google.com/file/d/1hqAPZ52JeJkFaZW_ehkQi7OFw4KnutFN/view?usp=drive_link" target="_blank" rel="noopener noreferrer">
+                      <button className="group text-white text-2xl font-semibold hover:text-cyan-300 transition-colors duration-300 flex items-center">
+                        Download App
+                        <ChevronRight className="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                      </button>
+                    </a>
                   </div>
                 </div>
               </div>
