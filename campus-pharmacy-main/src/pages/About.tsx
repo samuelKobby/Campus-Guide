@@ -103,9 +103,9 @@ export const About: React.FC = () => {
                   <div className="absolute h-full w-0.5 bg-gray-200 left-1/2 transform -translate-x-1/2 hidden md:block"></div>
                   <div className="grid md:grid-cols-4 gap-8">
                     {[
-                      { step: 1, title: 'Search', description: 'Find your medication' },
-                      { step: 2, title: 'Locate', description: 'See nearby pharmacies' },
-                      { step: 3, title: 'Navigate', description: 'Get directions' },
+                      { step: 1, title: 'Search', description: 'Search for your location or a Medication' },
+                      { step: 2, title: 'Locate', description: 'See your location or you medications' },
+                      { step: 3, title: 'Navigate', description: 'Get directions to your location or the available pharmacies' },
                       { step: 4, title: 'Purchase', description: 'Get your medication' }
                     ].map((item, index) => (
                       <div key={item.step} className="flex flex-col items-center text-center relative">
@@ -121,38 +121,7 @@ export const About: React.FC = () => {
               </section>
             </Parallax>
 
-            <Parallax scale={[0.95, 1]}>
-              {/* Testimonials */}
-              <section className="mb-16">
-                <h2 className="text-3xl font-bold mb-8 text-center">Student Experiences</h2>
-                <div className="grid md:grid-cols-2 gap-8">
-                  {[
-                    {
-                      quote: "This app saved me so much time finding my prescription. No more running between pharmacies!",
-                      author: "Sarah, Medical Student",
-                      icon: <User className="w-6 h-6" />
-                    },
-                    {
-                      quote: "The real-time availability feature is a game-changer. Found my medication in seconds!",
-                      author: "Michael, Graduate Student",
-                      icon: <User className="w-6 h-6" />
-                    }
-                  ].map((testimonial, index) => (
-                    <div key={index} className="bg-white rounded-xl p-8 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="flex items-start mb-4">
-                        <div className="bg-indigo-100 p-2 rounded-lg mr-4">
-                          {testimonial.icon}
-                        </div>
-                        <p className="text-gray-600 italic flex-1">
-                          "{testimonial.quote}"
-                        </p>
-                      </div>
-                      <p className="font-semibold text-right">{testimonial.author}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            </Parallax>
+     
 
             <Parallax translateY={[-10, 10]}>
               {/* Team Section */}
@@ -160,15 +129,13 @@ export const About: React.FC = () => {
                 <h2 className="text-3xl font-bold mb-8 text-center">Our Team</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                   {[
-                    { name: "Alex Johnson", role: "Founder & CEO" },
-                    { name: "Taylor Kim", role: "Product Designer" },
-                    { name: "Jordan Smith", role: "Lead Developer" }
+                    { name: "Samuel G. Fordjour", role: "Founder & CEO", image: "/images/4.jpg" }, // Update with actual image path
+                    { name: "Bolt AI", role: "Lead Developer", image: "/images/2.png" }, // Update with actual image path
+                    { name: "ChatGPT", role: "Product Designer", image: "/images/3.png" } // Update with actual image path
                   ].map((member, index) => (
                     <div key={index} className="bg-white rounded-xl p-6 text-center hover:shadow-md transition-shadow">
-                      <div className="w-24 h-24 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span className="text-indigo-600 text-2xl font-bold">
-                          {member.name.split(' ').map(n => n[0]).join('')}
-                        </span>
+                      <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-4">
+                        <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
                       </div>
                       <h3 className="text-xl font-semibold mb-1">{member.name}</h3>
                       <p className="text-gray-600">{member.role}</p>

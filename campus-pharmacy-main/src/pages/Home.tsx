@@ -54,22 +54,23 @@ import VoiceAgent from '../components/VoiceAgent';
 
   const testimonials = [
     {
-      name: 'Alex Rivera',
-      role: 'Engineering Student',
+      name: 'Anastaciah Andoh',
+      role: 'IT Student',
       text: 'I used to be late to every class. Now I navigate campus like a pro!',
-      avatar: '👨‍💻'
+      image: '/images/5.jpg' 
     },
+    
     {
-      name: 'Maya Patel',
-      role: 'Graduate Researcher',
-      text: 'The AR feature is incredible - it makes finding research labs so easy.',
-      avatar: '👩‍🔬'
-    },
-    {
-      name: 'Jordan Kim',
+      name: 'John Smith',
       role: 'Campus Tour Guide',
       text: 'This app revolutionized how I give campus tours to prospective students.',
-      avatar: '👨‍🎓'
+      image: '/images/7.webp' 
+    },
+    {
+      name: 'Elsie De-Graft',
+      role: 'Graduate Researcher',
+      text: 'The Voice Search feature is incredible - it makes finding research labs so easy.',
+      image: '/images/6.jpg' 
     }
   ];
 
@@ -283,7 +284,7 @@ export const Home: React.FC = () => {
               <div className="relative max-w-4xl mx-auto">
                 <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-12 border border-white/10">
                   <div className="text-center">
-                    <div className="text-6xl mb-6">{testimonials[currentSlide].avatar}</div>
+                  <img src={testimonials[currentSlide].image} alt={testimonials[currentSlide].name} className="w-24 h-24 rounded-full mx-auto mb-4" />
                     <blockquote className="text-2xl text-white mb-8 font-medium italic">
                       "{testimonials[currentSlide].text}"
                     </blockquote>
