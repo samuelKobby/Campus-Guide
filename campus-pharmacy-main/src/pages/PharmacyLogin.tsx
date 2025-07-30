@@ -210,12 +210,7 @@ export const PharmacyLogin: React.FC = () => {
         {/* Security Notice */}
         <div className="mt-6 space-y-2">
           <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-              <div className="text-sm">
-                <a href="#" className="font-medium text-gray-500 hover:text-blue-600 transition-colors duration-200">
-                  Username: legon_hall_pharmacy
-                  Password: 11111111
-                </a>
-              </div>
+              
             <p className="text-sm text-blue-800">
               <strong>First time logging in?</strong> Your temporary password is: <span className="font-mono">Pharm[YourPharmacyName]123</span>
             </p>

@@ -182,12 +182,7 @@ export const AdminLogin: React.FC = () => {
                   Remember me
                 </label> */}
               </div>
-              <div className="text-sm">
-                <a href="#" className="font-medium text-gray-500 hover:text-blue-600 transition-colors duration-200">
-                  Username: superadmin@gmail.com
-                  Password: 12345678
-                </a>
-              </div>
+              
               <div className="text-sm">
                 <a href="#" className="font-medium text-blue-500 hover:text-blue-600 transition-colors duration-200">
                   Forgot password?
