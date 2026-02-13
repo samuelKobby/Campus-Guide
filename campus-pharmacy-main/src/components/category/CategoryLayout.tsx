@@ -62,7 +62,7 @@ export const CategoryLayout: React.FC<CategoryLayoutProps> = ({
   };
 
   return (
-    <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#050816]' : 'bg-gray-50'}`}>
       {/* Hero Section */}
       <CategoryHero
         title={title}
@@ -82,7 +82,7 @@ export const CategoryLayout: React.FC<CategoryLayoutProps> = ({
                 type="text"
                 placeholder="Search locations..."
                 className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  theme === 'dark' ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
+                  theme === 'dark' ? 'bg-[#151030] border-gray-700 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'
                 }`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -99,8 +99,8 @@ export const CategoryLayout: React.FC<CategoryLayoutProps> = ({
                 className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                   selectedTags.includes(tag)
                     ? 'bg-blue-600 text-white'
-                    : theme === 'dark' 
-                      ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' 
+                    : theme === 'dark'
+                      ? 'bg-[#151030] text-gray-200 hover:bg-[#1a1540]'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
@@ -112,18 +112,14 @@ export const CategoryLayout: React.FC<CategoryLayoutProps> = ({
 
         {/* Loading State */}
         {loading ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className={`rounded-lg shadow-md overflow-hidden animate-pulse ${
-                theme === 'dark' ? 'bg-gray-800' : 'bg-white'
-              }`}>
-                <div className={`h-48 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'}`} />
-                <div className="p-4 space-y-4">
-                  <div className={`h-6 rounded w-3/4 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'}`} />
-                  <div className="space-y-2">
-                    <div className={`h-4 rounded ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'}`} />
-                    <div className={`h-4 rounded w-5/6 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'}`} />
-                  </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+              <div key={i} className="animate-pulse">
+                <div className={`h-[240px] rounded-xl mb-3 ${theme === 'dark' ? 'bg-[#0a0820]' : 'bg-gray-200'}`} />
+                <div className="space-y-2">
+                  <div className={`h-4 rounded w-5/6 ${theme === 'dark' ? 'bg-[#0a0820]' : 'bg-gray-200'}`} />
+                  <div className={`h-3 rounded w-4/6 ${theme === 'dark' ? 'bg-[#0a0820]' : 'bg-gray-200'}`} />
+                  <div className={`h-3 rounded w-3/6 ${theme === 'dark' ? 'bg-[#0a0820]' : 'bg-gray-200'}`} />
                 </div>
               </div>
             ))}
@@ -131,68 +127,64 @@ export const CategoryLayout: React.FC<CategoryLayoutProps> = ({
         ) : (
           <>
             {/* Locations Grid */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredLocations.map((location) => (
                 <motion.div
                   key={location.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
-                  className={`rounded-lg p-5 shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 ${
-                    theme === 'dark' 
-                      ? 'bg-gray-800 hover:bg-gray-750' 
-                      : 'bg-white hover:bg-gray-50'
-                  }`}
+                  className="cursor-pointer group relative"
                 >
-                  <div className='relative w-full h-[230px]'>
+                  {/* Image Container */}
+                  <div className='relative w-full h-[240px] overflow-hidden rounded-xl mb-3'>
                     <img
-                      className="w-full h-full object-cover rounded-2xl"
+                      className="w-full h-full object-stretch"
                       src={location.image}
                       alt={location.name}
                     />
-                  </div>
-                  <div className="p-4">
-                    <h2 className={`text-xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                      {location.name}
-                    </h2>
-                    <p className={`mb-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
-                      {location.description}
-                    </p>
-                    <div className={`space-y-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
-                      <p className="flex items-center">
-                        <FaMapMarkerAlt className="mr-2" />
-                        {location.building}
-                      </p>
-                      {location.openingHours && (
-                        <p className="flex items-center">
-                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          {location.openingHours}
-                        </p>
-                      )}
-                    </div>
-                    {location.tags && (
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {location.tags.map((tag, index) => (
-                          <span key={index} className={`px-2 py-1 text-sm rounded-full ${
-                            theme === 'dark' 
-                              ? 'bg-gray-700 text-gray-300' 
-                              : 'bg-gray-100 text-gray-600'
-                          }`}>
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+
+                    {/* Circular Get Directions Button */}
                     {location.getDirections && (
                       <button
                         onClick={location.getDirections}
-                        className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                        className="absolute bottom-2 right-2 w-10 h-10 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center shadow-lg"
                       >
-                        Get Directions
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                        </svg>
                       </button>
                     )}
+                  </div>
+
+                  {/* Content Container */}
+                  <div className="flex gap-3">
+                    <div className="flex-1">
+                      <h2 className={`text-sm font-semibold mb-1 line-clamp-2 leading-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                        {location.name}
+                      </h2>
+
+                      <div className={`text-xs space-y-0.5 ${theme === 'dark' ? 'text-[#a09cb9]' : 'text-gray-600'}`}>
+                        <p className="line-clamp-1">{location.building}</p>
+                        {location.openingHours && (
+                          <p className="line-clamp-1">{location.openingHours}</p>
+                        )}
+                      </div>
+
+                      {location.tags && location.tags.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {location.tags.slice(0, 2).map((tag, index) => (
+                            <span key={index} className={`px-2 py-0.5 text-xs rounded ${
+                              theme === 'dark'
+                                ? 'bg-[#0a0820] text-[#a09cb9]'
+                                : 'bg-gray-100 text-gray-600'
+                            }`}>
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </motion.div>
               ))}

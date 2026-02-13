@@ -203,7 +203,7 @@ export const HealthServices = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#050816]">
       <CategoryHero
         title="Health Services"
         description="Access comprehensive healthcare and wellness services on campus."
@@ -220,11 +220,11 @@ export const HealthServices = () => {
               <input
                 type="text"
                 placeholder="Search by name, location, or service..."
-                className="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-[#151030] dark:border-gray-700 dark:text-white dark:placeholder-gray-400"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
             </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -235,7 +235,7 @@ export const HealthServices = () => {
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                   selectedFilter === filter
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-[#151030] dark:text-[#a09cb9] dark:hover:bg-[#1a1540]'
                 }`}
               >
                 {filter}
@@ -245,18 +245,16 @@ export const HealthServices = () => {
         </div>
 
         {/* Location Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {loading ? (
             // Loading skeletons
-            [...Array(3)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
-                <div className="h-48 bg-gray-200" />
-                <div className="p-4 space-y-4">
-                  <div className="h-6 bg-gray-200 rounded w-3/4" />
-                  <div className="space-y-2">
-                    <div className="h-4 bg-gray-200 rounded" />
-                    <div className="h-4 bg-gray-200 rounded w-5/6" />
-                  </div>
+            [...Array(8)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="h-[240px] bg-gray-200 dark:bg-[#0a0820] rounded-xl mb-3" />
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 dark:bg-[#0a0820] rounded w-5/6" />
+                  <div className="h-3 bg-gray-200 dark:bg-[#0a0820] rounded w-4/6" />
+                  <div className="h-3 bg-gray-200 dark:bg-[#0a0820] rounded w-3/6" />
                 </div>
               </div>
             ))
@@ -264,50 +262,54 @@ export const HealthServices = () => {
             filteredLocations.map((location) => (
               <div
                 key={location.id}
-                className="bg-white rounded-lg p-5 shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                className="cursor-pointer group relative"
               >
-                <img
-                  className="h-48 w-full object-stretch rounded-2xl"
-                  src={location.image}
-                  alt={location.name}
-                />
-                <div className="p-4">
-                  <h2 className="text-xl font-bold mb-2">{location.name}</h2>
-                  <p className="text-gray-600 mb-4">{location.description}</p>
-                  <div className="space-y-2 text-gray-600">
-                    <p className="flex items-center">
-                      <FaFirstAid className="mr-2" />
-                      {location.building} - Floor {location.floor}
-                    </p>
-                    {location.openingHours && (
-                      <p className="flex items-center">
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        {location.openingHours}
-                      </p>
-                    )}
-                  </div>
-                  {location.tags && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {location.tags.map((tag, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-gray-100 text-gray-600 text-sm rounded-full"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                {/* Image Container */}
+                <div className="relative w-full h-[240px] overflow-hidden rounded-xl mb-3">
+                  <img
+                    className="w-full h-full object-stretch"
+                    src={location.image}
+                    alt={location.name}
+                  />
+
+                  {/* Circular Get Directions Button */}
                   {location.getDirections && (
                     <button
                       onClick={location.getDirections}
-                      className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                      className="absolute bottom-2 right-2 w-10 h-10 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center shadow-lg"
                     >
-                      Get Directions
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                      </svg>
                     </button>
                   )}
+                </div>
+
+                {/* Content Container */}
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <h2 className="text-sm font-semibold mb-1 dark:text-white line-clamp-2 leading-tight">{location.name}</h2>
+
+                    <div className="text-xs text-gray-600 dark:text-[#a09cb9] space-y-0.5">
+                      <p className="line-clamp-1">{location.building} - Floor {location.floor}</p>
+                      {location.openingHours && (
+                        <p className="line-clamp-1">{location.openingHours}</p>
+                      )}
+                    </div>
+
+                    {location.tags && location.tags.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {location.tags.slice(0, 2).map((tag, index) => (
+                          <span
+                            key={index}
+                            className="px-2 py-0.5 bg-gray-100 dark:bg-[#0a0820] text-gray-600 dark:text-[#a09cb9] text-xs rounded"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))
@@ -317,7 +319,7 @@ export const HealthServices = () => {
         {/* No Results Message */}
         {!loading && filteredLocations.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-600 text-lg">
+            <p className="text-gray-600 dark:text-[#a09cb9] text-lg">
               No health services found matching your criteria.
             </p>
           </div>

@@ -15,7 +15,7 @@ export const MainLayout: React.FC = () => {
         <Outlet />
       </main>
       {shouldShowFooter && (
-        <footer className="bg-gray-800 text-white py-8">
+        <footer className="bg-[#050816] text-white py-8">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>

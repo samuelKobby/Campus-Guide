@@ -3,7 +3,7 @@ import { SearchBar } from '../components/home/SearchBar';
 import { LocationCategories } from '../components/home/LocationCategories';
 import { HeroSlideshow } from '../components/home/HeroSlideshow';
 import {
-  MapPin, Compass, Zap, Users, Calendar, Coffee, BookOpen, Car, Navigation2, Star,Navigation,
+  MapPin, Compass, Users, Calendar, Coffee, BookOpen, Car, Navigation2, Star,Navigation,
   ArrowDown, Play, Globe, Target, Smartphone, ChevronRight, Clock, Shield, Award, Utensils, Hospital
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -105,7 +105,7 @@ export const Home: React.FC = () => {
   const bgParallax = scrollY * 0.1;
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden">
+    <div className="relative min-h-screen bg-white dark:bg-[#050816] overflow-hidden">
           
           {/* Dynamic Background with Mouse Interaction */}
           <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -144,30 +144,25 @@ export const Home: React.FC = () => {
             />
             <HeroSlideshow />
             <div className="relative z-10 text-center px-6 max-w-7xl mx-auto">
-              <div className="mb-8 inline-flex items-center px-6 py-3 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-                <Zap className="w-5 h-5 text-yellow-400 mr-2" />
-                <span className="text-white font-medium">Powered by Advanced AI Navigation</span>
-              </div>
-              
-              <h1 className="text-5xl font-bold mb-6 text-white">
+              <h1 className="text-5xl font-bold mb-6 text-gray-900 dark:text-white">
                 Find Your Way Around Campus
               </h1>
               
-              <p className="text-2xl md:text-3xl text-gray-300 mb-20 max-w-4xl mx-auto leading-relaxed">
+              <p className="text-2xl md:text-3xl text-gray-700 dark:text-gray-300 mb-20 max-w-4xl mx-auto leading-relaxed">
                 Never get lost again. Discover the smartest way to navigate your university. 
                 
               </p>
     
               <SearchBar />
               <div className="flex justify-center space-x-6 mt-16">
-                <button className="group bg-white/10 backdrop-blur-sm border border-white/20 rounded-full p-4 hover:bg-white/20 transition-all duration-300 hover:scale-110">
-                  <MapPin className="w-6 h-6 text-white group-hover:text-blue-300" />
+                <button className="group bg-gray-200/80 dark:bg-white/10 backdrop-blur-sm border border-gray-300 dark:border-white/20 rounded-full p-4 hover:bg-gray-300 dark:hover:bg-white/20 transition-all duration-300 hover:scale-110">
+                  <MapPin className="w-6 h-6 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-300" />
                 </button>
-                <button className="group bg-white/10 backdrop-blur-sm border border-white/20 rounded-full p-4 hover:bg-white/20 transition-all duration-300 hover:scale-110">
-                  <Navigation className="w-6 h-6 text-white group-hover:text-purple-300" />
+                <button className="group bg-gray-200/80 dark:bg-white/10 backdrop-blur-sm border border-gray-300 dark:border-white/20 rounded-full p-4 hover:bg-gray-300 dark:hover:bg-white/20 transition-all duration-300 hover:scale-110">
+                  <Navigation className="w-6 h-6 text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-300" />
                 </button>
-                <button className="group bg-white/10 backdrop-blur-sm border border-white/20 rounded-full p-4 hover:bg-white/20 transition-all duration-300 hover:scale-110">
-                  <Clock className="w-6 h-6 text-white group-hover:text-pink-300" />
+                <button className="group bg-gray-200/80 dark:bg-white/10 backdrop-blur-sm border border-gray-300 dark:border-white/20 rounded-full p-4 hover:bg-gray-300 dark:hover:bg-white/20 transition-all duration-300 hover:scale-110">
+                  <Clock className="w-6 h-6 text-gray-900 dark:text-white group-hover:text-pink-600 dark:group-hover:text-pink-300" />
                 </button>
               </div>
             </div>
@@ -185,7 +180,7 @@ export const Home: React.FC = () => {
                 {campusZones.map((zone, index) => (
                   <div
                     key={index}
-                    className="group relative overflow-hidden rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20 transition-all duration-700 hover:scale-105"
+                    className="group relative overflow-hidden rounded-3xl bg-gray-50 dark:bg-[#151030] backdrop-blur-xl border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 transition-all duration-700 hover:scale-105"
                     style={{
                       animation: `fadeInUp 0.8s ease-out ${index * 0.1}s both`
                     }}
@@ -197,10 +192,10 @@ export const Home: React.FC = () => {
                         <zone.icon className="w-8 h-8 text-white" />
                       </div>
                       
-                      <h3 className="text-2xl font-bold text-white mb-3">{zone.name}</h3>
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">{zone.name}</h3>
                       
                       <Link to={zone.path}>
-                        <div className="flex items-center text-cyan-400 group-hover:text-white transition-colors duration-300">
+                        <div className="flex items-center text-cyan-600 dark:text-cyan-400 group-hover:text-cyan-700 dark:group-hover:text-white transition-colors duration-300">
                           <span className="font-medium">Discover Zone</span>
                           <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                         </div>
@@ -216,10 +211,10 @@ export const Home: React.FC = () => {
           <section className="py-32 relative">
             <div className="container mx-auto px-6">
               <div className="text-center mb-20">
-                <h2 className="text-6xl font-bold mb-6 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                <h2 className="text-6xl font-bold mb-6 bg-gradient-to-r from-cyan-600 via-purple-600 to-pink-600 dark:from-cyan-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
                   Revolutionary Features
                 </h2>
-                <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+                <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
                   Experience navigation like never before with cutting-edge technology that adapts to your needs.
                 </p>
               </div>
@@ -230,13 +225,13 @@ export const Home: React.FC = () => {
                     <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-3xl blur-xl"
                          style={{background: `linear-gradient(to right, ${feature.color.split(' ')[1]}, ${feature.color.split(' ')[3]})`}} />
                     
-                    <div className="relative bg-white/5 backdrop-blur-xl rounded-3xl p-10 border border-white/10 hover:border-white/20 transition-all duration-700 hover:scale-105">
+                    <div className="relative bg-gray-50 dark:bg-[#151030] backdrop-blur-xl rounded-3xl p-10 border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 transition-all duration-700 hover:scale-105">
                       <div className={`inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-r ${feature.color} mb-8 group-hover:scale-110 transition-transform duration-500`}>
                         <feature.icon className="w-10 h-10 text-white" />
                       </div>
                       
-                      <h3 className="text-3xl font-bold text-white mb-4">{feature.title}</h3>
-                      <p className="text-gray-400 text-lg leading-relaxed">{feature.description}</p>
+                      <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{feature.title}</h3>
+                      <p className="text-gray-600 dark:text-[#a09cb9] text-lg leading-relaxed">{feature.description}</p>
                     </div>
                   </Link>
                 ))}
@@ -258,7 +253,7 @@ export const Home: React.FC = () => {
                     <div className={`text-6xl md:text-7xl font-black mb-4 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-500`}>
                       {stat.number}
                     </div>
-                    <div className="text-gray-300 text-lg font-medium">{stat.label}</div>
+                    <div className="text-gray-700 dark:text-gray-300 text-lg font-medium">{stat.label}</div>
                   </div>
                 ))}
               </div>
@@ -269,22 +264,22 @@ export const Home: React.FC = () => {
           <section className="py-32 relative">
             <div className="container mx-auto px-6">
               <div className="text-center mb-20">
-                <h2 className="text-6xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                <h2 className="text-6xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
                   Student Stories
                 </h2>
-                <p className="text-xl text-gray-400">Real experiences from real students</p>
+                <p className="text-xl text-gray-600 dark:text-gray-400">Real experiences from real students</p>
               </div>
     
               <div className="relative max-w-4xl mx-auto">
-                <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-12 border border-white/10">
+                <div className="bg-gray-50 dark:bg-[#151030] backdrop-blur-xl rounded-3xl p-12 border border-gray-200 dark:border-white/10">
                   <div className="text-center">
                   <img src={testimonials[currentSlide].image} alt={testimonials[currentSlide].name} className="w-24 h-24 rounded-full mx-auto mb-4" />
-                    <blockquote className="text-2xl text-white mb-8 font-medium italic">
+                    <blockquote className="text-2xl text-gray-900 dark:text-white mb-8 font-medium italic">
                       "{testimonials[currentSlide].text}"
                     </blockquote>
                     <div>
-                      <div className="text-xl font-bold text-white">{testimonials[currentSlide].name}</div>
-                      <div className="text-gray-400">{testimonials[currentSlide].role}</div>
+                      <div className="text-xl font-bold text-gray-900 dark:text-white">{testimonials[currentSlide].name}</div>
+                      <div className="text-gray-600 dark:text-[#a09cb9]">{testimonials[currentSlide].role}</div>
                     </div>
                   </div>
                 </div>
@@ -311,10 +306,10 @@ export const Home: React.FC = () => {
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 blur-3xl rounded-full" />
                 <div className="relative">
-                  <h2 className="text-7xl font-black mb-8 bg-gradient-to-r from-white via-cyan-200 to-purple-200 bg-clip-text text-transparent">
+                  <h2 className="text-7xl font-black mb-8 bg-gradient-to-r from-gray-900 via-cyan-700 to-purple-700 dark:from-white dark:via-cyan-200 dark:to-purple-200 bg-clip-text text-transparent">
                     Start Your Journey
                   </h2>
-                  <p className="text-2xl text-gray-300 mb-12 max-w-3xl mx-auto">
+                  <p className="text-2xl text-gray-700 dark:text-gray-300 mb-12 max-w-3xl mx-auto">
                     Join thousands of students who've transformed their campus experience. 
                     Never be late, never be lost, never be confused again.
                   </p>
@@ -326,7 +321,7 @@ export const Home: React.FC = () => {
                     </button>
                     
                     <a href="https://drive.google.com/file/d/1hqAPZ52JeJkFaZW_ehkQi7OFw4KnutFN/view?usp=drive_link" target="_blank" rel="noopener noreferrer">
-                      <button className="group text-white text-2xl font-semibold hover:text-cyan-300 transition-colors duration-300 flex items-center">
+                      <button className="group text-gray-900 dark:text-white text-2xl font-semibold hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors duration-300 flex items-center">
                         Download App
                         <ChevronRight className="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                       </button>

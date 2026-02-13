@@ -27,7 +27,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="px-4 pt-2 pb-4 space-y-2 bg-gray-900">
+    <div className="px-4 pt-2 pb-4 space-y-2 bg-[#050816]">
       <Link
         to="/map"
         className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"

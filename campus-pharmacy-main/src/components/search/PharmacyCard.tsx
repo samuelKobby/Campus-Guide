@@ -35,7 +35,7 @@ export const PharmacyCard: React.FC<PharmacyCardProps> = ({ pharmacy, medicines 
   return (
     <>
       <div 
-        className="bg-white rounded-lg shadow-md overflow-hidden transition-shadow duration-300 hover:shadow-lg"
+        className="bg-white dark:bg-[#151030] rounded-lg shadow-md overflow-hidden transition-shadow duration-300 hover:shadow-lg border border-gray-200 dark:border-white/10"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -45,27 +45,27 @@ export const PharmacyCard: React.FC<PharmacyCardProps> = ({ pharmacy, medicines 
           className="w-full h-48 object-cover"
         />
         <div className="p-4">
-          <h3 className="text-xl font-semibold mb-2">{pharmacy.name}</h3>
-          <div className="space-y-2 text-gray-600 mb-4">
+          <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">{pharmacy.name}</h3>
+          <div className="space-y-2 text-gray-600 dark:text-[#a09cb9] mb-4">
             <p> {pharmacy.location}</p>
             <p> {pharmacy.hours}</p>
             <p> {pharmacy.phone}</p>
           </div>
 
           {/* Medicines List */}
-          <div className="border-t pt-4 mb-4">
-            <h4 className="font-semibold mb-2">Available Medicines:</h4>
+          <div className="border-t border-gray-200 dark:border-white/10 pt-4 mb-4">
+            <h4 className="font-semibold mb-2 text-gray-900 dark:text-[#a09cb9]">Available Medicines:</h4>
             <div className="space-y-2">
               {medicines.map(medicine => (
                 <div 
                   key={medicine.id}
                   className={`p-2 rounded transition-colors duration-300 ${
-                    isHovered ? 'bg-gray-50' : ''
+                    isHovered ? 'bg-gray-50 dark:bg-white/5' : ''
                   }`}
                 >
                   <div className="flex justify-between items-center">
-                    <span>{medicine.name}</span>
-                    <span className="font-semibold text-blue-600">
+                    <span className="text-gray-900 dark:text-[#a09cb9]">{medicine.name}</span>
+                    <span className="font-semibold text-blue-600 dark:text-[#a09cb9]">
                       {medicine.price.toFixed(2)}
                     </span>
                   </div>
