@@ -25,7 +25,7 @@ export const About: React.FC = () => {
   
   return (
     <ParallaxProvider>
-      <div className="min-h-screen bg-gradient-to-b from-[#F2ECFD] to-white">
+      <div className="min-h-screen bg-gradient-to-b from-[#F2ECFD] to-white dark:from-[#050816] dark:to-[#050816]">
         {/* Hero Section with Video Background */}
         <div className="relative h-[770px] overflow-hidden ">
           <div className="absolute inset-0  h-full z-0">
@@ -44,7 +44,7 @@ export const About: React.FC = () => {
         </div>
 
         {/* Main Content */}
-        <div className="bg-[#F2ECFD]">
+        <div className="bg-[#F2ECFD] dark:bg-[#050816]">
           <div className="container mx-auto px-4 py-12 md:py-16">
             
             <Parallax translateY={[-20, 20]}>
@@ -67,12 +67,12 @@ export const About: React.FC = () => {
                     description: 'All pharmacies and medications are thoroughly verified'
                   }
                 ].map((item, index) => (
-                  <div key={index} className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                    <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
+                  <div key={index} className="bg-white dark:bg-[#151030] p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                    <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center mb-4 text-indigo-600 dark:text-indigo-400">
                       {item.icon}
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                    <p className="text-gray-600">{item.description}</p>
+                    <h3 className="text-xl font-semibold mb-2 dark:text-white">{item.title}</h3>
+                    <p className="text-gray-600 dark:text-[#a09cb9]">{item.description}</p>
                   </div>
                 ))}
               </section>
@@ -80,14 +80,14 @@ export const About: React.FC = () => {
 
             <Parallax scale={[0.9, 1]}>
               {/* Mission Statement */}
-              <section className="mb-16 bg-white rounded-2xl p-8 md:p-12 shadow-sm">
+              <section className="mb-16 bg-white dark:bg-[#151030] rounded-2xl p-8 md:p-12 shadow-sm">
                 <div className="max-w-4xl mx-auto text-center">
-                  <h2 className="text-3xl font-bold mb-6">Our Mission</h2>
-                  <p className="text-lg text-gray-700 mb-8">
+                  <h2 className="text-3xl font-bold mb-6 dark:text-white">Our Mission</h2>
+                  <p className="text-lg text-gray-700 dark:text-[#a09cb9] mb-8">
                     We're dedicated to ensuring students have immediate access to accurate medication availability information, creating a seamless experience that eliminates the hassle of pharmacy searches.
                   </p>
-                  <div className="bg-gray-100 rounded-xl p-6 text-left">
-                    <p className="text-gray-700 italic">
+                  <div className="bg-gray-100 dark:bg-[#0a0820] rounded-xl p-6 text-left">
+                    <p className="text-gray-700 dark:text-[#a09cb9] italic">
                       "Our goal is to save students valuable time and reduce stress by providing real-time medication availability at campus pharmacies."
                     </p>
                   </div>
@@ -98,9 +98,9 @@ export const About: React.FC = () => {
             <Parallax translateY={[20, -20]}>
               {/* How It Works */}
               <section className="mb-16">
-                <h2 className="text-3xl font-bold mb-8 text-center">How It Works</h2>
+                <h2 className="text-3xl font-bold mb-8 text-center dark:text-white">How It Works</h2>
                 <div className="relative">
-                  <div className="absolute h-full w-0.5 bg-gray-200 left-1/2 transform -translate-x-1/2 hidden md:block"></div>
+                  <div className="absolute h-full w-0.5 bg-gray-200 dark:bg-[#151030] left-1/2 transform -translate-x-1/2 hidden md:block"></div>
                   <div className="grid md:grid-cols-4 gap-8">
                     {[
                       { step: 1, title: 'Search', description: 'Search for your location or a Medication' },
@@ -109,11 +109,11 @@ export const About: React.FC = () => {
                       { step: 4, title: 'Purchase', description: 'Get your medication' }
                     ].map((item, index) => (
                       <div key={item.step} className="flex flex-col items-center text-center relative">
-                        <div className="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center mb-4 text-lg font-bold z-10">
+                        <div className="w-12 h-12 bg-indigo-600 dark:bg-indigo-500 text-white rounded-full flex items-center justify-center mb-4 text-lg font-bold z-10">
                           {item.step}
                         </div>
-                        <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                        <p className="text-gray-600">{item.description}</p>
+                        <h3 className="text-xl font-semibold mb-2 dark:text-white">{item.title}</h3>
+                        <p className="text-gray-600 dark:text-[#a09cb9]">{item.description}</p>
                       </div>
                     ))}
                   </div>
@@ -126,19 +126,19 @@ export const About: React.FC = () => {
             <Parallax translateY={[-10, 10]}>
               {/* Team Section */}
               <section className="mb-16">
-                <h2 className="text-3xl font-bold mb-8 text-center">Our Team</h2>
+                <h2 className="text-3xl font-bold mb-8 text-center dark:text-white">Our Team</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                   {[
                     { name: "Samuel G. Fordjour", role: "Founder & CEO", image: "/images/4.jpg" }, // Update with actual image path
                     { name: "Bolt AI", role: "Lead Developer", image: "/images/2.png" }, // Update with actual image path
                     { name: "ChatGPT", role: "Product Designer", image: "/images/3.png" } // Update with actual image path
                   ].map((member, index) => (
-                    <div key={index} className="bg-white rounded-xl p-6 text-center hover:shadow-md transition-shadow">
+                    <div key={index} className="bg-white dark:bg-[#151030] rounded-xl p-6 text-center hover:shadow-md transition-shadow">
                       <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-4">
                         <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
                       </div>
-                      <h3 className="text-xl font-semibold mb-1">{member.name}</h3>
-                      <p className="text-gray-600">{member.role}</p>
+                      <h3 className="text-xl font-semibold mb-1 dark:text-white">{member.name}</h3>
+                      <p className="text-gray-600 dark:text-[#a09cb9]">{member.role}</p>
                     </div>
                   ))}
                 </div>

@@ -105,7 +105,7 @@ export const Home: React.FC = () => {
   const bgParallax = scrollY * 0.1;
 
   return (
-    <div className="relative min-h-screen bg-white dark:bg-[#050816] overflow-hidden">
+    <div className="relative min-h-screen bg-gradient-to-b from-[#F2ECFD] to-white dark:bg-[#050816] overflow-hidden">
           
           {/* Dynamic Background with Mouse Interaction */}
           <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -180,7 +180,7 @@ export const Home: React.FC = () => {
                 {campusZones.map((zone, index) => (
                   <div
                     key={index}
-                    className="group relative overflow-hidden rounded-3xl bg-gray-50 dark:bg-[#151030] backdrop-blur-xl border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 transition-all duration-700 hover:scale-105"
+                    className="group relative overflow-hidden rounded-3xl bg-white dark:bg-[#151030] backdrop-blur-xl border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 transition-all duration-700 hover:scale-105"
                     style={{
                       animation: `fadeInUp 0.8s ease-out ${index * 0.1}s both`
                     }}
@@ -225,7 +225,7 @@ export const Home: React.FC = () => {
                     <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-3xl blur-xl"
                          style={{background: `linear-gradient(to right, ${feature.color.split(' ')[1]}, ${feature.color.split(' ')[3]})`}} />
                     
-                    <div className="relative bg-gray-50 dark:bg-[#151030] backdrop-blur-xl rounded-3xl p-10 border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 transition-all duration-700 hover:scale-105">
+                    <div className="relative bg-white dark:bg-[#151030] backdrop-blur-xl rounded-3xl p-10 border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 transition-all duration-700 hover:scale-105">
                       <div className={`inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-r ${feature.color} mb-8 group-hover:scale-110 transition-transform duration-500`}>
                         <feature.icon className="w-10 h-10 text-white" />
                       </div>
@@ -240,20 +240,35 @@ export const Home: React.FC = () => {
           </section>
     
           {/* Stats Section */}
-          <section className="py-32 relative">
-            <div className="container mx-auto px-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
+          <section className="py-32 relative overflow-hidden">
+            <div className="relative">
+              <div className="flex animate-scrollLeft">
+                {/* First set of stats */}
                 {[
                   { number: '95%', label: 'Navigation Accuracy', color: 'from-green-400 to-emerald-600' },
                   { number: '30K+', label: 'Daily Users', color: 'from-blue-400 to-cyan-600' },
                   { number: '2.5M', label: 'Directions Given', color: 'from-purple-400 to-pink-600' },
                   { number: '4.9★', label: 'User Rating', color: 'from-yellow-400 to-orange-600' }
                 ].map((stat, index) => (
-                  <div key={index} className="text-center group">
-                    <div className={`text-6xl md:text-7xl font-black mb-4 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-500`}>
+                  <div key={`stat-1-${index}`} className="text-center group flex-shrink-0 px-12 mx-8">
+                    <div className={`text-6xl md:text-7xl font-black mb-4 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-500 whitespace-nowrap`}>
                       {stat.number}
                     </div>
-                    <div className="text-gray-700 dark:text-gray-300 text-lg font-medium">{stat.label}</div>
+                    <div className="text-gray-700 dark:text-gray-300 text-lg font-medium whitespace-nowrap">{stat.label}</div>
+                  </div>
+                ))}
+                {/* Duplicate set for seamless loop */}
+                {[
+                  { number: '95%', label: 'Navigation Accuracy', color: 'from-green-400 to-emerald-600' },
+                  { number: '30K+', label: 'Daily Users', color: 'from-blue-400 to-cyan-600' },
+                  { number: '2.5M', label: 'Directions Given', color: 'from-purple-400 to-pink-600' },
+                  { number: '4.9★', label: 'User Rating', color: 'from-yellow-400 to-orange-600' }
+                ].map((stat, index) => (
+                  <div key={`stat-2-${index}`} className="text-center group flex-shrink-0 px-12 mx-8">
+                    <div className={`text-6xl md:text-7xl font-black mb-4 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-500 whitespace-nowrap`}>
+                      {stat.number}
+                    </div>
+                    <div className="text-gray-700 dark:text-gray-300 text-lg font-medium whitespace-nowrap">{stat.label}</div>
                   </div>
                 ))}
               </div>
@@ -271,7 +286,7 @@ export const Home: React.FC = () => {
               </div>
     
               <div className="relative max-w-4xl mx-auto">
-                <div className="bg-gray-50 dark:bg-[#151030] backdrop-blur-xl rounded-3xl p-12 border border-gray-200 dark:border-white/10">
+                <div className="bg-white dark:bg-[#151030] backdrop-blur-xl rounded-3xl p-12 border border-gray-200 dark:border-white/10">
                   <div className="text-center">
                   <img src={testimonials[currentSlide].image} alt={testimonials[currentSlide].name} className="w-24 h-24 rounded-full mx-auto mb-4" />
                     <blockquote className="text-2xl text-gray-900 dark:text-white mb-8 font-medium italic">
@@ -346,7 +361,7 @@ export const Home: React.FC = () => {
                 transform: translateY(0);
               }
             }
-            
+
             @keyframes slideInLeft {
               from {
                 opacity: 0;
@@ -356,6 +371,23 @@ export const Home: React.FC = () => {
                 opacity: 1;
                 transform: translateX(0);
               }
+            }
+
+            @keyframes scrollLeft {
+              from {
+                transform: translateX(0);
+              }
+              to {
+                transform: translateX(-50%);
+              }
+            }
+
+            .animate-scrollLeft {
+              animation: scrollLeft 20s linear infinite;
+            }
+
+            .animate-scrollLeft:hover {
+              animation-play-state: paused;
             }
           `}</style>
         </div>

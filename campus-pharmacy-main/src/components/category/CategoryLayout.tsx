@@ -62,7 +62,7 @@ export const CategoryLayout: React.FC<CategoryLayoutProps> = ({
   };
 
   return (
-    <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#050816]' : 'bg-gray-50'}`}>
+    <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#050816]' : 'bg-gradient-to-b from-[#F2ECFD] to-white'}`}>
       {/* Hero Section */}
       <CategoryHero
         title={title}

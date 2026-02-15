@@ -84,7 +84,7 @@ export const SearchBar: React.FC = () => {
 
   return (
     <div>
-      <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
+      <form onSubmit={handleSearch} className="mx-auto min-w-[280px] max-w-[720px]">
         <div className="relative flex items-center">
           <input
             type="text"
@@ -100,11 +100,11 @@ export const SearchBar: React.FC = () => {
               setSearchResults(results);
             }}
             placeholder="Search for a location..."
-            className="w-full px-6 py-4 text-lg text-gray-900 bg-white bg-opacity-95 backdrop-blur-sm rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-xl border border-white/20"
+            className="w-full h-14 px-6 text-base text-gray-900 bg-white bg-opacity-95 backdrop-blur-sm rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-xl border border-white/20"
           />
           <button
             type="submit"
-            className="absolute right-4 p-2 text-blue-600 hover:text-blue-800 transition-colors"
+            className="absolute right-4 min-h-[48px] min-w-[48px] flex items-center justify-center text-blue-600 hover:text-blue-800 transition-colors"
             aria-label="Search"
           >
             <FaSearch size={20} />
@@ -114,7 +114,7 @@ export const SearchBar: React.FC = () => {
       
       {/* Show instant search results only when there's a query */}
       {searchQuery.trim() && (
-        <div className="max-w-2xl mx-auto mt-2">
+        <div className="mx-auto min-w-[280px] max-w-[720px] mt-2">
           {loading ? (
             <div className="bg-white rounded-lg shadow-lg p-4 text-center text-gray-600">
               Loading...
@@ -145,7 +145,7 @@ export const SearchBar: React.FC = () => {
       
       {/* AI Search Results */}
       {searchQuery.trim() && aiResults.length > 0 && (
-        <div className="max-w-2xl mx-auto mt-2">
+        <div className="mx-auto min-w-[280px] max-w-[720px] mt-2">
           <div className="bg-white rounded-lg shadow-lg p-4 max-h-96 overflow-y-auto">
             <h3 className="text-sm font-semibold text-gray-700 mb-2">AI-Powered Results:</h3>
             {aiResults.map((location) => (
@@ -182,7 +182,7 @@ export const SearchBar: React.FC = () => {
       
       {/* AI Search Loading State */}
       {searchQuery.trim() && aiLoading && (
-        <div className="max-w-2xl mx-auto mt-2">
+        <div className="mx-auto min-w-[280px] max-w-[720px] mt-2">
           <div className="bg-white rounded-lg shadow-lg p-4 text-center text-gray-600">
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500 mr-2"></div>
@@ -194,7 +194,7 @@ export const SearchBar: React.FC = () => {
       
       {/* AI Search Error State */}
       {searchQuery.trim() && aiError && (
-        <div className="max-w-2xl mx-auto mt-2">
+        <div className="mx-auto min-w-[280px] max-w-[720px] mt-2">
           <div className="bg-white rounded-lg shadow-lg p-4 text-center text-red-600">
             Error: {aiError}
           </div>
@@ -203,7 +203,7 @@ export const SearchBar: React.FC = () => {
       
       {/* No Results State */}
       {searchQuery.trim() && !loading && searchResults.length === 0 && !aiLoading && aiResults.length === 0 && !aiError && (
-        <div className="max-w-2xl mx-auto mt-2">
+        <div className="mx-auto min-w-[280px] max-w-[720px] mt-2">
           <div className="bg-white rounded-lg shadow-lg p-4 text-center text-gray-600">
             No locations found matching your search
           </div>
