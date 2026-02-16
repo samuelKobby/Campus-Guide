@@ -19,12 +19,12 @@ export const DesktopNav: React.FC = () => {
           <span>Categories</span>
           <FaChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
         </button>
-        <div className="absolute left-0 mt-2 w-64 bg-[#151030] rounded-lg shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-in-out">
+        <div className="absolute left-0 mt-2 w-64 bg-white/10 dark:bg-gray-900/40 backdrop-blur-xl rounded-lg shadow-xl border border-white/20 dark:border-gray-700/30 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-in-out">
           {categories.map((category) => (
             <Link
               key={category.name}
               to={category.path}
-              className="flex items-center px-4 py-2 text-gray-300 hover:bg-[#1a1540] hover:text-white transition-colors rounded-md"
+              className="flex items-center px-4 py-2 text-white/90 hover:bg-white/20 dark:hover:bg-white/10 hover:text-white transition-all duration-200 rounded-md mx-2"
             >
               <category.icon className="mr-3" />
               {category.name}

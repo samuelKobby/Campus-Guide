@@ -115,8 +115,8 @@ export const SearchBar: React.FC = () => {
 
   return (
     <div ref={searchContainerRef} className="relative" style={{ zIndex: 9999 }}>
-      <div className="h-[60px] mb-4">
-        <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
+      <div className="h-[48px] mb-4">
+        <form onSubmit={handleSearch} className="max-w-4xl mx-auto">
           <div className="relative flex items-center">
             <div className="relative flex items-center w-full">
               <div className="absolute left-4 text-blue-600 z-10">
@@ -135,7 +135,7 @@ export const SearchBar: React.FC = () => {
                   handleSearch(e as any);
                 }}
                 placeholder="Search for a location..."
-                className="w-full pl-12 pr-24 py-4 text-lg text-gray-900 bg-white bg-opacity-95 backdrop-blur-sm rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-xl border border-white/20"
+                className="w-full pl-12 pr-24 py-3 text-lg text-gray-900 bg-white bg-opacity-95 backdrop-blur-sm rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-xl border border-white/20 placeholder:text-gray-500"
               />
               <div className="absolute right-4 flex items-center gap-2">
                 <button
@@ -165,7 +165,7 @@ export const SearchBar: React.FC = () => {
                   {showLangSelector && (
                     <div
                       ref={dropdownRef}
-                      className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1"
+                      className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 border border-gray-200"
                       style={{ zIndex: 9999 }}
                     >
                       {languages.map((lang) => (
@@ -194,11 +194,11 @@ export const SearchBar: React.FC = () => {
 
       <div className="absolute left-0 right-0" style={{ zIndex: 9999 }}>
         {searchQuery.trim() && (
-          <div className="max-w-2xl mx-auto mt-2">
+          <div className="max-w-4xl mx-auto mt-2">
             {isSearching ? (
-              <div className="bg-white rounded-lg shadow-lg p-4 text-center text-gray-600">Searching...</div>
+              <div className="bg-white rounded-lg shadow-lg p-4 text-center text-gray-600 border border-gray-200">Searching...</div>
             ) : searchResults.length > 0 ? (
-              <div className="bg-white rounded-lg shadow-lg p-4 max-h-96 overflow-y-auto space-y-2">
+              <div className="bg-white rounded-lg shadow-lg p-4 max-h-96 overflow-y-auto space-y-2 border border-gray-200">
                 {searchResults.map((location: AISearchResult) => (
                   <div
                     key={location.id}
@@ -210,7 +210,7 @@ export const SearchBar: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <div className="bg-white rounded-lg shadow-lg p-4 text-center text-gray-600">
+              <div className="bg-white rounded-lg shadow-lg p-4 text-center text-gray-600 border border-gray-200">
                 {searchMessage || 'No locations found'}
               </div>
             )}
@@ -224,7 +224,7 @@ export const SearchBar: React.FC = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="max-w-2xl mx-auto mt-2 bg-yellow-50 text-yellow-800 px-4 py-2 rounded-lg text-center"
+            className="max-w-4xl mx-auto mt-2 bg-yellow-50 text-yellow-800 px-4 py-2 rounded-lg text-center border border-yellow-200"
           >
             Voice search is not supported in this browser. Please type your search instead.
           </motion.div>
@@ -234,7 +234,7 @@ export const SearchBar: React.FC = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="max-w-2xl mx-auto mt-2 bg-blue-50 text-blue-800 px-4 py-2 rounded-lg text-center"
+            className="max-w-4xl mx-auto mt-2 bg-blue-50 text-blue-800 px-4 py-2 rounded-lg text-center border border-blue-200"
           >
             Listening... Speak your search query
           </motion.div>
@@ -244,7 +244,7 @@ export const SearchBar: React.FC = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="max-w-2xl mx-auto mt-2 bg-red-50 text-red-800 px-4 py-2 rounded-lg text-center"
+            className="max-w-4xl mx-auto mt-2 bg-red-50 text-red-800 px-4 py-2 rounded-lg text-center border border-red-200"
           >
             {error === 'no-speech' ? 'No speech was detected. Please try again.' : 'Error occurred during voice recognition.'}
           </motion.div>

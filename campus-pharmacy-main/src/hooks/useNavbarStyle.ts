@@ -6,7 +6,8 @@ export const useNavbarStyle = (isMenuOpen: boolean) => {
   const scrollPosition = useScrollPosition();
   
   const isHomePage = location.pathname === '/';
-  const shouldBeTransparent = scrollPosition < 100 && isHomePage && !isMenuOpen;
+  const isCategoryPage = location.pathname.startsWith('/category/');
+  const shouldBeTransparent = scrollPosition < 100 && (isHomePage || isCategoryPage) && !isMenuOpen;
   
   const baseClasses = 'fixed top-0 left-0 right-0 z-50 transition-all duration-300';
   const backgroundClasses = shouldBeTransparent

@@ -21,7 +21,7 @@ export const CategoryHero: React.FC<CategoryHeroProps> = ({
   stats,
 }) => {
   return (
-    <div className="relative h-[400px] overflow-hidden">
+    <div className="relative h-[500px] overflow-hidden">
       {/* Background Image with Gradient Overlay */}
       <div
         className="absolute inset-0 bg-cover bg-center"

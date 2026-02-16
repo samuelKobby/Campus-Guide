@@ -58,27 +58,58 @@
   }
 }
 
-/* View Transitions API styles for smooth theme switching */
+/* View Transitions API styles for smooth circular theme switching */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation: none;
+  animation-duration: 0.8s;
+  animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   mix-blend-mode: normal;
+  height: 100%;
+  width: 100%;
 }
 
-/* Default: When switching to dark mode, new layer (dark) appears on top */
-::view-transition-old(root) {
-  z-index: 1;
+::view-transition-image-pair(root) {
+  isolation: auto;
 }
 
-::view-transition-new(root) {
-  z-index: 2;
+/* Expanding circle animation for dark mode */
+@keyframes expand-circle {
+  from {
+    clip-path: circle(0px at var(--x, 50%) var(--y, 50%));
+  }
+  to {
+    clip-path: circle(150vmax at var(--x, 50%) var(--y, 50%));
+  }
 }
 
-/* When in dark mode and switching to light, old layer (dark) should be on top */
-.dark::view-transition-old(root) {
-  z-index: 2;
+/* Shrinking circle animation for light mode */
+@keyframes shrink-circle {
+  from {
+    clip-path: circle(150vmax at var(--x, 50%) var(--y, 50%));
+  }
+  to {
+    clip-path: circle(0px at var(--x, 50%) var(--y, 50%));
+  }
 }
 
+/* When switching TO dark mode (after transition, html has .dark class) */
 .dark::view-transition-new(root) {
+  animation-name: expand-circle;
+  z-index: 2;
+}
+
+.dark::view-transition-old(root) {
   z-index: 1;
+  animation: none;
+}
+
+/* When switching TO light mode (after transition, html doesn't have .dark class) */
+html:not(.dark)::view-transition-old(root) {
+  animation-name: shrink-circle;
+  z-index: 2;
+}
+
+html:not(.dark)::view-transition-new(root) {
+  z-index: 1;
+  animation: none;
 }

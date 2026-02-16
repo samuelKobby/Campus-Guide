@@ -56,51 +56,60 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  const toggleTheme = (event?: React.MouseEvent) => {
-    // Check if View Transitions API is supported
-    if (!document.startViewTransition) {
-      setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
-      return;
-    }
-
-    // Get the click position
+  const toggleTheme = async (event?: React.MouseEvent) => {
+    // Get the click position from the button
     const x = event?.clientX ?? window.innerWidth / 2;
     const y = event?.clientY ?? window.innerHeight / 2;
 
-    // Calculate the radius needed to cover the entire screen from the click point
-    // Adding extra padding to ensure full coverage
-    const endRadius = Math.hypot(
-      Math.max(x, window.innerWidth - x),
-      Math.max(y, window.innerHeight - y)
+    console.log('Toggle theme clicked at:', x, y);
+
+    // Calculate the maximum radius needed to cover the entire screen
+    const endRadius = Math.sqrt(
+      Math.pow(Math.max(x, window.innerWidth - x), 2) +
+      Math.pow(Math.max(y, window.innerHeight - y), 2)
     ) * 1.5;
 
+    console.log('End radius:', endRadius);
+
     // Determine if we're switching to dark mode
-    const isDarkMode = theme === 'light';
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    const isDarkMode = newTheme === 'dark';
+
+    console.log('Switching to:', newTheme);
+
+    // Check if View Transitions API is supported
+    // @ts-ignore - startViewTransition may not be in TypeScript definitions yet
+    if (!document.startViewTransition) {
+      console.warn('⚠️ View Transitions API not supported in this browser!');
+      console.log('Falling back to instant theme switch');
+      setTheme(newTheme);
+      return;
+    }
+
+    console.log('✅ View Transitions API is supported!');
+    console.log('Starting transition animation...');
+
+    // Set CSS custom properties for the animation origin point
+    document.documentElement.style.setProperty('--x', `${x}px`);
+    document.documentElement.style.setProperty('--y', `${y}px`);
 
     // Start the view transition
-    const transition = document.startViewTransition(() => {
-      setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+    // @ts-ignore
+    const transition = document.startViewTransition(async () => {
+      setTheme(newTheme);
     });
 
-    // Animate the circular clip path
-    transition.ready.then(() => {
-      // Create the clip-path animation
-      const clipPath = [
-        `circle(0px at ${x}px ${y}px)`,
-        `circle(${endRadius}px at ${x}px ${y}px)`,
-      ];
-
-      document.documentElement.animate(
-        {
-          clipPath: isDarkMode ? clipPath : [...clipPath].reverse(),
-        },
-        {
-          duration: 700,
-          easing: 'ease-in-out',
-          pseudoElement: isDarkMode ? '::view-transition-new(root)' : '::view-transition-old(root)',
-        }
-      );
-    });
+    try {
+      await transition.ready;
+      console.log('✅ Transition ready! CSS animation should be playing now...');
+      console.log('Animation origin point:', `x: ${x}px, y: ${y}px`);
+      console.log('Animation direction:', isDarkMode ? 'Expanding circle (spreading dark)' : 'Shrinking circle (retreating dark)');
+      
+      await transition.finished;
+      console.log('✅ Animation complete!');
+    } catch (error) {
+      console.error('❌ Transition animation failed:', error);
+    }
   };
 
   return (

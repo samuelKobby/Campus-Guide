@@ -27,10 +27,10 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="px-4 pt-2 pb-4 space-y-2 bg-[#050816]">
+    <div className="px-4 pt-2 pb-4 space-y-2 bg-gray-900/40 dark:bg-gray-900/60 backdrop-blur-xl border-t border-white/10">
       <Link
         to="/map"
-        className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
+        className="block px-3 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-md transition-all duration-200"
         onClick={handleLinkClick}
       >
         Interactive Map
@@ -39,7 +39,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
       {/* Categories Dropdown */}
       <div>
         <button
-          className="flex items-center w-full px-3 py-2 text-gray-300 hover:text-white transition-colors"
+          className="flex items-center w-full px-3 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-md transition-all duration-200"
           onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
         >
           <span>Categories</span>
@@ -52,7 +52,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
             <Link
               key={category.name}
               to={category.path}
-              className="flex items-center px-8 py-2 text-gray-400 hover:text-white transition-colors"
+              className="flex items-center px-8 py-2 text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-all duration-200"
               onClick={handleLinkClick}
             >
               <category.icon className="mr-3" />
@@ -64,7 +64,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
 
       <Link
         to="/about"
-        className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
+        className="block px-3 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-md transition-all duration-200"
         onClick={handleLinkClick}
       >
         About
@@ -72,7 +72,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
 
       <Link
         to="/contact"
-        className="block px-3 py-2 text-gray-300 hover:text-white transition-colors"
+        className="block px-3 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-md transition-all duration-200"
         onClick={handleLinkClick}
       >
         Contact

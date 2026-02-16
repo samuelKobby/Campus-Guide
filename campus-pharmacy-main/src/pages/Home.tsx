@@ -105,12 +105,12 @@ export const Home: React.FC = () => {
   const bgParallax = scrollY * 0.1;
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-[#F2ECFD] to-white dark:bg-[#050816] overflow-hidden">
+    <div className="relative min-h-screen bg-gradient-to-b from-[#F2ECFD] to-white dark:from-[#050816] dark:to-[#0a0a2a] overflow-hidden">
           
           {/* Dynamic Background with Mouse Interaction */}
           <div className="fixed inset-0 overflow-hidden pointer-events-none">
             <div 
-              className="absolute w-96 h-96 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-3xl animate-pulse"
+              className="absolute w-96 h-96 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 dark:from-cyan-400/10 dark:to-blue-400/10 rounded-full blur-3xl animate-pulse"
               style={{ 
                 left: `${20 + mousePosition.x * 0.02}%`,
                 top: `${10 + mousePosition.y * 0.02}%`,
@@ -118,7 +118,7 @@ export const Home: React.FC = () => {
               }}
             />
             <div 
-              className="absolute w-80 h-80 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-3xl animate-pulse"
+              className="absolute w-80 h-80 bg-gradient-to-r from-purple-500/20 to-pink-500/20 dark:from-purple-400/10 dark:to-pink-400/10 rounded-full blur-3xl animate-pulse"
               style={{ 
                 right: `${15 + mousePosition.x * -0.01}%`,
                 top: `${30 + mousePosition.y * 0.015}%`,
@@ -126,7 +126,7 @@ export const Home: React.FC = () => {
               }}
             />
             <div 
-              className="absolute w-72 h-72 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full blur-3xl animate-pulse"
+              className="absolute w-72 h-72 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 dark:from-emerald-400/10 dark:to-teal-400/10 rounded-full blur-3xl animate-pulse"
               style={{ 
                 left: `${60 + mousePosition.x * 0.01}%`,
                 bottom: `${20 + mousePosition.y * -0.01}%`,
@@ -139,30 +139,30 @@ export const Home: React.FC = () => {
           <section className="relative pt-32 pb-20 md:pt-40 md:pb-32">
             
             <div 
-              className="absolute inset-0 bg-[radial-gradient(circle,rgba(139,69,193,0.3)_0%,transparent_70%)]"
+              className="absolute inset-0 bg-[radial-gradient(circle,rgba(139,69,193,0.25)_0%,transparent_70%)]"
               style={{ transform: `translateY(${heroParallax}px)` }}
             />
             <HeroSlideshow />
             <div className="relative z-10 text-center px-6 max-w-7xl mx-auto">
-              <h1 className="text-5xl font-bold mb-6 text-gray-900 dark:text-white">
+              <h1 className="text-5xl font-bold mb-6 text-white drop-shadow-lg">
                 Find Your Way Around Campus
               </h1>
               
-              <p className="text-2xl md:text-3xl text-gray-700 dark:text-gray-300 mb-20 max-w-4xl mx-auto leading-relaxed">
+              <p className="text-2xl md:text-3xl text-white/90 mb-12 max-w-4xl mx-auto leading-relaxed drop-shadow-md">
                 Never get lost again. Discover the smartest way to navigate your university. 
                 
               </p>
     
               <SearchBar />
               <div className="flex justify-center space-x-6 mt-16">
-                <button className="group bg-gray-200/80 dark:bg-white/10 backdrop-blur-sm border border-gray-300 dark:border-white/20 rounded-full p-4 hover:bg-gray-300 dark:hover:bg-white/20 transition-all duration-300 hover:scale-110">
-                  <MapPin className="w-6 h-6 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-300" />
+                <button className="group bg-white/20 backdrop-blur-sm border border-white/30 rounded-full p-4 hover:bg-white/30 transition-all duration-300 hover:scale-110">
+                  <MapPin className="w-6 h-6 text-white group-hover:text-blue-300" />
                 </button>
-                <button className="group bg-gray-200/80 dark:bg-white/10 backdrop-blur-sm border border-gray-300 dark:border-white/20 rounded-full p-4 hover:bg-gray-300 dark:hover:bg-white/20 transition-all duration-300 hover:scale-110">
-                  <Navigation className="w-6 h-6 text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-300" />
+                <button className="group bg-white/20 backdrop-blur-sm border border-white/30 rounded-full p-4 hover:bg-white/30 transition-all duration-300 hover:scale-110">
+                  <Navigation className="w-6 h-6 text-white group-hover:text-purple-300" />
                 </button>
-                <button className="group bg-gray-200/80 dark:bg-white/10 backdrop-blur-sm border border-gray-300 dark:border-white/20 rounded-full p-4 hover:bg-gray-300 dark:hover:bg-white/20 transition-all duration-300 hover:scale-110">
-                  <Clock className="w-6 h-6 text-gray-900 dark:text-white group-hover:text-pink-600 dark:group-hover:text-pink-300" />
+                <button className="group bg-white/20 backdrop-blur-sm border border-white/30 rounded-full p-4 hover:bg-white/30 transition-all duration-300 hover:scale-110">
+                  <Clock className="w-6 h-6 text-white group-hover:text-pink-300" />
                 </button>
               </div>
             </div>
@@ -241,8 +241,8 @@ export const Home: React.FC = () => {
     
           {/* Stats Section */}
           <section className="py-32 relative overflow-hidden">
-            <div className="relative">
-              <div className="flex animate-scrollLeft">
+            <div className="relative w-full">
+              <div className="flex animate-scrollLeft will-change-transform">
                 {/* First set of stats */}
                 {[
                   { number: '95%', label: 'Navigation Accuracy', color: 'from-green-400 to-emerald-600' },
@@ -250,21 +250,35 @@ export const Home: React.FC = () => {
                   { number: '2.5M', label: 'Directions Given', color: 'from-purple-400 to-pink-600' },
                   { number: '4.9★', label: 'User Rating', color: 'from-yellow-400 to-orange-600' }
                 ].map((stat, index) => (
-                  <div key={`stat-1-${index}`} className="text-center group flex-shrink-0 px-12 mx-8">
+                  <div key={`stat-1-${index}`} className="text-center group flex-shrink-0 px-12 mx-8 min-w-[280px]">
                     <div className={`text-6xl md:text-7xl font-black mb-4 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-500 whitespace-nowrap`}>
                       {stat.number}
                     </div>
                     <div className="text-gray-700 dark:text-gray-300 text-lg font-medium whitespace-nowrap">{stat.label}</div>
                   </div>
                 ))}
-                {/* Duplicate set for seamless loop */}
+                {/* Second set for seamless loop */}
                 {[
                   { number: '95%', label: 'Navigation Accuracy', color: 'from-green-400 to-emerald-600' },
                   { number: '30K+', label: 'Daily Users', color: 'from-blue-400 to-cyan-600' },
                   { number: '2.5M', label: 'Directions Given', color: 'from-purple-400 to-pink-600' },
                   { number: '4.9★', label: 'User Rating', color: 'from-yellow-400 to-orange-600' }
                 ].map((stat, index) => (
-                  <div key={`stat-2-${index}`} className="text-center group flex-shrink-0 px-12 mx-8">
+                  <div key={`stat-2-${index}`} className="text-center group flex-shrink-0 px-12 mx-8 min-w-[280px]">
+                    <div className={`text-6xl md:text-7xl font-black mb-4 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-500 whitespace-nowrap`}>
+                      {stat.number}
+                    </div>
+                    <div className="text-gray-700 dark:text-gray-300 text-lg font-medium whitespace-nowrap">{stat.label}</div>
+                  </div>
+                ))}
+                {/* Third set for seamless loop */}
+                {[
+                  { number: '95%', label: 'Navigation Accuracy', color: 'from-green-400 to-emerald-600' },
+                  { number: '30K+', label: 'Daily Users', color: 'from-blue-400 to-cyan-600' },
+                  { number: '2.5M', label: 'Directions Given', color: 'from-purple-400 to-pink-600' },
+                  { number: '4.9★', label: 'User Rating', color: 'from-yellow-400 to-orange-600' }
+                ].map((stat, index) => (
+                  <div key={`stat-3-${index}`} className="text-center group flex-shrink-0 px-12 mx-8 min-w-[280px]">
                     <div className={`text-6xl md:text-7xl font-black mb-4 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-500 whitespace-nowrap`}>
                       {stat.number}
                     </div>
@@ -319,7 +333,7 @@ export const Home: React.FC = () => {
           <section className="py-32 relative">
             <div className="container mx-auto px-6 text-center">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 blur-3xl rounded-full" />
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 dark:from-cyan-500/10 dark:via-purple-500/10 dark:to-pink-500/10 blur-3xl rounded-full" />
                 <div className="relative">
                   <h2 className="text-7xl font-black mb-8 bg-gradient-to-r from-gray-900 via-cyan-700 to-purple-700 dark:from-white dark:via-cyan-200 dark:to-purple-200 bg-clip-text text-transparent">
                     Start Your Journey
@@ -374,16 +388,17 @@ export const Home: React.FC = () => {
             }
 
             @keyframes scrollLeft {
-              from {
+              0% {
                 transform: translateX(0);
               }
-              to {
-                transform: translateX(-50%);
+              100% {
+                transform: translateX(-33.333%);
               }
             }
 
             .animate-scrollLeft {
-              animation: scrollLeft 20s linear infinite;
+              animation: scrollLeft 30s linear infinite;
+              display: flex;
             }
 
             .animate-scrollLeft:hover {
