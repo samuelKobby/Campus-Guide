@@ -1,10 +1,17 @@
 import React, { useState, useRef } from 'react';
-import { Upload, Camera, X, FileText, Loader2 } from 'lucide-react';
+import { Upload, Camera, X, FileText, Loader2, CheckCircle, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Tesseract from 'tesseract.js';
+import { supabase } from '../../lib/supabase';
 
 interface PrescriptionUploadProps {
   onMedicineDetected: (medicineName: string) => void;
   theme: string;
+}
+
+interface DetectedMedicine {
+  name: string;
+  confidence: number;
 }
 
 export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({ 
@@ -14,7 +21,9 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [detectedText, setDetectedText] = useState<string>('');
+  const [detectedMedicines, setDetectedMedicines] = useState<DetectedMedicine[]>([]);
+  const [extractedText, setExtractedText] = useState<string>('');
+  const [processingProgress, setProcessingProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,33 +40,155 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
 
   const processImage = async (imageData: string) => {
     setIsProcessing(true);
+    setProcessingProgress(0);
+    setDetectedMedicines([]);
+    setExtractedText('');
     
     try {
-      // Simulate OCR processing (in production, you'd use Tesseract.js or a cloud OCR API)
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Step 1: Extract text using Tesseract OCR
+      setProcessingProgress(10);
+      const result = await Tesseract.recognize(
+        imageData,
+        'eng',
+        {
+          logger: (m) => {
+            if (m.status === 'recognizing text') {
+              setProcessingProgress(10 + Math.floor(m.progress * 40));
+            }
+          }
+        }
+      );
       
-      // Mock detected medicines - In production, use actual OCR
-      const mockDetectedMedicines = [
-        'Paracetamol',
-        'Ibuprofen',
-        'Amoxicillin',
-        'Cetirizine'
-      ];
+      const extractedText = result.data.text;
+      setExtractedText(extractedText);
+      setProcessingProgress(50);
       
-      const detected = mockDetectedMedicines[Math.floor(Math.random() * mockDetectedMedicines.length)];
-      setDetectedText(detected);
-      onMedicineDetected(detected);
+      // Step 2: Fetch all medicines from database
+      const { data: allMedicines, error } = await supabase
+        .from('medicines')
+        .select('name, description, category');
+      
+      if (error) throw error;
+      setProcessingProgress(60);
+      
+      // Step 3: Parse extracted text to find medicine names
+      const detectedMeds: DetectedMedicine[] = [];
+      const textLower = extractedText.toLowerCase();
+      const words = textLower.split(/\s+/);
+      
+      // Check each medicine name against the extracted text
+      allMedicines?.forEach((medicine) => {
+        const medicineName = medicine.name.toLowerCase();
+        const medicineWords = medicineName.split(/\s+/);
+        
+        // Check for exact name match
+        if (textLower.includes(medicineName)) {
+          detectedMeds.push({
+            name: medicine.name,
+            confidence: 1.0
+          });
+        } 
+        // Check for partial matches (medicine name contains multiple words)
+        else if (medicineWords.length > 1) {
+          const matchedWords = medicineWords.filter((word: string) => 
+            words.some((w: string) => w.includes(word) || word.includes(w))
+          );
+          const confidence = matchedWords.length / medicineWords.length;
+          
+          if (confidence >= 0.6) {
+            detectedMeds.push({
+              name: medicine.name,
+              confidence
+            });
+          }
+        }
+        // Check for single word matches with fuzzy matching
+        else {
+          const matched = words.some((word: string) => {
+            // Check if the word is similar to medicine name (allowing for OCR errors)
+            if (word === medicineName) return true;
+            if (word.includes(medicineName) || medicineName.includes(word)) return true;
+            
+            // Levenshtein distance check for OCR errors (optional)
+            return calculateSimilarity(word, medicineName) > 0.8;
+          });
+          
+          if (matched) {
+            detectedMeds.push({
+              name: medicine.name,
+              confidence: 0.8
+            });
+          }
+        }
+      });
+      
+      setProcessingProgress(90);
+      
+      // Step 4: Sort by confidence and remove duplicates
+      const uniqueMeds = Array.from(
+        new Map(detectedMeds.map(med => [med.name, med])).values()
+      ).sort((a, b) => b.confidence - a.confidence);
+      
+      setDetectedMedicines(uniqueMeds);
+      setProcessingProgress(100);
+      
+      // Set the first detected medicine as the search term
+      if (uniqueMeds.length > 0) {
+        onMedicineDetected(uniqueMeds[0].name);
+      }
       
     } catch (error) {
       console.error('Error processing image:', error);
+      setExtractedText('Error processing image. Please try again.');
     } finally {
       setIsProcessing(false);
     }
   };
 
+  // Helper function to calculate string similarity (Levenshtein distance based)
+  const calculateSimilarity = (str1: string, str2: string): number => {
+    const longer = str1.length > str2.length ? str1 : str2;
+    const shorter = str1.length > str2.length ? str2 : str1;
+    
+    if (longer.length === 0) return 1.0;
+    
+    const editDistance = getEditDistance(longer, shorter);
+    return (longer.length - editDistance) / longer.length;
+  };
+
+  const getEditDistance = (str1: string, str2: string): number => {
+    const matrix: number[][] = [];
+    
+    for (let i = 0; i <= str2.length; i++) {
+      matrix[i] = [i];
+    }
+    
+    for (let j = 0; j <= str1.length; j++) {
+      matrix[0][j] = j;
+    }
+    
+    for (let i = 1; i <= str2.length; i++) {
+      for (let j = 1; j <= str1.length; j++) {
+        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j] + 1
+          );
+        }
+      }
+    }
+    
+    return matrix[str2.length][str1.length];
+  };
+
   const handleClear = () => {
     setSelectedImage(null);
-    setDetectedText('');
+    setDetectedMedicines([]);
+    setExtractedText('');
+    setProcessingProgress(0);
     setIsProcessing(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -197,19 +328,32 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
 
                     {/* Processing State */}
                     {isProcessing && (
-                      <div className={`rounded-xl p-6 text-center ${theme === 'dark' ? 'bg-white/5' : 'bg-gray-50'}`}>
+                      <div className={`rounded-xl p-6 ${theme === 'dark' ? 'bg-white/5' : 'bg-gray-50'}`}>
                         <Loader2 className="w-12 h-12 mx-auto mb-4 text-purple-500 animate-spin" />
-                        <p className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                        <p className={`font-medium text-center ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                           Processing prescription...
                         </p>
-                        <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                          Extracting medicine names
+                        <p className={`text-sm mt-1 text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                          Scanning image for medicine names
                         </p>
+                        
+                        {/* Progress Bar */}
+                        <div className="mt-4">
+                          <div className={`w-full h-2 rounded-full overflow-hidden ${theme === 'dark' ? 'bg-white/10' : 'bg-gray-200'}`}>
+                            <div 
+                              className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300"
+                              style={{ width: `${processingProgress}%` }}
+                            />
+                          </div>
+                          <p className={`text-xs mt-2 text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                            {processingProgress}% Complete
+                          </p>
+                        </div>
                       </div>
                     )}
 
                     {/* Results */}
-                    {!isProcessing && detectedText && (
+                    {!isProcessing && detectedMedicines.length > 0 && (
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -219,20 +363,84 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
                             : 'bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200'
                         }`}
                       >
-                        <div className="flex items-start gap-3">
+                        <div className="flex items-start gap-3 mb-4">
                           <div className="p-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500">
+                            <CheckCircle className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className={`font-semibold mb-1 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                              {detectedMedicines.length} Medicine{detectedMedicines.length > 1 ? 's' : ''} Detected
+                            </h3>
+                            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                              Click on a medicine to search for it
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {/* Medicine List */}
+                        <div className="space-y-2">
+                          {detectedMedicines.map((medicine, index) => (
+                            <button
+                              key={index}
+                              onClick={() => {
+                                onMedicineDetected(medicine.name);
+                                handleClose();
+                              }}
+                              className={`w-full text-left p-3 rounded-lg transition-all ${
+                                theme === 'dark'
+                                  ? 'bg-white/5 hover:bg-white/10 border border-white/10'
+                                  : 'bg-white hover:bg-gray-50 border border-gray-200'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className={`font-medium ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`}>
+                                    {medicine.name}
+                                  </p>
+                                  <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>
+                                    Confidence: {Math.round(medicine.confidence * 100)}%
+                                  </p>
+                                </div>
+                                <ChevronRight className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-400'}`} />
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                    
+                    {/* No Medicines Detected */}
+                    {!isProcessing && selectedImage && detectedMedicines.length === 0 && extractedText && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`rounded-xl p-6 ${
+                          theme === 'dark'
+                            ? 'bg-orange-500/10 border border-orange-500/20'
+                            : 'bg-orange-50 border border-orange-200'
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 rounded-lg bg-orange-500">
                             <FileText className="w-5 h-5 text-white" />
                           </div>
                           <div className="flex-1">
                             <h3 className={`font-semibold mb-1 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                              Medicine Detected
+                              No Medicines Detected
                             </h3>
-                            <p className={`text-lg font-medium mb-2 ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`}>
-                              {detectedText}
-                            </p>
                             <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                              Search results have been updated below
+                              We couldn't find any medicine names in the image. Please ensure the prescription is clear and readable.
                             </p>
+                            {extractedText && (
+                              <details className="mt-3">
+                                <summary className={`text-xs cursor-pointer ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>
+                                  View extracted text
+                                </summary>
+                                <p className={`text-xs mt-2 p-2 rounded ${theme === 'dark' ? 'bg-white/5' : 'bg-white'}`}>
+                                  {extractedText.substring(0, 200)}{extractedText.length > 200 ? '...' : ''}
+                                </p>
+                              </details>
+                            )}
                           </div>
                         </div>
                       </motion.div>
