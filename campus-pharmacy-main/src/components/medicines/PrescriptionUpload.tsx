@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Upload, Camera, X, FileText, Loader2, CheckCircle, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Tesseract from 'tesseract.js';
 import { supabase } from '../../lib/supabase';
 
 interface PrescriptionUploadProps {
@@ -13,6 +12,16 @@ interface DetectedMedicine {
   name: string;
   confidence: number;
 }
+
+// OCR.space API configuration (free tier - much faster than Tesseract.js)
+// For production, consider upgrading to Google Cloud Vision API for even better accuracy and speed
+// Google Vision API setup:
+// 1. Enable Google Cloud Vision API in Google Cloud Console
+// 2. Create API key or service account
+// 3. Replace OCR.space call with Vision API call
+// 4. Use Supabase Edge Function to securely handle API key
+const OCR_API_KEY = 'K87899142388957'; // Free API key (max 25,000 requests/month)
+const OCR_API_URL = 'https://api.ocr.space/parse/image';
 
 export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({ 
   onMedicineDetected, 
@@ -45,23 +54,49 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
     setExtractedText('');
     
     try {
-      // Step 1: Extract text using Tesseract OCR
+      // Step 1: Perform OCR using OCR.space API (much faster than Tesseract.js)
       setProcessingProgress(10);
-      const result = await Tesseract.recognize(
-        imageData,
-        'eng',
-        {
-          logger: (m) => {
-            if (m.status === 'recognizing text') {
-              setProcessingProgress(10 + Math.floor(m.progress * 40));
-            }
-          }
-        }
-      );
       
-      const extractedText = result.data.text;
-      setExtractedText(extractedText);
+      // Convert base64 to blob
+      const response = await fetch(imageData);
+      const blob = await response.blob();
+      
+      // Prepare form data for OCR.space API
+      const formData = new FormData();
+      formData.append('base64Image', imageData);
+      formData.append('language', 'eng');
+      formData.append('isOverlayRequired', 'false');
+      formData.append('detectOrientation', 'true');
+      formData.append('scale', 'true');
+      formData.append('OCREngine', '2'); // Use OCR Engine 2 for better accuracy
+      
+      setProcessingProgress(20);
+      
+      // Call OCR.space API
+      const ocrResponse = await fetch(OCR_API_URL, {
+        method: 'POST',
+        headers: {
+          'apikey': OCR_API_KEY
+        },
+        body: formData
+      });
+      
+      const ocrResult = await ocrResponse.json();
       setProcessingProgress(50);
+      
+      if (ocrResult.IsErroredOnProcessing) {
+        throw new Error(ocrResult.ErrorMessage?.[0] || 'OCR processing failed');
+      }
+      
+      // Extract text from OCR result
+      const extractedText = ocrResult.ParsedResults?.[0]?.ParsedText || '';
+      setExtractedText(extractedText);
+      setProcessingProgress(60);
+      
+      if (!extractedText) {
+        setProcessingProgress(100);
+        return;
+      }
       
       // Step 2: Fetch all medicines from database
       const { data: allMedicines, error } = await supabase
@@ -69,7 +104,7 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
         .select('name, description, category');
       
       if (error) throw error;
-      setProcessingProgress(60);
+      setProcessingProgress(70);
       
       // Step 3: Parse extracted text to find medicine names
       const detectedMeds: DetectedMedicine[] = [];
@@ -139,7 +174,7 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
       
     } catch (error) {
       console.error('Error processing image:', error);
-      setExtractedText('Error processing image. Please try again.');
+      setExtractedText('Error processing image. Please try again with a clearer image.');
     } finally {
       setIsProcessing(false);
     }
@@ -248,7 +283,7 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
                         Upload Prescription
                       </h2>
                       <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                        Upload an image of your prescription to search for medicines
+                        Fast AI-powered scanning to instantly detect medicines
                       </p>
                     </div>
                   </div>
