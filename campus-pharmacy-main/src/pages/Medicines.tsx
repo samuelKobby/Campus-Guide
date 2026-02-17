@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import placeholderImage from '../assets/placeholder.svg';
 import { VoiceSearchInput } from '../components/search/VoiceSearchInput';
+import { PrescriptionUpload } from '../components/medicines/PrescriptionUpload';
 import { useVoiceLanguages } from '../hooks/useVoiceLanguages';
 import { useMedicineTranslations } from '../hooks/useMedicineTranslations';
 import { useTheme } from '../context/ThemeContext';
@@ -92,11 +93,16 @@ export const Medicines: React.FC = () => {
                 currentLanguage={currentLanguage}
                 onLanguageChange={setCurrentLanguage}
                 className="w-full"
+                theme={theme}
               />
             </div>
             <div className="flex gap-4">
+              <PrescriptionUpload 
+                onMedicineDetected={setSearchTerm}
+                theme={theme}
+              />
               <select
-                className={`p-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 ${
+                className={`p-2 border rounded-2xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 ${
                   theme === 'dark' ? 'bg-[#151030] border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'
                 }`}
                 value={selectedCategory}

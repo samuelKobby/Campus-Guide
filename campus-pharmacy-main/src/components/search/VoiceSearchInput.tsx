@@ -11,6 +11,7 @@ interface VoiceSearchInputProps {
   className?: string;
   currentLanguage: VoiceLanguage;
   onLanguageChange?: (lang: VoiceLanguage) => void;
+  theme?: string;
 }
 
 export const VoiceSearchInput: React.FC<VoiceSearchInputProps> = ({
@@ -20,7 +21,8 @@ export const VoiceSearchInput: React.FC<VoiceSearchInputProps> = ({
   placeholder = 'Search...',
   className = '',
   currentLanguage,
-  onLanguageChange
+  onLanguageChange,
+  theme = 'light'
 }) => {
   const {
     isListening,
@@ -69,7 +71,7 @@ export const VoiceSearchInput: React.FC<VoiceSearchInputProps> = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full p-2 pr-24 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full p-2 pr-24 border rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       <div className="absolute right-2 flex space-x-2">
         {isSupported && (
@@ -99,7 +101,9 @@ export const VoiceSearchInput: React.FC<VoiceSearchInputProps> = ({
         {showLangSelector && (
           <div 
             ref={dropdownRef}
-            className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg py-1" 
+            className={`absolute right-0 top-full mt-2 w-48 rounded-2xl shadow-lg py-2 px-2 ${
+              theme === 'dark' ? 'bg-[#151030] border border-white/10' : 'bg-white'
+            }`}
             style={{ zIndex: 9999 }}>
             {languages.map((lang) => (
               <button
@@ -110,17 +114,27 @@ export const VoiceSearchInput: React.FC<VoiceSearchInputProps> = ({
                   }
                   setShowLangSelector(false);
                 }}
-                className={`w-full px-4 py-2 text-left hover:bg-gray-100 ${currentLanguage.code === lang.code ? 'bg-blue-50 text-blue-600' : 'text-gray-700'}`}
+                className={`w-full px-4 py-2 text-left transition-colors rounded-xl mb-1 last:mb-0 ${
+                  currentLanguage.code === lang.code
+                    ? theme === 'dark'
+                      ? 'bg-purple-500/20 text-purple-400'
+                      : 'bg-purple-50 text-purple-600'
+                    : theme === 'dark'
+                      ? 'text-gray-300 hover:bg-white/10'
+                      : 'text-gray-700 hover:bg-gray-100'
+                }`}
               >
                 <span>{lang.name}</span>
-                <span className="ml-2 text-sm text-gray-500">({lang.code})</span>
+                <span className={`ml-2 text-sm ${
+                  theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+                }`}>({lang.code})</span>
               </button>
             ))}
           </div>
         )}
       </div>
       {error && (
-        <div className="absolute top-full left-0 right-0 mt-2 p-2 bg-red-100 text-red-600 rounded-lg text-sm transition-opacity">
+        <div className="absolute top-full left-0 right-0 mt-2 p-2 bg-red-100 text-red-600 rounded-2xl text-sm transition-opacity">
           {error}
         </div>
       )}

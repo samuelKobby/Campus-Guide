@@ -25,7 +25,8 @@
     "react-parallax-tilt": "^1.7.296",
     "react-router-dom": "^6.22.0",
     "react-scroll-parallax": "^3.4.5",
-    "recharts": "^2.15.1"
+    "recharts": "^2.15.1",
+    "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.23",

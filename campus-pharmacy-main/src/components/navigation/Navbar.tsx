@@ -33,13 +33,12 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        <div className={`md:hidden transition-all duration-300 ${isMenuOpen ? 'block' : 'hidden'}`}>
-          <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
-        </div>
       </nav>
       {/* Spacer for fixed navbar */}
       <div className={`h-16 ${navbarClass.includes('bg-transparent') ? 'hidden' : ''}`} />
+      
+      {/* Mobile Menu Drawer */}
+      <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
     </>
   );
 };

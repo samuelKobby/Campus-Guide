@@ -1,6 +1,5 @@
 import React, { useState, useEffect, FC, ChangeEvent, FormEvent, MouseEvent } from 'react';
 import { MapPin, Mail, Phone, Clock, Send, User, MessageSquare, Star, Sparkles, Navigation, Info, Headphones } from 'lucide-react';
-import VoiceAgent from '../components/VoiceAgent';
 import { useTheme } from '../context/ThemeContext';
 import { motion } from 'framer-motion';
 
@@ -355,7 +354,6 @@ export const Contact: FC = () => {
       </section>
       </div>
 
-      <VoiceAgent />
     </div>
   );
 };

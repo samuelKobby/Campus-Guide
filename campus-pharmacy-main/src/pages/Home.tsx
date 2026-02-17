@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SearchBar } from '../components/home/SearchBar';
 import { LocationCategories } from '../components/home/LocationCategories';
 import { HeroSlideshow } from '../components/home/HeroSlideshow';
@@ -6,8 +6,7 @@ import {
   MapPin, Compass, Users, Calendar, Coffee, BookOpen, Car, Navigation2, Star,Navigation,
   ArrowDown, Play, Globe, Target, Smartphone, ChevronRight, Clock, Shield, Award, Utensils, Hospital
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import VoiceAgent from '../components/VoiceAgent';  
+import { Link } from 'react-router-dom';  
 
 
 
@@ -79,6 +78,11 @@ export const Home: React.FC = () => {
   const [scrollY, setScrollY] = useState(0);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
+
+  // Refs for scroll animations
+  const sectionsRef = useRef<{ [key: string]: HTMLElement | null }>({});
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -91,6 +95,37 @@ export const Home: React.FC = () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('mousemove', handleMouseMove);
     };
+  }, []);
+
+  // Set video playback speed
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.playbackRate = 0.75;
+    }
+  }, []);
+
+  // Intersection Observer for scroll animations
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -100px 0px'
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setVisibleSections(prev => new Set(prev).add(entry.target.id));
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    Object.values(sectionsRef.current).forEach(section => {
+      if (section) observer.observe(section);
+    });
+
+    return () => observer.disconnect();
   }, []);
 
   // Auto-rotating testimonials
@@ -172,7 +207,15 @@ export const Home: React.FC = () => {
           </section>
     
           {/* Campus Zones Section */}
-          <section className="py-14 relative">
+          <section 
+            id="campus-zones"
+            ref={(el) => sectionsRef.current['campus-zones'] = el}
+            className={`py-14 relative transition-all duration-1000 ${
+              visibleSections.has('campus-zones') 
+                ? 'opacity-100 translate-y-0' 
+                : 'opacity-0 translate-y-20'
+            }`}
+          >
             <div className="container mx-auto px-6">
               
     
@@ -180,9 +223,13 @@ export const Home: React.FC = () => {
                 {campusZones.map((zone, index) => (
                   <div
                     key={index}
-                    className="group relative overflow-hidden rounded-3xl bg-white dark:bg-[#151030] backdrop-blur-xl border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 transition-all duration-700 hover:scale-105"
+                    className={`group relative overflow-hidden rounded-3xl bg-white dark:bg-[#151030] backdrop-blur-xl border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 transition-all duration-700 hover:scale-105 ${
+                      visibleSections.has('campus-zones')
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 translate-y-10'
+                    }`}
                     style={{
-                      animation: `fadeInUp 0.8s ease-out ${index * 0.1}s both`
+                      transitionDelay: visibleSections.has('campus-zones') ? `${index * 100}ms` : '0ms'
                     }}
                   >
                     <div className={`absolute inset-0 bg-gradient-to-br ${zone.color} opacity-0 group-hover:opacity-20 transition-opacity duration-700`} />
@@ -207,10 +254,78 @@ export const Home: React.FC = () => {
             </div>
           </section>
     
-          {/* Features Showcase */}
-          <section className="py-32 relative">
+          {/* Tutorial Section */}
+          <section 
+            id="tutorial"
+            ref={(el) => sectionsRef.current['tutorial'] = el}
+            className={`py-32 relative transition-all duration-1000 delay-200 ${
+              visibleSections.has('tutorial') 
+                ? 'opacity-100 translate-y-0' 
+                : 'opacity-0 translate-y-20'
+            }`}
+          >
             <div className="container mx-auto px-6">
-              <div className="text-center mb-20">
+              <div className="max-w-6xl mx-auto">
+                <div className={`relative group transition-all duration-1000 delay-300 ${
+                  visibleSections.has('tutorial')
+                    ? 'opacity-100 scale-100'
+                    : 'opacity-0 scale-95'
+                }`}>
+                  {/* macOS Window Frame */}
+                  <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-[#1e1e2e] shadow-2xl border border-gray-200 dark:border-white/10">
+                    {/* macOS Title Bar */}
+                    <div className="bg-gradient-to-b from-gray-100 to-gray-200 dark:from-[#2a2a3e] dark:to-[#25253a] px-4 py-3 flex items-center justify-between border-b border-gray-300 dark:border-white/10">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 transition-colors"></div>
+                        <div className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 transition-colors"></div>
+                        <div className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 transition-colors"></div>
+                      </div>
+                      <div className="flex-1 text-center">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Campus Guide Tutorial</span>
+                      </div>
+                      <div className="w-16"></div>
+                    </div>
+                    
+                    {/* Video Container */}
+                    <div className="relative bg-black overflow-hidden" style={{ aspectRatio: '21/9' }}>
+                      <video
+                        ref={videoRef}
+                        className="w-full h-full object-cover"
+                        style={{ objectPosition: 'center 45%' }}
+                        src="https://drive.google.com/file/d/15LBPgSBgQARsi903svSI3y7am2foUWt8/preview"
+                        title="Campus Guide Tutorial"
+                        controls
+                        playsInline
+                        loop
+                        muted
+                        autoPlay
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Decorative Elements */}
+                  <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 -z-10" />
+                </div>
+              </div>
+            </div>
+          </section>
+    
+          {/* Features Showcase */}
+          <section 
+            id="features"
+            ref={(el) => sectionsRef.current['features'] = el}
+            className={`py-32 relative transition-all duration-1000 ${
+              visibleSections.has('features') 
+                ? 'opacity-100 translate-y-0' 
+                : 'opacity-0 translate-y-20'
+            }`}
+          >
+            <div className="container mx-auto px-6">
+              <div className={`text-center mb-20 transition-all duration-1000 delay-100 ${
+                visibleSections.has('features')
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-10'
+              }`}>
                 <h2 className="text-6xl font-bold mb-6 bg-gradient-to-r from-cyan-600 via-purple-600 to-pink-600 dark:from-cyan-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
                   Revolutionary Features
                 </h2>
@@ -221,7 +336,18 @@ export const Home: React.FC = () => {
     
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 {features.map((feature, index) => (
-                  <Link to={feature.link} key={index} className="group relative">
+                  <Link 
+                    to={feature.link} 
+                    key={index} 
+                    className={`group relative transition-all duration-700 ${
+                      visibleSections.has('features')
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 translate-y-10'
+                    }`}
+                    style={{
+                      transitionDelay: visibleSections.has('features') ? `${index * 150}ms` : '0ms'
+                    }}
+                  >
                     <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-3xl blur-xl"
                          style={{background: `linear-gradient(to right, ${feature.color.split(' ')[1]}, ${feature.color.split(' ')[3]})`}} />
                     
@@ -240,7 +366,15 @@ export const Home: React.FC = () => {
           </section>
     
           {/* Stats Section */}
-          <section className="py-32 relative overflow-hidden">
+          <section 
+            id="stats"
+            ref={(el) => sectionsRef.current['stats'] = el}
+            className={`py-32 relative overflow-hidden transition-all duration-1000 ${
+              visibleSections.has('stats') 
+                ? 'opacity-100 scale-100' 
+                : 'opacity-0 scale-95'
+            }`}
+          >
             <div className="relative w-full">
               <div className="flex animate-scrollLeft will-change-transform">
                 {/* First set of stats */}
@@ -290,9 +424,21 @@ export const Home: React.FC = () => {
           </section>
     
           {/* Testimonials Carousel */}
-          <section className="py-32 relative">
+          <section 
+            id="testimonials"
+            ref={(el) => sectionsRef.current['testimonials'] = el}
+            className={`py-32 relative transition-all duration-1000 ${
+              visibleSections.has('testimonials') 
+                ? 'opacity-100 translate-y-0' 
+                : 'opacity-0 translate-y-20'
+            }`}
+          >
             <div className="container mx-auto px-6">
-              <div className="text-center mb-20">
+              <div className={`text-center mb-20 transition-all duration-1000 delay-100 ${
+                visibleSections.has('testimonials')
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-10'
+              }`}>
                 <h2 className="text-6xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
                   Student Stories
                 </h2>
@@ -330,20 +476,40 @@ export const Home: React.FC = () => {
           </section>
     
           {/* Final CTA */}
-          <section className="py-32 relative">
+          <section 
+            id="cta"
+            ref={(el) => sectionsRef.current['cta'] = el}
+            className={`py-32 relative transition-all duration-1000 ${
+              visibleSections.has('cta') 
+                ? 'opacity-100 translate-y-0' 
+                : 'opacity-0 translate-y-20'
+            }`}
+          >
             <div className="container mx-auto px-6 text-center">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 dark:from-cyan-500/10 dark:via-purple-500/10 dark:to-pink-500/10 blur-3xl rounded-full" />
                 <div className="relative">
-                  <h2 className="text-7xl font-black mb-8 bg-gradient-to-r from-gray-900 via-cyan-700 to-purple-700 dark:from-white dark:via-cyan-200 dark:to-purple-200 bg-clip-text text-transparent">
+                  <h2 className={`text-7xl font-black mb-8 bg-gradient-to-r from-gray-900 via-cyan-700 to-purple-700 dark:from-white dark:via-cyan-200 dark:to-purple-200 bg-clip-text text-transparent transition-all duration-1000 delay-200 ${
+                    visibleSections.has('cta')
+                      ? 'opacity-100 translate-y-0'
+                      : 'opacity-0 translate-y-10'
+                  }`}>
                     Start Your Journey
                   </h2>
-                  <p className="text-2xl text-gray-700 dark:text-gray-300 mb-12 max-w-3xl mx-auto">
+                  <p className={`text-2xl text-gray-700 dark:text-gray-300 mb-12 max-w-3xl mx-auto transition-all duration-1000 delay-300 ${
+                    visibleSections.has('cta')
+                      ? 'opacity-100 translate-y-0'
+                      : 'opacity-0 translate-y-10'
+                  }`}>
                     Join thousands of students who've transformed their campus experience. 
                     Never be late, never be lost, never be confused again.
                   </p>
                   
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                  <div className={`flex flex-col sm:flex-row items-center justify-center gap-6 transition-all duration-1000 delay-500 ${
+                    visibleSections.has('cta')
+                      ? 'opacity-100 translate-y-0'
+                      : 'opacity-0 translate-y-10'
+                  }`}>
                     <button className="group relative overflow-hidden bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 text-white px-16 py-6 rounded-2xl font-bold text-2xl shadow-2xl hover:shadow-purple-500/25 transition-all duration-500 hover:scale-105">
                       <span className="relative z-10">Get Started Free</span>
                       <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -359,7 +525,6 @@ export const Home: React.FC = () => {
                 </div>
               </div>
             </div>
-            <VoiceAgent />
           </section>
     
           
@@ -387,6 +552,28 @@ export const Home: React.FC = () => {
               }
             }
 
+            @keyframes fadeInScale {
+              from {
+                opacity: 0;
+                transform: scale(0.9);
+              }
+              to {
+                opacity: 1;
+                transform: scale(1);
+              }
+            }
+
+            @keyframes slideInRight {
+              from {
+                opacity: 0;
+                transform: translateX(50px);
+              }
+              to {
+                opacity: 1;
+                transform: translateX(0);
+              }
+            }
+
             @keyframes scrollLeft {
               0% {
                 transform: translateX(0);
@@ -396,13 +583,42 @@ export const Home: React.FC = () => {
               }
             }
 
+            @keyframes float {
+              0%, 100% {
+                transform: translateY(0px);
+              }
+              50% {
+                transform: translateY(-20px);
+              }
+            }
+
             .animate-scrollLeft {
-              animation: scrollLeft 30s linear infinite;
+              animation: scrollLeft 15s linear infinite;
               display: flex;
             }
 
             .animate-scrollLeft:hover {
               animation-play-state: paused;
+            }
+
+            /* Smooth scroll behavior */
+            html {
+              scroll-behavior: smooth;
+            }
+
+            /* Enhanced transition timing */
+            section {
+              transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            /* Fade in on load */
+            @keyframes fadeIn {
+              from {
+                opacity: 0;
+              }
+              to {
+                opacity: 1;
+              }
             }
           `}</style>
         </div>

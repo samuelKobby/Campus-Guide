@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Clock, MapPin, ShieldCheck, User } from 'lucide-react';
 import { ParallaxProvider, Parallax } from 'react-scroll-parallax';
-import VoiceAgent from '../components/VoiceAgent';
 
 export const About: React.FC = () => {
   const parallaxRef = useRef<HTMLDivElement>(null);
@@ -146,7 +145,6 @@ export const About: React.FC = () => {
             </Parallax>
           </div>
         </div>
-        <VoiceAgent />
       </div>
     </ParallaxProvider>
   );

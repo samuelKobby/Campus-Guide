@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Navbar } from '../navigation/Navbar';
+import VoiceAgent from '../VoiceAgent';
 
 export const MainLayout: React.FC = () => {
   const location = useLocation();
@@ -14,6 +15,7 @@ export const MainLayout: React.FC = () => {
       <main className="flex-grow">
         <Outlet />
       </main>
+      <VoiceAgent />
       {shouldShowFooter && (
         <footer className="bg-[#050816] text-white py-8">
           <div className="container mx-auto px-4">
