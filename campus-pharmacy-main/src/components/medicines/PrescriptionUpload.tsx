@@ -11,6 +11,8 @@ interface PrescriptionUploadProps {
 interface DetectedMedicine {
   name: string;
   confidence: number;
+  available: boolean; // Whether medicine exists in our database
+  inStock: boolean; // Whether it's available in any pharmacy
 }
 
 // OCR.space API configuration (free tier - much faster than Tesseract.js)
@@ -98,62 +100,99 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
         return;
       }
       
-      // Step 2: Fetch all medicines from database
-      const { data: allMedicines, error } = await supabase
-        .from('medicines')
-        .select('name, description, category');
+      // Step 2: Extract potential medicine names from the OCR text
+      // Look for medicine-like patterns: capitalized words, medical terms, etc.
+      const lines = extractedText.split('\n').filter((line: string) => line.trim());
+      const potentialMedicines: string[] = [];
       
-      if (error) throw error;
+      lines.forEach((line: string) => {
+        const words = line.trim().split(/\s+/);
+        
+        // Look for capitalized words or words that look like medicine names
+        // Common patterns: starts with capital, contains "mg", "ml", ends with common suffixes
+        words.forEach((word: string) => {
+          const cleanWord = word.replace(/[^a-zA-Z0-9]/g, '');
+          
+          // Filter criteria for potential medicine names:
+          // - At least 4 characters
+          // - Starts with capital or contains medical terms
+          // - Not common words
+          if (cleanWord.length >= 4 && 
+              (/^[A-Z]/.test(cleanWord) || 
+               /mg|ml|tab|cap|syr|susp/i.test(word) ||
+               /cillin|mycin|azole|prazole|olol|pine|ine|ide|one$/i.test(cleanWord))) {
+            
+            // Remove dosage info and clean up
+            const medicineName = cleanWord
+              .replace(/\d+mg/gi, '')
+              .replace(/\d+ml/gi, '')
+              .replace(/tab|caps?|syr|susp/gi, '')
+              .trim();
+            
+            if (medicineName.length >= 4 && 
+                !potentialMedicines.includes(medicineName) &&
+                !/^(the|and|for|take|daily|times|day|night|morning|evening|after|before|with|without)$/i.test(medicineName)) {
+              potentialMedicines.push(medicineName);
+            }
+          }
+        });
+      });
+      
       setProcessingProgress(70);
       
-      // Step 3: Parse extracted text to find medicine names
-      const detectedMeds: DetectedMedicine[] = [];
-      const textLower = extractedText.toLowerCase();
-      const words = textLower.split(/\s+/);
+      // Step 3: Fetch all medicines from database to check availability
+      const { data: allMedicines, error } = await supabase
+        .from('medicines')
+        .select('name, available');
       
-      // Check each medicine name against the extracted text
-      allMedicines?.forEach((medicine) => {
-        const medicineName = medicine.name.toLowerCase();
-        const medicineWords = medicineName.split(/\s+/);
+      if (error) throw error;
+      setProcessingProgress(80);
+      
+      // Step 4: Match detected medicines with database
+      const detectedMeds: DetectedMedicine[] = [];
+      
+      potentialMedicines.forEach((detectedName) => {
+        const detectedLower = detectedName.toLowerCase();
         
-        // Check for exact name match
-        if (textLower.includes(medicineName)) {
+        // Try to find exact or partial match in database
+        let bestMatch: any = null;
+        let bestConfidence = 0;
+        
+        allMedicines?.forEach((medicine) => {
+          const medicineName = medicine.name.toLowerCase();
+          
+          // Exact match
+          if (medicineName === detectedLower) {
+            bestMatch = medicine;
+            bestConfidence = 1.0;
+          }
+          // Partial match
+          else if (medicineName.includes(detectedLower) || detectedLower.includes(medicineName)) {
+            const similarity = calculateSimilarity(detectedLower, medicineName);
+            if (similarity > bestConfidence) {
+              bestMatch = medicine;
+              bestConfidence = similarity;
+            }
+          }
+        });
+        
+        // Add to detected medicines list
+        if (bestMatch && bestConfidence >= 0.7) {
+          // Medicine found in database
           detectedMeds.push({
-            name: medicine.name,
-            confidence: 1.0
+            name: bestMatch.name, // Use actual database name
+            confidence: bestConfidence,
+            available: true,
+            inStock: bestMatch.available
           });
-        } 
-        // Check for partial matches (medicine name contains multiple words)
-        else if (medicineWords.length > 1) {
-          const matchedWords = medicineWords.filter((word: string) => 
-            words.some((w: string) => w.includes(word) || word.includes(w))
-          );
-          const confidence = matchedWords.length / medicineWords.length;
-          
-          if (confidence >= 0.6) {
-            detectedMeds.push({
-              name: medicine.name,
-              confidence
-            });
-          }
-        }
-        // Check for single word matches with fuzzy matching
-        else {
-          const matched = words.some((word: string) => {
-            // Check if the word is similar to medicine name (allowing for OCR errors)
-            if (word === medicineName) return true;
-            if (word.includes(medicineName) || medicineName.includes(word)) return true;
-            
-            // Levenshtein distance check for OCR errors (optional)
-            return calculateSimilarity(word, medicineName) > 0.8;
+        } else {
+          // Medicine detected but not in database
+          detectedMeds.push({
+            name: detectedName, // Use detected name from prescription
+            confidence: bestConfidence > 0 ? bestConfidence : 0.5,
+            available: false,
+            inStock: false
           });
-          
-          if (matched) {
-            detectedMeds.push({
-              name: medicine.name,
-              confidence: 0.8
-            });
-          }
         }
       });
       
@@ -167,9 +206,10 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
       setDetectedMedicines(uniqueMeds);
       setProcessingProgress(100);
       
-      // Set the first detected medicine as the search term
-      if (uniqueMeds.length > 0) {
-        onMedicineDetected(uniqueMeds[0].name);
+      // Set the first AVAILABLE medicine as the search term (skip out of stock ones)
+      const firstAvailable = uniqueMeds.find(med => med.available);
+      if (firstAvailable) {
+        onMedicineDetected(firstAvailable.name);
       }
       
     } catch (error) {
@@ -407,7 +447,7 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
                               {detectedMedicines.length} Medicine{detectedMedicines.length > 1 ? 's' : ''} Detected
                             </h3>
                             <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                              Click on a medicine to search for it
+                              {detectedMedicines.filter(m => m.available).length} available • {detectedMedicines.filter(m => !m.available).length} not in stock
                             </p>
                           </div>
                         </div>
@@ -418,25 +458,59 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
                             <button
                               key={index}
                               onClick={() => {
-                                onMedicineDetected(medicine.name);
-                                handleClose();
+                                if (medicine.available) {
+                                  onMedicineDetected(medicine.name);
+                                  handleClose();
+                                }
                               }}
+                              disabled={!medicine.available}
                               className={`w-full text-left p-3 rounded-lg transition-all ${
-                                theme === 'dark'
-                                  ? 'bg-white/5 hover:bg-white/10 border border-white/10'
-                                  : 'bg-white hover:bg-gray-50 border border-gray-200'
-                              }`}
+                                medicine.available
+                                  ? theme === 'dark'
+                                    ? 'bg-white/5 hover:bg-white/10 border border-white/10'
+                                    : 'bg-white hover:bg-gray-50 border border-gray-200'
+                                  : theme === 'dark'
+                                    ? 'bg-red-500/10 border border-red-500/20 opacity-75'
+                                    : 'bg-red-50 border border-red-200 opacity-75'
+                              } ${medicine.available ? 'cursor-pointer' : 'cursor-not-allowed'}`}
                             >
                               <div className="flex items-center justify-between">
-                                <div>
-                                  <p className={`font-medium ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`}>
-                                    {medicine.name}
-                                  </p>
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <p className={`font-medium ${
+                                      medicine.available 
+                                        ? theme === 'dark' ? 'text-purple-400' : 'text-purple-600'
+                                        : theme === 'dark' ? 'text-red-400' : 'text-red-600'
+                                    }`}>
+                                      {medicine.name}
+                                    </p>
+                                    {!medicine.available && (
+                                      <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                        theme === 'dark' 
+                                          ? 'bg-red-500/20 text-red-300' 
+                                          : 'bg-red-100 text-red-700'
+                                      }`}>
+                                        Out of Stock
+                                      </span>
+                                    )}
+                                    {medicine.available && !medicine.inStock && (
+                                      <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                        theme === 'dark' 
+                                          ? 'bg-orange-500/20 text-orange-300' 
+                                          : 'bg-orange-100 text-orange-700'
+                                      }`}>
+                                        Limited Stock
+                                      </span>
+                                    )}
+                                  </div>
                                   <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>
                                     Confidence: {Math.round(medicine.confidence * 100)}%
+                                    {medicine.available && ' • Click to view details'}
                                   </p>
                                 </div>
-                                <ChevronRight className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-400'}`} />
+                                {medicine.available && (
+                                  <ChevronRight className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-400'}`} />
+                                )}
                               </div>
                             </button>
                           ))}
