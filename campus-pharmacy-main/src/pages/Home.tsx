@@ -79,10 +79,11 @@ export const Home: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
+  const [player, setPlayer] = useState<any>(null);
 
   // Refs for scroll animations
   const sectionsRef = useRef<{ [key: string]: HTMLElement | null }>({});
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -95,13 +96,6 @@ export const Home: React.FC = () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('mousemove', handleMouseMove);
     };
-  }, []);
-
-  // Set video playback speed
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.playbackRate = 0.75;
-    }
   }, []);
 
   // Intersection Observer for scroll animations
@@ -134,6 +128,51 @@ export const Home: React.FC = () => {
       setCurrentSlide(prev => (prev + 1) % 3);
     }, 4000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Load YouTube IFrame API and initialize player with custom playback speed
+  useEffect(() => {
+    // Load YouTube IFrame API
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+
+    // Initialize player when API is ready
+    (window as any).onYouTubeIframeAPIReady = () => {
+      if (videoRef.current) {
+        const ytPlayer = new (window as any).YT.Player('youtube-player', {
+          videoId: 'CAZvsp4DT5w',
+          playerVars: {
+            autoplay: 1,
+            mute: 1,
+            loop: 1,
+            playlist: 'CAZvsp4DT5w',
+            controls: 1,
+            modestbranding: 1,
+            rel: 0
+          },
+          events: {
+            onReady: (event: any) => {
+              event.target.setPlaybackRate(0.5); // Set speed to 0.5x (slower)
+              setPlayer(event.target);
+            },
+            onStateChange: (event: any) => {
+              // Ensure playback rate is maintained
+              if (event.data === (window as any).YT.PlayerState.PLAYING) {
+                event.target.setPlaybackRate(0.5);
+              }
+            }
+          }
+        });
+      }
+    };
+
+    return () => {
+      if (player) {
+        player.destroy();
+      }
+    };
   }, []);
 
   const heroParallax = scrollY * 0.2;
@@ -287,18 +326,11 @@ export const Home: React.FC = () => {
                     </div>
                     
                     {/* Video Container */}
-                    <div className="relative bg-black overflow-hidden" style={{ aspectRatio: '21/9' }}>
-                      <video
+                    <div className="relative bg-black overflow-hidden" style={{ aspectRatio: '16/9' }}>
+                      <div
+                        id="youtube-player"
                         ref={videoRef}
-                        className="w-full h-full object-cover"
-                        style={{ objectPosition: 'center 45%' }}
-                        src="https://drive.google.com/file/d/15LBPgSBgQARsi903svSI3y7am2foUWt8/preview"
-                        title="Campus Guide Tutorial"
-                        controls
-                        playsInline
-                        loop
-                        muted
-                        autoPlay
+                        className="w-full h-full"
                       />
                     </div>
                   </div>

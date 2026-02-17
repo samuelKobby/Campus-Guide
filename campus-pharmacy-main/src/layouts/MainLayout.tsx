@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { Navbar } from '../components/navigation/Navbar';
 import { Footer } from '../components/navigation/Footer';
 
@@ -7,6 +8,10 @@ interface MainLayoutProps {
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+  const location = useLocation();
+  const hideFooterPaths = ['/admin', '/admin/login', '/category', '/medicines'];
+  const shouldShowFooter = !hideFooterPaths.some(path => location.pathname.startsWith(path));
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -15,7 +20,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           {children}
         </div>
       </main>
-      <Footer />
+      {shouldShowFooter && <Footer />}
     </div>
   );
 };

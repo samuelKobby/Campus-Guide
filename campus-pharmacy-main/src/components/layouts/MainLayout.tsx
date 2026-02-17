@@ -5,7 +5,7 @@ import VoiceAgent from '../VoiceAgent';
 
 export const MainLayout: React.FC = () => {
   const location = useLocation();
-  const hideFooterPaths = ['/admin', '/admin/login'];
+  const hideFooterPaths = ['/admin', '/admin/login', '/category', '/medicines'];
   const shouldShowFooter = !hideFooterPaths.some(path => location.pathname.startsWith(path));
   const isHomePage = location.pathname === '/';
 
