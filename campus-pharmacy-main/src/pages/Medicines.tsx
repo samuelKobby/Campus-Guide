@@ -117,7 +117,7 @@ export const Medicines: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredMedicines.map((medicine) => (
             <MedicineCard 
               key={medicine.id} 
@@ -216,7 +216,6 @@ const MedicineCard: React.FC<{
       <div className='relative w-full h-[240px] overflow-hidden rounded-xl mb-3'>
         <motion.img
           className="w-full h-full object-cover"
-          src={medicine.image || placeholderImage}
           alt={medicine.name}
           animate={{
             scale: isHovered ? 1.05 : 1,

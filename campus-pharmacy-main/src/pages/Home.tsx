@@ -1,658 +1,715 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { SearchBar } from '../components/home/SearchBar';
-import { LocationCategories } from '../components/home/LocationCategories';
-import { HeroSlideshow } from '../components/home/HeroSlideshow';
+import { CompassNavigation } from '../components/home/CompassNavigation';
+import { CampusMarker } from '../components/home/CampusMarker';
+import { ThemeToggle } from '../components/ui/ThemeToggle';
+import { useTheme } from '../context/ThemeContext';
+import { Link } from 'react-router-dom';
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import {
-  MapPin, Compass, Users, Calendar, Coffee, BookOpen, Car, Navigation2, Star,Navigation,
-  ArrowDown, Play, Globe, Target, Smartphone, ChevronRight, Clock, Shield, Award, Utensils, Hospital
+  BookOpen, Users, Target, Utensils, Hospital, MapPin, Navigation2,
+  Wifi, Battery, Signal, Layers, Globe, Crosshair, LayoutGrid,
+  Activity, Zap, Search, Antenna, ChevronRight, Menu, X, ChevronDown,
+  GraduationCap, Coffee, Dumbbell, HeartPulse, Info, Phone, Map as MapIcon, Play,
+  Pill, Building2,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';  
 
+/* ── Background slide images ──────────────────────────────────────────── */
+const bgSlides = [
+  '/images/3d1.png',
+  '/images/3d4.png',
+  '/images/3d5.png',
+  '/images/campus-illustration.png',
+];
 
+/* ── Data ─────────────────────────────────────────────────────────────────── */
+const campusZones = [
+  { name: 'Academic', icon: BookOpen, path: '/category/academic', color: 'from-emerald-400 to-teal-600', angle: 300, distance: 1.12 },
+  { name: 'Libraries', icon: BookOpen, path: '/category/libraries', color: 'from-amber-400 to-orange-500', angle: 0, distance: 1 },
+  { name: 'Dining', icon: Utensils, path: '/category/dining', color: 'from-pink-400 to-rose-500', angle: 60, distance: 1.12 },
+  { name: 'Sports', icon: Target, path: '/category/sports', color: 'from-sky-400 to-blue-500', angle: 120, distance: 1.25 },
+  { name: 'Student Hub', icon: Users, path: '/category/student-centers', color: 'from-violet-400 to-purple-500', angle: 180, distance: 1.25 },
+  { name: 'Health', icon: Hospital, path: '/category/health', color: 'from-fuchsia-400 to-pink-500', angle: 240, distance: 1.25 },
+];
 
-  
-  const campusZones = [
-    { name: 'Academic Buildings', color: 'from-emerald-400 to-teal-600', path: '/category/academic', icon: BookOpen },
-    { name: 'Student Centers', color: 'from-purple-400 to-indigo-600', path: '/category/student-centers', icon: Users },
-    { name: 'Libraries', color: 'from-orange-400 to-red-600', path: '/category/libraries', icon: BookOpen },
-    { name: 'Sports Facilities', color: 'from-blue-400 to-cyan-600', path: '/category/sports', icon: Target },
-    { name: 'Dining Halls', color: 'from-pink-400 to-rose-600', path: '/category/dining', icon: Utensils },
-    { name: 'Health Services', color: 'from-violet-400 to-purple-600', path: '/category/health', icon: Hospital }
-  ];
+const quickStats = [
+  { label: 'Locations', countTo: 2400, prefix: '', suffix: '+', decimals: 0, icon: MapPin },
+  { label: 'Accuracy', countTo: 95, prefix: '', suffix: '%', decimals: 0, icon: Crosshair },
+  { label: 'Users', countTo: 30, prefix: '', suffix: 'K+', decimals: 0, icon: Activity },
+  { label: 'Response', countTo: 0.2, prefix: '<', suffix: 's', decimals: 1, icon: Zap },
+];
 
-  const features = [
-    {
-      icon: Navigation2,
-      title: 'Instant Directions',
-      description: 'Get turn-by-turn navigation to any location on campus in seconds',
-      color: 'from-cyan-500 to-blue-600',
-      link: '/category/academic'
-    },
-    {
-      icon: Shield,
-      title: 'Medications Availability',
-      description: 'Instant medication availability and pricing information',
-      color: 'from-purple-500 to-pink-600',
-      link: '/medicines'
-    },
-    {
-      icon: Compass,
-      title: 'Easy Navigation',
-      description: 'Turn-by-turn directions to nearest pharmacies',
-      color: 'from-green-500 to-emerald-600',
-      link: '/pharmacies'
-    },
-    {
-      icon: Hospital,
-      title: 'Pharmacies Information',
-      description: 'All pharmacies and medications are thoroughly verified',
-      color: 'from-orange-500 to-red-600',
-      link: '/pharmacies'
-    }
-  ];
+function CountUpValue({ countTo, prefix = '', suffix = '', decimals = 0, duration = 1800, delay = 1200 }: {
+  countTo: number; prefix?: string; suffix?: string; decimals?: number; duration?: number; delay?: number;
+}) {
+  const [current, setCurrent] = useState(0);
+  useEffect(() => {
+    let raf: number;
+    const timeout = setTimeout(() => {
+      let startTime: number | null = null;
+      const step = (ts: number) => {
+        if (!startTime) startTime = ts;
+        const progress = Math.min((ts - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setCurrent(eased * countTo);
+        if (progress < 1) raf = requestAnimationFrame(step);
+      };
+      raf = requestAnimationFrame(step);
+    }, delay);
+    return () => { clearTimeout(timeout); cancelAnimationFrame(raf); };
+  }, [countTo, duration, delay]);
+  const display = decimals > 0 ? current.toFixed(decimals) : Math.round(current).toLocaleString();
+  return <>{prefix}{display}{suffix}</>;
+}
 
-  const testimonials = [
-    {
-      name: 'Anastaciah Andoh',
-      role: 'IT Student',
-      text: 'I used to be late to every class. Now I navigate campus like a pro!',
-      image: '/images/5.jpg' 
-    },
-    
-    {
-      name: 'John Smith',
-      role: 'Campus Tour Guide',
-      text: 'This app revolutionized how I give campus tours to prospective students.',
-      image: '/images/7.webp' 
-    },
-    {
-      name: 'Elsie De-Graft',
-      role: 'Graduate Researcher',
-      text: 'The Voice Search feature is incredible - it makes finding research labs so easy.',
-      image: '/images/6.jpg' 
-    }
-  ];
+const navCategories = [
+  { name: 'Academic', icon: GraduationCap, path: '/category/academic' },
+  { name: 'Libraries', icon: BookOpen, path: '/category/libraries' },
+  { name: 'Dining', icon: Utensils, path: '/category/dining' },
+  { name: 'Sports', icon: Dumbbell, path: '/category/sports' },
+  { name: 'Student Centers', icon: Coffee, path: '/category/student-centers' },
+  { name: 'Health', icon: HeartPulse, path: '/category/health' },
+];
 
+/* ── Component ─────────────────────────────────────────────────────────────── */
 export const Home: React.FC = () => {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [time, setTime] = useState(new Date());
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [vpSize, setVpSize] = useState({ w: window.innerWidth, h: window.innerHeight });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [catDropdownOpen, setCatDropdownOpen] = useState(false);
+  const [compassOpen, setCompassOpen] = useState(false);
+  const [demoOpen, setDemoOpen] = useState(false);
+  const [slideIndex, setSlideIndex] = useState(0);
+  const [prevSlideIndex, setPrevSlideIndex] = useState<number | null>(null);
+  const [slideAnimating, setSlideAnimating] = useState(false);
 
-  const [scrollY, setScrollY] = useState(0);
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
-  const [player, setPlayer] = useState<any>(null);
-
-  // Refs for scroll animations
-  const sectionsRef = useRef<{ [key: string]: HTMLElement | null }>({});
-  const videoRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    const handleMouseMove = (e: MouseEvent) => setMousePosition({ x: e.clientX, y: e.clientY });
-    
-    window.addEventListener('scroll', handleScroll);
-    window.addEventListener('mousemove', handleMouseMove);
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, []);
-
-  // Intersection Observer for scroll animations
-  useEffect(() => {
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -100px 0px'
-    };
-
-    const observerCallback = (entries: IntersectionObserverEntry[]) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          setVisibleSections(prev => new Set(prev).add(entry.target.id));
-        }
-      });
-    };
-
-    const observer = new IntersectionObserver(observerCallback, observerOptions);
-
-    Object.values(sectionsRef.current).forEach(section => {
-      if (section) observer.observe(section);
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
-  // Auto-rotating testimonials
+  // Rotate slides every 5 seconds — right-to-left slide
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSlide(prev => (prev + 1) % 3);
-    }, 4000);
+      setPrevSlideIndex(si => si === null ? slideIndex : si);
+      setSlideIndex(i => (i + 1) % bgSlides.length);
+      setSlideAnimating(true);
+      setTimeout(() => {
+        setPrevSlideIndex(null);
+        setSlideAnimating(false);
+      }, 900);
+    }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [slideIndex]);
+  const [compassOrigin, setCompassOrigin] = useState('50% 50%');
+  const [demoOrigin, setDemoOrigin] = useState('50% 50%');
+  const categoriesBtnRef = useRef<HTMLDivElement>(null);
+  const demoBtnRef = useRef<HTMLButtonElement>(null);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
-  // Load YouTube IFrame API and initialize player with custom playback speed
+  const openCompass = () => {
+    if (categoriesBtnRef.current && containerRef.current) {
+      const btnRect = categoriesBtnRef.current.getBoundingClientRect();
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const ox = btnRect.left + btnRect.width / 2 - containerRect.left;
+      const oy = btnRect.top + btnRect.height / 2 - containerRect.top;
+      setCompassOrigin(`${ox}px ${oy}px`);
+    }
+    setCompassOpen(v => !v);
+  };
+
+  const openDemo = () => {
+    if (demoBtnRef.current && containerRef.current) {
+      const btnRect = demoBtnRef.current.getBoundingClientRect();
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const ox = btnRect.left + btnRect.width / 2 - containerRect.left;
+      const oy = btnRect.top + btnRect.height / 2 - containerRect.top;
+      setDemoOrigin(`${ox}px ${oy}px`);
+    }
+    setDemoOpen(v => !v);
+    if (compassOpen) setCompassOpen(false);
+  };
+
   useEffect(() => {
-    // Load YouTube IFrame API
-    const tag = document.createElement('script');
-    tag.src = 'https://www.youtube.com/iframe_api';
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
-
-    // Initialize player when API is ready
-    (window as any).onYouTubeIframeAPIReady = () => {
-      if (videoRef.current) {
-        const ytPlayer = new (window as any).YT.Player('youtube-player', {
-          videoId: 'CAZvsp4DT5w',
-          playerVars: {
-            autoplay: 1,
-            mute: 1,
-            loop: 1,
-            playlist: 'CAZvsp4DT5w',
-            controls: 1,
-            modestbranding: 1,
-            rel: 0
-          },
-          events: {
-            onReady: (event: any) => {
-              event.target.setPlaybackRate(0.5); // Set speed to 0.5x (slower)
-              setPlayer(event.target);
-            },
-            onStateChange: (event: any) => {
-              // Ensure playback rate is maintained
-              if (event.data === (window as any).YT.PlayerState.PLAYING) {
-                event.target.setPlaybackRate(0.5);
-              }
-            }
-          }
-        });
-      }
-    };
-
-    return () => {
-      if (player) {
-        player.destroy();
-      }
-    };
+    const onMove = (e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY });
+    window.addEventListener('mousemove', onMove);
+    return () => window.removeEventListener('mousemove', onMove);
   }, []);
 
-  const heroParallax = scrollY * 0.2;
-  const bgParallax = scrollY * 0.1;
+  useEffect(() => {
+    const t = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    const onResize = () => setVpSize({ w: window.innerWidth, h: window.innerHeight });
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const getMarkerRadius = useCallback(() => {
+    const base = Math.min(vpSize.w, vpSize.h);
+    if (vpSize.w < 640) return base * 0.28;
+    if (vpSize.w < 1024) return base * 0.26;
+    return base * 0.24;
+  }, [vpSize]);
+
+  const markerRadius = getMarkerRadius();
+
+  const formattedTime = time.toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit', hour12: true }).replace(',', '').replace(' AM', ' am').replace(' PM', ' pm');
+  const formattedDate = time.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+  // SVG connector lines from center to each marker
+  const connectorLines = campusZones.map((zone) => {
+    const rad = (zone.angle - 90) * (Math.PI / 180);
+    const ex = Math.cos(rad) * markerRadius;
+    const ey = Math.sin(rad) * markerRadius;
+    return { ex, ey, color: zone.color };
+  });
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-[#F2ECFD] to-white dark:from-[#050816] dark:to-[#0a0a2a] overflow-hidden">
-          
-          {/* Dynamic Background with Mouse Interaction */}
-          <div className="fixed inset-0 overflow-hidden pointer-events-none">
-            <div 
-              className="absolute w-96 h-96 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 dark:from-cyan-400/10 dark:to-blue-400/10 rounded-full blur-3xl animate-pulse"
-              style={{ 
-                left: `${20 + mousePosition.x * 0.02}%`,
-                top: `${10 + mousePosition.y * 0.02}%`,
-                transform: `translate(-50%, -50%) translateY(${bgParallax}px)`
-              }}
-            />
-            <div 
-              className="absolute w-80 h-80 bg-gradient-to-r from-purple-500/20 to-pink-500/20 dark:from-purple-400/10 dark:to-pink-400/10 rounded-full blur-3xl animate-pulse"
-              style={{ 
-                right: `${15 + mousePosition.x * -0.01}%`,
-                top: `${30 + mousePosition.y * 0.015}%`,
-                transform: `translate(50%, -50%) translateY(${-bgParallax}px)`
-              }}
-            />
-            <div 
-              className="absolute w-72 h-72 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 dark:from-emerald-400/10 dark:to-teal-400/10 rounded-full blur-3xl animate-pulse"
-              style={{ 
-                left: `${60 + mousePosition.x * 0.01}%`,
-                bottom: `${20 + mousePosition.y * -0.01}%`,
-                transform: `translate(-50%, 50%) translateY(${bgParallax * 0.5}px)`
-              }}
-            />
+  <LayoutGroup id="home-layout">
+    <div ref={containerRef} className="home-dashboard">
+      {/* ── Background layers ──────────────────────────────────────────── */}
+      {/* Base colour */}
+      <div className={`absolute inset-0 ${isDark ? 'bg-[#030810]' : 'bg-[#eef2fd]'}`} />
+
+      {/* Slide images — right-to-left slide */}
+      {prevSlideIndex !== null && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `url(${bgSlides[prevSlideIndex]})`,
+            backgroundSize: 'contain',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            animation: slideAnimating ? 'bg-slide-out 0.9s cubic-bezier(0.76,0,0.24,1) forwards' : 'none',
+          }}
+        />
+      )}
+      <div
+        key={slideIndex}
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `url(${bgSlides[slideIndex]})`,
+          backgroundSize: 'contain',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          animation: slideAnimating ? 'bg-slide-in 0.9s cubic-bezier(0.76,0,0.24,1) forwards' : 'none',
+        }}
+      />
+
+      {/* Dark overlay behind search bar only — dark mode */}
+
+      {/* Subtle noise texture */}
+      <div className="absolute inset-0 opacity-[0.025] mix-blend-overlay"
+        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E")`, backgroundSize: '200px 200px' }} />
+
+      {/* Grid overlay — finer, more technical */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
+        style={{
+          backgroundImage: isDark
+            ? `linear-gradient(rgba(6,182,212,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.4) 1px, transparent 1px)`
+            : `linear-gradient(rgba(37,99,235,0.35) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,0.35) 1px, transparent 1px)`,
+          backgroundSize: '48px 48px',
+        }}
+      />
+
+      {/* Radial vignette */}
+      <div className={`absolute inset-0 ${isDark ? 'bg-[radial-gradient(ellipse_at_center,transparent_20%,rgba(3,8,16,0.85)_100%)]' : 'bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(220,230,255,0.55)_100%)]'}`} />
+
+      {/* Ambient orbs with mouse parallax */}
+      <div className="absolute w-[800px] h-[800px] rounded-full blur-[220px] pointer-events-none opacity-60"
+        style={{
+          background: isDark
+            ? 'radial-gradient(circle, rgba(6,182,212,0.1) 0%, transparent 65%)'
+            : 'radial-gradient(circle, rgba(37,99,235,0.07) 0%, transparent 65%)',
+          top: '15%',
+          left: `${38 + (mousePos.x / vpSize.w) * 12}%`,
+          transform: 'translate(-50%, -50%)',
+          transition: 'left 1.2s cubic-bezier(0.22,1,0.36,1)',
+        }}
+      />
+      <div className="absolute w-[600px] h-[600px] rounded-full blur-[200px] pointer-events-none opacity-40"
+        style={{
+          background: isDark
+            ? 'radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 65%)'
+            : 'radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 65%)',
+          bottom: '5%',
+          right: `${15 + (mousePos.y / vpSize.h) * 8}%`,
+          transition: 'right 1.2s cubic-bezier(0.22,1,0.36,1)',
+        }}
+      />
+
+      {/* ── Integrated HUD Navbar ─────────────────────────────────────── */}
+      <motion.nav
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        className="absolute top-0 left-0 right-0 z-50 hud-navbar"
+      >
+        <div className="flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-8 h-16">
+          {/* ── Logo with rings ── */}
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="relative flex items-center justify-center">
+              {/* Concentric rings around logo */}
+              <svg className="absolute w-14 h-14 animate-[spin_25s_linear_infinite] opacity-30" viewBox="0 0 56 56">
+                <circle cx="28" cy="28" r="26" fill="none" stroke={isDark ? 'rgba(6,182,212,0.35)' : 'rgba(37,99,235,0.3)'} strokeWidth="0.5" strokeDasharray="3 5" />
+              </svg>
+              <svg className="absolute w-[4.5rem] h-[4.5rem] animate-[spin_40s_linear_infinite_reverse] opacity-20" viewBox="0 0 72 72">
+                <circle cx="36" cy="36" r="34" fill="none" stroke={isDark ? 'rgba(6,182,212,0.25)' : 'rgba(37,99,235,0.2)'} strokeWidth="0.5" strokeDasharray="1.5 6" />
+              </svg>
+              <img src="/images/1.png" alt="Campus Guide" className="h-9 w-9 relative z-10 drop-shadow-[0_0_6px_rgba(6,182,212,0.25)]" />
+            </div>
+            <span className={`font-bold text-lg tracking-tight ${isDark ? 'text-white drop-shadow-[0_0_8px_rgba(6,182,212,0.15)]' : ''}`}
+              style={{ fontFamily: "'Inter','SF Pro Display',system-ui,sans-serif", ...(!isDark ? { color: '#2d3340' } : {}) }}>
+              CampusGuide
+            </span>
+          </Link>
+
+          {/* ── Search bar in navbar ── */}
+          <div className="hidden md:flex items-center flex-1 max-w-sm mx-8">
+            <AnimatePresence>
+              {compassOpen && (
+                <motion.div
+                  key="navbar-search"
+                  className="search-hud-wrapper search-hud-navbar w-full"
+                  initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                  transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+                >
+                  <SearchBar />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-    
-          {/* Hero Section */}
-          <section className="relative pt-32 pb-20 md:pt-40 md:pb-32">
-            
-            <div 
-              className="absolute inset-0 bg-[radial-gradient(circle,rgba(139,69,193,0.25)_0%,transparent_70%)]"
-              style={{ transform: `translateY(${heroParallax}px)` }}
+
+          {/* ── Right: bare status items + theme toggle + mobile toggle ── */}
+          <div className="flex items-center gap-3">
+            {/* Demo button */}
+            <button ref={demoBtnRef} onClick={openDemo} className="hud-bare hidden sm:flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
+              <Play className={`w-3 h-3 ${isDark ? 'text-cyan-300/90' : 'text-blue-600/80'}`} />
+              <span className={`text-[10px] font-medium tracking-widest ${isDark ? 'text-cyan-300/90' : 'text-blue-700/90'}`}>Demo</span>
+            </button>
+            {/* Time */}
+            <span className={`hud-bare hidden sm:block font-semibold tabular-nums text-[11px] ${isDark ? 'text-cyan-100/95' : 'text-slate-800'}`}>{formattedTime}</span>
+            {/* Theme toggle */}
+            <ThemeToggle className="hud-theme-toggle" />
+            {/* Mobile menu button */}
+            <button
+              className={`md:hidden p-2 rounded-lg transition-colors ${isDark ? 'text-cyan-400/60 hover:text-cyan-300 hover:bg-white/5' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'}`}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+
+        {/* ── Mobile menu ── */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <>
+              {/* Backdrop with blur */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+                onClick={() => setMobileMenuOpen(false)}
+              />
+
+              {/* Drawer */}
+              <motion.div
+                initial={{ x: '-100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="fixed top-0 left-0 bottom-0 z-50 w-80 max-w-[85vw] overflow-y-auto"
+                style={{
+                  background: 'rgba(12, 17, 30, 0.72)',
+                  backdropFilter: 'blur(20px) saturate(1.6)',
+                  WebkitBackdropFilter: 'blur(20px) saturate(1.6)',
+                  borderRight: '1px solid rgba(255,255,255,0.06)',
+                  boxShadow: '4px 0 30px rgba(0,0,0,0.35), inset -1px 0 0 rgba(255,255,255,0.04)',
+                }}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 border-b border-white/10">
+                  <div className="absolute bottom-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                  <Link to="/" className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                    <img src="/images/1.png" alt="Campus Guide" className="h-8 w-8" />
+                    <span className="font-bold text-lg text-white">CampusGuide</span>
+                  </Link>
+                  <button
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="p-2 rounded-lg transition-all text-white/60 hover:text-white hover:bg-white/10"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                {/* Menu Items */}
+                <div className="p-6 space-y-1">
+                  {navCategories.map((cat) => (
+                    <Link
+                      key={cat.name}
+                      to={cat.path}
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <cat.icon className="w-4 h-4 text-cyan-400/60" />
+                      <span>{cat.name}</span>
+                    </Link>
+                  ))}
+                  <div className="my-2 border-t border-white/10" />
+                  <Link
+                    to="/medicines"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Pill className="w-4 h-4 text-cyan-400/60" />
+                    <span>Medicines</span>
+                  </Link>
+                  <Link
+                    to="/pharmacies"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Building2 className="w-4 h-4 text-cyan-400/60" />
+                    <span>Pharmacies</span>
+                  </Link>
+                  <div className="my-2 border-t border-white/10" />
+                  <Link
+                    to="/about"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Info className="w-4 h-4 text-cyan-400/60" />
+                    <span>About</span>
+                  </Link>
+                  <Link
+                    to="/contact"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Phone className="w-4 h-4 text-cyan-400/60" />
+                    <span>Contact</span>
+                  </Link>
+                  <a
+                    href="https://earth.google.com/web/@5.65162219,-0.18694534,95.85505974a,152.56713881d,57.25032726y,91.66577259h,60t,0r/data=CgRCAggBMikKJwolCiExZUxIajdmX3V5QWZHQUYxbnZuRkhMWmFPMnhoa25JS0sgAToDCgEwQgIIAEoICIWEhuwEEAE"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <MapIcon className="w-4 h-4 text-cyan-400/60" />
+                    <span>3D Map</span>
+                  </a>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </motion.nav>
+
+      {/* ── Compass + markers area ─────────────────────────────────────── */}
+      <AnimatePresence>
+      {compassOpen && (
+      <motion.div
+        key="compass-area"
+        className="absolute inset-0 flex items-center justify-center z-10"
+        style={{ marginTop: '12px', transformOrigin: compassOrigin }}
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+      >
+        <div className="relative" style={{ width: markerRadius * 2.6, height: markerRadius * 2.6 }}>
+
+          {/* SVG connector lines from center to markers */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none z-[1]" style={{ overflow: 'visible' }}>
+            <defs>
+              <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="rgba(6,182,212,0.25)" />
+                <stop offset="100%" stopColor="rgba(6,182,212,0.03)" />
+              </linearGradient>
+            </defs>
+            {connectorLines.map((line, i) => (
+              <line
+                key={i}
+                x1="50%"
+                y1="50%"
+                x2={`calc(50% + ${line.ex}px)`}
+                y2={`calc(50% + ${line.ey}px)`}
+                stroke={isDark ? 'rgba(6,182,212,0.07)' : 'rgba(37,99,235,0.12)'}
+                strokeWidth="1"
+                strokeDasharray="4 6"
+                className="connector-line"
+                style={{ animationDelay: `${i * 0.15}s` }}
+              />
+            ))}
+            {/* Radar sweep rings */}
+            <circle cx="50%" cy="50%" r="28%" fill="none" stroke={isDark ? 'rgba(6,182,212,0.04)' : 'rgba(37,99,235,0.1)'} strokeWidth="0.5" strokeDasharray="2 4" />
+            <circle cx="50%" cy="50%" r="44%" fill="none" stroke={isDark ? 'rgba(6,182,212,0.03)' : 'rgba(37,99,235,0.08)'} strokeWidth="0.5" strokeDasharray="1.5 5" />
+          </svg>
+
+          {/* Radar sweep */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[2]">
+            <div className="radar-sweep" style={{ width: markerRadius * 2, height: markerRadius * 2 }} />
+          </div>
+
+          {/* Compass center */}
+          <div className="absolute inset-0 flex items-center justify-center z-[5]">
+            <CompassNavigation mouseX={mousePos.x} mouseY={mousePos.y} isDark={isDark} />
+          </div>
+
+          {/* Campus zone markers */}
+          {campusZones.map((zone, i) => (
+            <CampusMarker
+              key={zone.name}
+              name={zone.name}
+              icon={zone.icon}
+              path={zone.path}
+              angle={zone.angle}
+              distance={markerRadius * zone.distance}
+              color={zone.color}
+              delay={i}
+              mouseX={mousePos.x}
+              mouseY={mousePos.y}
             />
-            <HeroSlideshow />
-            <div className="relative z-10 text-center px-6 max-w-7xl mx-auto">
-              <h1 className="text-5xl font-bold mb-6 text-white drop-shadow-lg">
+          ))}
+        </div>
+      </motion.div>
+      )}
+      </AnimatePresence>
+
+      {/* ── Centered search — shown when compass is hidden ─────────── */}
+      <AnimatePresence>
+        {!compassOpen && !demoOpen && (
+          <motion.div
+            key="center-search"
+            className="absolute inset-0 z-40 hidden md:flex flex-col items-center justify-center pointer-events-none" style={{ paddingTop: '0px' }}
+            initial={{ y: -240, opacity: 0, scale: 0.92 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: -240, opacity: 0, scale: 0.92 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 26 }}
+          >
+            {/* Hero text */}
+            <motion.div
+              className="text-center mb-6 pointer-events-none"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+            >
+              <h1 className={`text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}
+                style={{ fontFamily: "'Inter','SF Pro Display',system-ui,sans-serif" }}>
                 Find Your Way Around Campus
               </h1>
-              
-              <p className="text-2xl md:text-3xl text-white/90 mb-12 max-w-4xl mx-auto leading-relaxed drop-shadow-md">
-                Never get lost again. Discover the smartest way to navigate your university. 
-                
+              <p className={`mt-3 text-base sm:text-lg lg:text-xl ${isDark ? 'text-cyan-100/80' : 'text-slate-500'}`}>
+                Search locations, pharmacies, services & more
               </p>
-    
+            </motion.div>
+            <div className="search-hud-wrapper search-hud-centered pointer-events-auto" style={{ width: 'min(860px, 92vw)', position: 'relative' }}>
+              <div className="absolute inset-0 rounded-full pointer-events-none" style={{ background: isDark ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.55)', filter: 'blur(32px)', transform: 'scale(1.15)', zIndex: -1 }} />
               <SearchBar />
-              <div className="flex justify-center space-x-6 mt-16">
-                <button className="group bg-white/20 backdrop-blur-sm border border-white/30 rounded-full p-4 hover:bg-white/30 transition-all duration-300 hover:scale-110">
-                  <MapPin className="w-6 h-6 text-white group-hover:text-blue-300" />
-                </button>
-                <button className="group bg-white/20 backdrop-blur-sm border border-white/30 rounded-full p-4 hover:bg-white/30 transition-all duration-300 hover:scale-110">
-                  <Navigation className="w-6 h-6 text-white group-hover:text-purple-300" />
-                </button>
-                <button className="group bg-white/20 backdrop-blur-sm border border-white/30 rounded-full p-4 hover:bg-white/30 transition-all duration-300 hover:scale-110">
-                  <Clock className="w-6 h-6 text-white group-hover:text-pink-300" />
-                </button>
-              </div>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-            
-
-          </section>
-    
-          {/* Campus Zones Section */}
-          <section 
-            id="campus-zones"
-            ref={(el) => sectionsRef.current['campus-zones'] = el}
-            className={`py-14 relative transition-all duration-1000 ${
-              visibleSections.has('campus-zones') 
-                ? 'opacity-100 translate-y-0' 
-                : 'opacity-0 translate-y-20'
-            }`}
+      {/* ── Demo video — compass-style center animation ──────────────── */}
+      <AnimatePresence>
+        {demoOpen && (
+          <motion.div
+            key="demo-area"
+            className="absolute inset-0 flex items-center justify-center z-10"
+            style={{ marginTop: '12px', transformOrigin: demoOrigin }}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 30 }}
           >
-            <div className="container mx-auto px-6">
-              
-    
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-[-80px]">
-                {campusZones.map((zone, index) => (
-                  <div
-                    key={index}
-                    className={`group relative overflow-hidden rounded-3xl bg-white dark:bg-[#151030] backdrop-blur-xl border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 transition-all duration-700 hover:scale-105 ${
-                      visibleSections.has('campus-zones')
-                        ? 'opacity-100 translate-y-0'
-                        : 'opacity-0 translate-y-10'
-                    }`}
-                    style={{
-                      transitionDelay: visibleSections.has('campus-zones') ? `${index * 100}ms` : '0ms'
-                    }}
-                  >
-                    <div className={`absolute inset-0 bg-gradient-to-br ${zone.color} opacity-0 group-hover:opacity-20 transition-opacity duration-700`} />
-                    
-                    <div className="relative p-8">
-                      <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r ${zone.color} mb-6 group-hover:scale-110 transition-transform duration-500`}>
-                        <zone.icon className="w-8 h-8 text-white" />
-                      </div>
-                      
-                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">{zone.name}</h3>
-                      
-                      <Link to={zone.path}>
-                        <div className="flex items-center text-cyan-600 dark:text-cyan-400 group-hover:text-cyan-700 dark:group-hover:text-white transition-colors duration-300">
-                          <span className="font-medium">Discover Zone</span>
-                          <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-                        </div>
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-    
-          {/* Tutorial Section */}
-          <section 
-            id="tutorial"
-            ref={(el) => sectionsRef.current['tutorial'] = el}
-            className={`py-32 relative transition-all duration-1000 delay-200 ${
-              visibleSections.has('tutorial') 
-                ? 'opacity-100 translate-y-0' 
-                : 'opacity-0 translate-y-20'
-            }`}
-          >
-            <div className="container mx-auto px-6">
-              <div className="max-w-6xl mx-auto">
-                <div className={`relative group transition-all duration-1000 delay-300 ${
-                  visibleSections.has('tutorial')
-                    ? 'opacity-100 scale-100'
-                    : 'opacity-0 scale-95'
+            <div className="relative w-full max-w-4xl px-5">
+              {/* Decorative glow */}
+              <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 rounded-3xl blur-2xl opacity-60 -z-10" />
+              {/* macOS Window Frame */}
+              <div className={`relative overflow-hidden rounded-2xl shadow-2xl ${
+                isDark ? 'bg-[#1e1e2e] border border-white/10' : 'bg-white border border-gray-200'
+              }`}>
+                {/* macOS Title Bar */}
+                <div className={`flex items-center justify-between px-3 py-1.5 border-b ${
+                  isDark
+                    ? 'bg-gradient-to-b from-[#2a2a3e] to-[#25253a] border-white/10'
+                    : 'bg-gradient-to-b from-gray-100 to-gray-200 border-gray-300'
                 }`}>
-                  {/* macOS Window Frame */}
-                  <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-[#1e1e2e] shadow-2xl border border-gray-200 dark:border-white/10">
-                    {/* macOS Title Bar */}
-                    <div className="bg-gradient-to-b from-gray-100 to-gray-200 dark:from-[#2a2a3e] dark:to-[#25253a] px-4 py-3 flex items-center justify-between border-b border-gray-300 dark:border-white/10">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 transition-colors"></div>
-                        <div className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 transition-colors"></div>
-                        <div className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 transition-colors"></div>
-                      </div>
-                      <div className="flex-1 text-center">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Campus Guide Tutorial</span>
-                      </div>
-                      <div className="w-16"></div>
-                    </div>
-                    
-                    {/* Video Container */}
-                    <div className="relative bg-black overflow-hidden" style={{ aspectRatio: '16/9' }}>
-                      <div
-                        id="youtube-player"
-                        ref={videoRef}
-                        className="w-full h-full"
-                      />
-                    </div>
+                  <div className="flex items-center space-x-1.5">
+                    <button onClick={openDemo} className="w-2.5 h-2.5 rounded-full bg-red-500 hover:bg-red-600 transition-colors" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
                   </div>
-                  
-                  {/* Decorative Elements */}
-                  <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 -z-10" />
+                  <span className={`text-[10px] font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Campus Guide Tutorial</span>
+                  <div className="w-10" />
+                </div>
+                {/* Video Container */}
+                <div className="relative bg-black overflow-hidden" style={{ aspectRatio: '16/9' }}>
+                  <iframe
+                    className="absolute inset-0 w-full h-full"
+                    src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&rel=0"
+                    title="Campus Guide Demo"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
                 </div>
               </div>
             </div>
-          </section>
-    
-          {/* Features Showcase */}
-          <section 
-            id="features"
-            ref={(el) => sectionsRef.current['features'] = el}
-            className={`py-32 relative transition-all duration-1000 ${
-              visibleSections.has('features') 
-                ? 'opacity-100 translate-y-0' 
-                : 'opacity-0 translate-y-20'
-            }`}
-          >
-            <div className="container mx-auto px-6">
-              <div className={`text-center mb-20 transition-all duration-1000 delay-100 ${
-                visibleSections.has('features')
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-10'
-              }`}>
-                <h2 className="text-6xl font-bold mb-6 bg-gradient-to-r from-cyan-600 via-purple-600 to-pink-600 dark:from-cyan-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
-                  Revolutionary Features
-                </h2>
-                <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-                  Experience navigation like never before with cutting-edge technology that adapts to your needs.
-                </p>
-              </div>
-    
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                {features.map((feature, index) => (
-                  <Link 
-                    to={feature.link} 
-                    key={index} 
-                    className={`group relative transition-all duration-700 ${
-                      visibleSections.has('features')
-                        ? 'opacity-100 translate-y-0'
-                        : 'opacity-0 translate-y-10'
-                    }`}
-                    style={{
-                      transitionDelay: visibleSections.has('features') ? `${index * 150}ms` : '0ms'
-                    }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-3xl blur-xl"
-                         style={{background: `linear-gradient(to right, ${feature.color.split(' ')[1]}, ${feature.color.split(' ')[3]})`}} />
-                    
-                    <div className="relative bg-white dark:bg-[#151030] backdrop-blur-xl rounded-3xl p-10 border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 transition-all duration-700 hover:scale-105">
-                      <div className={`inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-r ${feature.color} mb-8 group-hover:scale-110 transition-transform duration-500`}>
-                        <feature.icon className="w-10 h-10 text-white" />
-                      </div>
-                      
-                      <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{feature.title}</h3>
-                      <p className="text-gray-600 dark:text-[#a09cb9] text-lg leading-relaxed">{feature.description}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </section>
-    
-          {/* Stats Section */}
-          <section 
-            id="stats"
-            ref={(el) => sectionsRef.current['stats'] = el}
-            className={`py-32 relative overflow-hidden transition-all duration-1000 ${
-              visibleSections.has('stats') 
-                ? 'opacity-100 scale-100' 
-                : 'opacity-0 scale-95'
-            }`}
-          >
-            <div className="relative w-full">
-              <div className="flex animate-scrollLeft will-change-transform">
-                {/* First set of stats */}
-                {[
-                  { number: '95%', label: 'Navigation Accuracy', color: 'from-green-400 to-emerald-600' },
-                  { number: '30K+', label: 'Daily Users', color: 'from-blue-400 to-cyan-600' },
-                  { number: '2.5M', label: 'Directions Given', color: 'from-purple-400 to-pink-600' },
-                  { number: '4.9★', label: 'User Rating', color: 'from-yellow-400 to-orange-600' }
-                ].map((stat, index) => (
-                  <div key={`stat-1-${index}`} className="text-center group flex-shrink-0 px-12 mx-8 min-w-[280px]">
-                    <div className={`text-6xl md:text-7xl font-black mb-4 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-500 whitespace-nowrap`}>
-                      {stat.number}
-                    </div>
-                    <div className="text-gray-700 dark:text-gray-300 text-lg font-medium whitespace-nowrap">{stat.label}</div>
-                  </div>
-                ))}
-                {/* Second set for seamless loop */}
-                {[
-                  { number: '95%', label: 'Navigation Accuracy', color: 'from-green-400 to-emerald-600' },
-                  { number: '30K+', label: 'Daily Users', color: 'from-blue-400 to-cyan-600' },
-                  { number: '2.5M', label: 'Directions Given', color: 'from-purple-400 to-pink-600' },
-                  { number: '4.9★', label: 'User Rating', color: 'from-yellow-400 to-orange-600' }
-                ].map((stat, index) => (
-                  <div key={`stat-2-${index}`} className="text-center group flex-shrink-0 px-12 mx-8 min-w-[280px]">
-                    <div className={`text-6xl md:text-7xl font-black mb-4 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-500 whitespace-nowrap`}>
-                      {stat.number}
-                    </div>
-                    <div className="text-gray-700 dark:text-gray-300 text-lg font-medium whitespace-nowrap">{stat.label}</div>
-                  </div>
-                ))}
-                {/* Third set for seamless loop */}
-                {[
-                  { number: '95%', label: 'Navigation Accuracy', color: 'from-green-400 to-emerald-600' },
-                  { number: '30K+', label: 'Daily Users', color: 'from-blue-400 to-cyan-600' },
-                  { number: '2.5M', label: 'Directions Given', color: 'from-purple-400 to-pink-600' },
-                  { number: '4.9★', label: 'User Rating', color: 'from-yellow-400 to-orange-600' }
-                ].map((stat, index) => (
-                  <div key={`stat-3-${index}`} className="text-center group flex-shrink-0 px-12 mx-8 min-w-[280px]">
-                    <div className={`text-6xl md:text-7xl font-black mb-4 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-500 whitespace-nowrap`}>
-                      {stat.number}
-                    </div>
-                    <div className="text-gray-700 dark:text-gray-300 text-lg font-medium whitespace-nowrap">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-    
-          {/* Testimonials Carousel */}
-          <section 
-            id="testimonials"
-            ref={(el) => sectionsRef.current['testimonials'] = el}
-            className={`py-32 relative transition-all duration-1000 ${
-              visibleSections.has('testimonials') 
-                ? 'opacity-100 translate-y-0' 
-                : 'opacity-0 translate-y-20'
-            }`}
-          >
-            <div className="container mx-auto px-6">
-              <div className={`text-center mb-20 transition-all duration-1000 delay-100 ${
-                visibleSections.has('testimonials')
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-10'
-              }`}>
-                <h2 className="text-6xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                  Student Stories
-                </h2>
-                <p className="text-xl text-gray-600 dark:text-gray-400">Real experiences from real students</p>
-              </div>
-    
-              <div className="relative max-w-4xl mx-auto">
-                <div className="bg-white dark:bg-[#151030] backdrop-blur-xl rounded-3xl p-12 border border-gray-200 dark:border-white/10">
-                  <div className="text-center">
-                  <img src={testimonials[currentSlide].image} alt={testimonials[currentSlide].name} className="w-24 h-24 rounded-full mx-auto mb-4" />
-                    <blockquote className="text-2xl text-gray-900 dark:text-white mb-8 font-medium italic">
-                      "{testimonials[currentSlide].text}"
-                    </blockquote>
-                    <div>
-                      <div className="text-xl font-bold text-gray-900 dark:text-white">{testimonials[currentSlide].name}</div>
-                      <div className="text-gray-600 dark:text-[#a09cb9]">{testimonials[currentSlide].role}</div>
-                    </div>
-                  </div>
-                </div>
-    
-                {/* Carousel Indicators */}
-                <div className="flex justify-center mt-8 space-x-3">
-                  {testimonials.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentSlide(index)}
-                      className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                        index === currentSlide ? 'bg-cyan-400 scale-125' : 'bg-white/30'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-    
-          {/* Final CTA */}
-          <section 
-            id="cta"
-            ref={(el) => sectionsRef.current['cta'] = el}
-            className={`py-32 relative transition-all duration-1000 ${
-              visibleSections.has('cta') 
-                ? 'opacity-100 translate-y-0' 
-                : 'opacity-0 translate-y-20'
-            }`}
-          >
-            <div className="container mx-auto px-6 text-center">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 dark:from-cyan-500/10 dark:via-purple-500/10 dark:to-pink-500/10 blur-3xl rounded-full" />
-                <div className="relative">
-                  <h2 className={`text-7xl font-black mb-8 bg-gradient-to-r from-gray-900 via-cyan-700 to-purple-700 dark:from-white dark:via-cyan-200 dark:to-purple-200 bg-clip-text text-transparent transition-all duration-1000 delay-200 ${
-                    visibleSections.has('cta')
-                      ? 'opacity-100 translate-y-0'
-                      : 'opacity-0 translate-y-10'
-                  }`}>
-                    Start Your Journey
-                  </h2>
-                  <p className={`text-2xl text-gray-700 dark:text-gray-300 mb-12 max-w-3xl mx-auto transition-all duration-1000 delay-300 ${
-                    visibleSections.has('cta')
-                      ? 'opacity-100 translate-y-0'
-                      : 'opacity-0 translate-y-10'
-                  }`}>
-                    Join thousands of students who've transformed their campus experience. 
-                    Never be late, never be lost, never be confused again.
-                  </p>
-                  
-                  <div className={`flex flex-col sm:flex-row items-center justify-center gap-6 transition-all duration-1000 delay-500 ${
-                    visibleSections.has('cta')
-                      ? 'opacity-100 translate-y-0'
-                      : 'opacity-0 translate-y-10'
-                  }`}>
-                    <button className="group relative overflow-hidden bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 text-white px-16 py-6 rounded-2xl font-bold text-2xl shadow-2xl hover:shadow-purple-500/25 transition-all duration-500 hover:scale-105">
-                      <span className="relative z-10">Get Started Free</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    </button>
-                    
-                    <a href="https://drive.google.com/file/d/1hqAPZ52JeJkFaZW_ehkQi7OFw4KnutFN/view?usp=drive_link" target="_blank" rel="noopener noreferrer">
-                      <button className="group text-gray-900 dark:text-white text-2xl font-semibold hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors duration-300 flex items-center">
-                        Download App
-                        <ChevronRight className="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-                      </button>
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-    
-          
-    
-          <style jsx>{`
-            @keyframes fadeInUp {
-              from {
-                opacity: 0;
-                transform: translateY(30px);
-              }
-              to {
-                opacity: 1;
-                transform: translateY(0);
-              }
-            }
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-            @keyframes slideInLeft {
-              from {
-                opacity: 0;
-                transform: translateX(-50px);
-              }
-              to {
-                opacity: 1;
-                transform: translateX(0);
-              }
-            }
-
-            @keyframes fadeInScale {
-              from {
-                opacity: 0;
-                transform: scale(0.9);
-              }
-              to {
-                opacity: 1;
-                transform: scale(1);
-              }
-            }
-
-            @keyframes slideInRight {
-              from {
-                opacity: 0;
-                transform: translateX(50px);
-              }
-              to {
-                opacity: 1;
-                transform: translateX(0);
-              }
-            }
-
-            @keyframes scrollLeft {
-              0% {
-                transform: translateX(0);
-              }
-              100% {
-                transform: translateX(-33.333%);
-              }
-            }
-
-            @keyframes float {
-              0%, 100% {
-                transform: translateY(0px);
-              }
-              50% {
-                transform: translateY(-20px);
-              }
-            }
-
-            .animate-scrollLeft {
-              animation: scrollLeft 15s linear infinite;
-              display: flex;
-            }
-
-            .animate-scrollLeft:hover {
-              animation-play-state: paused;
-            }
-
-            /* Smooth scroll behavior */
-            html {
-              scroll-behavior: smooth;
-            }
-
-            /* Enhanced transition timing */
-            section {
-              transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-            }
-
-            /* Fade in on load */
-            @keyframes fadeIn {
-              from {
-                opacity: 0;
-              }
-              to {
-                opacity: 1;
-              }
-            }
-          `}</style>
+      {/* ── Mobile search bar (below navbar on small screens) ──────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.7 }}
+        className="absolute inset-0 z-40 flex flex-col justify-center gap-32 px-6 md:hidden pointer-events-none"
+      >
+        <h2 className={`font-bold tracking-tight text-left ${isDark ? 'text-white' : 'text-slate-900'}`}
+          style={{ fontFamily: "'Inter','SF Pro Display',system-ui,sans-serif", fontSize: 'clamp(2.8rem, 12vw, 4.5rem)', lineHeight: 1.05 }}>
+          Find Your<br/>Way
+        </h2>
+        <div className="search-hud-wrapper search-hud-navbar w-full max-w-md mx-auto pointer-events-auto">
+          <SearchBar />
         </div>
+        <h2 className={`font-bold tracking-tight text-right ${isDark ? 'text-white' : 'text-slate-900'}`}
+          style={{ fontFamily: "'Inter','SF Pro Display',system-ui,sans-serif", fontSize: 'clamp(2.8rem, 12vw, 4.5rem)', lineHeight: 1.05 }}>
+          Around<br/>Campus.
+        </h2>
+      </motion.div>
+
+      {/* ── Bottom stats bar ───────────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.1, duration: 0.8 }}
+        className="absolute bottom-0 left-0 right-0 z-30 flex justify-center"
+      >
+        {/* Left outward corner notch */}
+        <div className="flex-shrink-0 self-end" style={{
+          width: 40,
+          height: 40,
+          marginRight: -1,
+          background: isDark ? '#060c18' : '#ffffff',
+          WebkitMaskImage: 'radial-gradient(circle 40px at 0% 0%, transparent 39.5px, black 40px)',
+          maskImage: 'radial-gradient(circle 40px at 0% 0%, transparent 39.5px, black 40px)',
+        }} />
+        <div
+          className="inline-flex items-center gap-5 sm:gap-10 px-10 py-4"
+          style={{
+            background: isDark
+              ? '#060c18'
+              : '#ffffff',
+            border: 'none',
+            borderRadius: '24px 24px 0 0',
+          }}
+        >
+          {quickStats.map((stat) => (
+            <div key={stat.label} className="stat-chip">
+              <stat.icon className={`w-3 h-3 ${isDark ? 'text-cyan-400/90' : 'text-blue-600'}`} />
+              <span className={`font-bold tabular-nums ${isDark ? 'text-white/90' : 'text-slate-900'}`}>
+                <CountUpValue countTo={stat.countTo} prefix={stat.prefix} suffix={stat.suffix} decimals={stat.decimals} />
+              </span>
+              <span className={`uppercase tracking-[0.15em] hidden sm:inline ${isDark ? 'text-cyan-300/70' : 'text-slate-600/90'}`}>{stat.label}</span>
+            </div>
+          ))}
+        </div>
+        {/* Right outward corner notch */}
+        <div className="flex-shrink-0 self-end" style={{
+          width: 40,
+          height: 40,
+          marginLeft: -1,
+          background: isDark ? '#060c18' : '#ffffff',
+          WebkitMaskImage: 'radial-gradient(circle 40px at 100% 0%, transparent 39.5px, black 40px)',
+          maskImage: 'radial-gradient(circle 40px at 100% 0%, transparent 39.5px, black 40px)',
+        }} />
+      </motion.div>
+
+      {/* ── Left side items ───────────────────────────────────────────── */}
+      <div className="absolute left-5 sm:left-8 top-1/2 -translate-y-1/2 z-30 hidden lg:flex flex-col gap-2">
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.8, duration: 0.5 }}>
+          <div className="hud-side-label"><Layers className="w-3 h-3" /><span>EXPLORE</span></div>
+        </motion.div>
+
+        {/* Categories — compass toggle */}
+        <motion.div ref={categoriesBtnRef} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.9, duration: 0.5 }}>
+          <button onClick={openCompass} className="w-full text-left">
+            <motion.div
+              whileHover={{ scale: 1.05, x: 4 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+              className={`hud-side-item group${compassOpen ? ' hud-side-item-active' : ''}`}
+            >
+              <div className="hud-side-icon"><LayoutGrid className="w-3.5 h-3.5" /></div>
+              <span>Categories</span>
+              <ChevronRight className={`w-3 h-3 ml-auto transition-all duration-300 ${compassOpen ? 'opacity-60 rotate-90' : 'opacity-0 group-hover:opacity-60'}`} />
+            </motion.div>
+          </button>
+        </motion.div>
+
+        {[
+          { icon: MapPin, label: 'Pharmacies', to: '/pharmacies', delay: 1.0 },
+          { icon: Search, label: 'Medicines', to: '/medicines', delay: 1.1 },
+        ].map((item) => (
+          <motion.div key={item.label} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: item.delay, duration: 0.5 }}>
+            <Link to={item.to}>
+              <motion.div whileHover={{ scale: 1.05, x: 4 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }} className="hud-side-item group">
+                <div className="hud-side-icon"><item.icon className="w-3.5 h-3.5" /></div>
+                <span>{item.label}</span>
+                <ChevronRight className="w-3 h-3 ml-auto opacity-0 group-hover:opacity-60 transition-opacity" />
+              </motion.div>
+            </Link>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* ── Right side items ──────────────────────────────────────────── */}
+      <div className="absolute right-5 sm:right-8 top-1/2 -translate-y-1/2 z-30 hidden lg:flex flex-col items-end gap-2">
+        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.8, duration: 0.5 }}>
+          <div className="hud-side-label"><Navigation2 className="w-3 h-3" /><span>NAVIGATE</span></div>
+        </motion.div>
+        {[
+          { icon: Globe, label: '3D Map', href: 'https://earth.google.com/web/@5.65162219,-0.18694534,95.85505974a,152.56713881d,57.25032726y,91.66577259h,60t,0r/data=CgRCAggBMikKJwolCiExZUxIajdmX3V5QWZHQUYxbnZuRkhMWmFPMnhoa25JS0sgAToDCgEwQgIIAEoICIWEhuwEEAE', delay: 0.9 },
+          { icon: Crosshair, label: 'About', to: '/about', delay: 1.0 },
+          { icon: Activity, label: 'Contact', to: '/contact', delay: 1.1 },
+        ].map((item) => {
+          const inner = (
+            <motion.div whileHover={{ scale: 1.05, x: -4 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }} className="hud-side-item group">
+              <div className="hud-side-icon"><item.icon className="w-3.5 h-3.5" /></div>
+              <span>{item.label}</span>
+              <ChevronRight className="w-3 h-3 ml-auto opacity-0 group-hover:opacity-60 transition-opacity" />
+            </motion.div>
+          );
+          return (
+            <motion.div key={item.label} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: item.delay, duration: 0.5 }}>
+              {item.href ? (
+                <a href={item.href} target="_blank" rel="noopener noreferrer">{inner}</a>
+              ) : (
+                <Link to={item.to!}>{inner}</Link>
+              )}
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* ── Scanline overlay ───────────────────────────────────────────── */}
+      <div className="absolute inset-0 pointer-events-none z-50 scanline-overlay" />
+
+      {/* ── ElevenLabs Voice Agent ─────────────────────────────────────── */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <elevenlabs-convai
+          agent-id="agent_01jx5fv1kbech895mwad5nx8wb"
+          avatar-orb-style="icon"
+        ></elevenlabs-convai>
+      </div>
+    </div>
+  </LayoutGroup>
   );
-};  
+};

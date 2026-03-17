@@ -15,15 +15,9 @@ interface DetectedMedicine {
   inStock: boolean; // Whether it's available in any pharmacy
 }
 
-// OCR.space API configuration (free tier - much faster than Tesseract.js)
-// For production, consider upgrading to Google Cloud Vision API for even better accuracy and speed
-// Google Vision API setup:
-// 1. Enable Google Cloud Vision API in Google Cloud Console
-// 2. Create API key or service account
-// 3. Replace OCR.space call with Vision API call
-// 4. Use Supabase Edge Function to securely handle API key
-const OCR_API_KEY = 'K87899142388957'; // Free API key (max 25,000 requests/month)
-const OCR_API_URL = 'https://api.ocr.space/parse/image';
+// OCR.space API via Supabase Edge Function
+// Free tier: 25,000 requests/month - No credit card required
+// Works well with printed text, decent with clear handwriting
 
 export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({ 
   onMedicineDetected, 
@@ -56,42 +50,26 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
     setExtractedText('');
     
     try {
-      // Step 1: Perform OCR using OCR.space API (much faster than Tesseract.js)
+      // Step 1: Perform OCR using Google Cloud Vision API via Supabase Edge Function
       setProcessingProgress(10);
       
-      // Convert base64 to blob
-      const response = await fetch(imageData);
-      const blob = await response.blob();
-      
-      // Prepare form data for OCR.space API
-      const formData = new FormData();
-      formData.append('base64Image', imageData);
-      formData.append('language', 'eng');
-      formData.append('isOverlayRequired', 'false');
-      formData.append('detectOrientation', 'true');
-      formData.append('scale', 'true');
-      formData.append('OCREngine', '2'); // Use OCR Engine 2 for better accuracy
-      
-      setProcessingProgress(20);
-      
-      // Call OCR.space API
-      const ocrResponse = await fetch(OCR_API_URL, {
-        method: 'POST',
-        headers: {
-          'apikey': OCR_API_KEY
-        },
-        body: formData
+      // Call Supabase Edge Function for OCR
+      const { data: ocrResult, error: ocrError } = await supabase.functions.invoke('ocr-vision', {
+        body: { imageBase64: imageData }
       });
       
-      const ocrResult = await ocrResponse.json();
-      setProcessingProgress(50);
-      
-      if (ocrResult.IsErroredOnProcessing) {
-        throw new Error(ocrResult.ErrorMessage?.[0] || 'OCR processing failed');
+      if (ocrError) {
+        throw new Error(ocrError.message || 'OCR processing failed');
       }
       
+      if (!ocrResult.success) {
+        throw new Error(ocrResult.error || 'Failed to extract text from image');
+      }
+      
+      setProcessingProgress(50);
+      
       // Extract text from OCR result
-      const extractedText = ocrResult.ParsedResults?.[0]?.ParsedText || '';
+      const extractedText = ocrResult.text || '';
       setExtractedText(extractedText);
       setProcessingProgress(60);
       
@@ -299,7 +277,7 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
             onClick={handleClose}
           >
             <motion.div
@@ -307,7 +285,7 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className={`w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden ${
+              className={`w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] ${
                 theme === 'dark' ? 'bg-[#151030]' : 'bg-white'
               }`}
             >

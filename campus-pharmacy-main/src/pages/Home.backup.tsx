@@ -1,0 +1,856 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { SearchBar } from '../components/home/SearchBar';
+import { LocationCategories } from '../components/home/LocationCategories';
+import { HeroSlideshow } from '../components/home/HeroSlideshow';
+import {
+  MapPin, Compass, Users, Calendar, Coffee, BookOpen, Car, Navigation2, Star, Navigation,
+  ArrowDown, Play, Globe, Target, Smartphone, ChevronRight, Clock, Shield, Award, Utensils, Hospital
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+// ── 3D tilt hook ──────────────────────────────────────────────────────────────
+function useTilt(strength = 15) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  const handleMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const { left, top, width, height } = el.getBoundingClientRect();
+    const x = (e.clientX - left) / width  - 0.5;   // –0.5 … 0.5
+    const y = (e.clientY - top)  / height - 0.5;
+    el.style.transform = `perspective(800px) rotateY(${x * strength}deg) rotateX(${-y * strength}deg) scale3d(1.04,1.04,1.04)`;
+  }, [strength]);
+
+  const handleLeave = useCallback(() => {
+    if (ref.current)
+      ref.current.style.transform = 'perspective(800px) rotateY(0deg) rotateX(0deg) scale3d(1,1,1)';
+  }, []);
+
+  return { ref, handleMove, handleLeave };
+}
+
+
+
+  
+  const campusZones = [
+    { name: 'Academic Buildings', color: 'from-emerald-400 to-teal-600', path: '/category/academic', icon: BookOpen },
+    { name: 'Student Centers', color: 'from-purple-400 to-indigo-600', path: '/category/student-centers', icon: Users },
+    { name: 'Libraries', color: 'from-orange-400 to-red-600', path: '/category/libraries', icon: BookOpen },
+    { name: 'Sports Facilities', color: 'from-blue-400 to-cyan-600', path: '/category/sports', icon: Target },
+    { name: 'Dining Halls', color: 'from-pink-400 to-rose-600', path: '/category/dining', icon: Utensils },
+    { name: 'Health Services', color: 'from-violet-400 to-purple-600', path: '/category/health', icon: Hospital }
+  ];
+
+  const features = [
+    {
+      icon: Navigation2,
+      title: 'Instant Directions',
+      description: 'Get turn-by-turn navigation to any location on campus in seconds',
+      color: 'from-cyan-500 to-blue-600',
+      link: '/category/academic'
+    },
+    {
+      icon: Shield,
+      title: 'Medications Availability',
+      description: 'Instant medication availability and pricing information',
+      color: 'from-purple-500 to-pink-600',
+      link: '/medicines'
+    },
+    {
+      icon: Compass,
+      title: 'Easy Navigation',
+      description: 'Turn-by-turn directions to nearest pharmacies',
+      color: 'from-green-500 to-emerald-600',
+      link: '/pharmacies'
+    },
+    {
+      icon: Hospital,
+      title: 'Pharmacies Information',
+      description: 'All pharmacies and medications are thoroughly verified',
+      color: 'from-orange-500 to-red-600',
+      link: '/pharmacies'
+    }
+  ];
+
+  const testimonials = [
+    {
+      name: 'Anastaciah Andoh',
+      role: 'IT Student',
+      text: 'I used to be late to every class. Now I navigate campus like a pro!',
+      image: '/images/5.jpg' 
+    },
+    
+    {
+      name: 'John Smith',
+      role: 'Campus Tour Guide',
+      text: 'This app revolutionized how I give campus tours to prospective students.',
+      image: '/images/7.webp' 
+    },
+    {
+      name: 'Elsie De-Graft',
+      role: 'Graduate Researcher',
+      text: 'The Voice Search feature is incredible - it makes finding research labs so easy.',
+      image: '/images/6.jpg' 
+    }
+  ];
+
+export const Home: React.FC = () => {
+
+  const [scrollY, setScrollY] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
+  const [player, setPlayer] = useState<any>(null);
+
+  // Refs for scroll animations
+  const sectionsRef = useRef<{ [key: string]: HTMLElement | null }>({});
+  const videoRef = useRef<HTMLDivElement>(null);
+  const featuresCarouselRef = useRef<HTMLDivElement>(null);
+  const [activeFeature, setActiveFeature] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    const handleMouseMove = (e: MouseEvent) => setMousePosition({ x: e.clientX, y: e.clientY });
+    
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('mousemove', handleMouseMove);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
+
+  // Intersection Observer for scroll animations
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -100px 0px'
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setVisibleSections(prev => new Set(prev).add(entry.target.id));
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    Object.values(sectionsRef.current).forEach(section => {
+      if (section) observer.observe(section);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Auto-rotating testimonials
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % 3);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Load YouTube IFrame API and initialize player with custom playback speed
+  useEffect(() => {
+    // Load YouTube IFrame API
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+
+    // Initialize player when API is ready
+    (window as any).onYouTubeIframeAPIReady = () => {
+      if (videoRef.current) {
+        const ytPlayer = new (window as any).YT.Player('youtube-player', {
+          videoId: 'CAZvsp4DT5w',
+          playerVars: {
+            autoplay: 1,
+            mute: 1,
+            loop: 1,
+            playlist: 'CAZvsp4DT5w',
+            controls: 1,
+            modestbranding: 1,
+            rel: 0
+          },
+          events: {
+            onReady: (event: any) => {
+              event.target.setPlaybackQuality('hd1080');
+              event.target.setPlaybackRate(0.5); // Set speed to 0.5x (slower)
+              setPlayer(event.target);
+            },
+            onStateChange: (event: any) => {
+              // Ensure playback rate and quality are maintained
+              if (event.data === (window as any).YT.PlayerState.PLAYING) {
+                event.target.setPlaybackQuality('hd1080');
+                event.target.setPlaybackRate(0.5);
+              }
+            }
+          }
+        });
+      }
+    };
+
+    return () => {
+      if (player) {
+        player.destroy();
+      }
+    };
+  }, []);
+
+  const heroParallax = scrollY * 0.2;
+  const bgParallax = scrollY * 0.1;
+
+  return (
+    <div className="relative min-h-screen bg-gradient-to-b from-[#F2ECFD] to-white dark:from-[#050816] dark:to-[#0a0a2a] overflow-hidden">
+
+          {/* ── Dot-grid particle background ─────────────────────────────── */}
+          <div
+            className="fixed inset-0 pointer-events-none z-0"
+            style={{
+              backgroundImage: `radial-gradient(circle, rgba(139,92,246,0.18) 1px, transparent 1px)`,
+              backgroundSize: '36px 36px',
+              transform: `translateY(${bgParallax * 0.3}px)`,
+            }}
+          />
+
+          {/* ── Aurora mesh background — shifts colour slowly ─────────────── */}
+          <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+            {/* Orb 1 — cyan/blue, mouse-tracked */}
+            <div
+              className="absolute rounded-full blur-[120px] aurora-orb-1"
+              style={{
+                width: '600px', height: '600px',
+                background: 'radial-gradient(circle, rgba(6,182,212,0.35) 0%, rgba(59,130,246,0.2) 60%, transparent 100%)',
+                left: `${18 + mousePosition.x * 0.018}%`,
+                top:  `${8  + mousePosition.y * 0.018}%`,
+                transform: `translate(-50%,-50%) translateY(${bgParallax}px)`,
+              }}
+            />
+            {/* Orb 2 — purple/pink */}
+            <div
+              className="absolute rounded-full blur-[100px] aurora-orb-2"
+              style={{
+                width: '520px', height: '520px',
+                background: 'radial-gradient(circle, rgba(168,85,247,0.35) 0%, rgba(236,72,153,0.2) 60%, transparent 100%)',
+                right: `${12 + mousePosition.x * -0.012}%`,
+                top:   `${25 + mousePosition.y * 0.013}%`,
+                transform: `translate(50%,-50%) translateY(${-bgParallax}px)`,
+              }}
+            />
+            {/* Orb 3 — emerald/teal, deep parallax */}
+            <div
+              className="absolute rounded-full blur-[90px] aurora-orb-3"
+              style={{
+                width: '440px', height: '440px',
+                background: 'radial-gradient(circle, rgba(16,185,129,0.3) 0%, rgba(20,184,166,0.15) 60%, transparent 100%)',
+                left:   `${55 + mousePosition.x * 0.009}%`,
+                bottom: `${18 + mousePosition.y * -0.009}%`,
+                transform: `translate(-50%,50%) translateY(${bgParallax * 0.4}px)`,
+              }}
+            />
+            {/* Orb 4 — deep neon pink, far parallax layer */}
+            <div
+              className="absolute rounded-full blur-[140px] aurora-orb-4"
+              style={{
+                width: '700px', height: '380px',
+                background: 'radial-gradient(ellipse, rgba(244,63,94,0.18) 0%, transparent 70%)',
+                left: '30%', bottom: '5%',
+                transform: `translateY(${bgParallax * 0.15}px)`,
+              }}
+            />
+          </div>
+    
+          {/* ── Hero Section ─────────────────────────────────────────────── */}
+          <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden">
+
+            {/* Radial spotlight parallax layer */}
+            <div
+              className="absolute inset-0 bg-[radial-gradient(circle,rgba(139,69,193,0.25)_0%,transparent_70%)]"
+              style={{ transform: `translateY(${heroParallax}px)` }}
+            />
+
+            {/* ── Floating 3D objects ──────────────────────────────────── */}
+            {/* Sphere 1 — large cyan glass */}
+            <div className="absolute pointer-events-none float-slow"
+                 style={{ top: '10%', left: '5%', transform: `translateY(${scrollY * 0.08}px)` }}>
+              <div className="w-28 h-28 rounded-full"
+                   style={{
+                     background: 'radial-gradient(circle at 35% 35%, rgba(255,255,255,0.6) 0%, rgba(6,182,212,0.7) 40%, rgba(6,182,212,0.1) 100%)',
+                     boxShadow: '0 0 40px 10px rgba(6,182,212,0.3), inset 0 0 20px rgba(255,255,255,0.2)',
+                     backdropFilter: 'blur(4px)',
+                   }} />
+            </div>
+            {/* Sphere 2 — medium purple */}
+            <div className="absolute pointer-events-none float-med"
+                 style={{ top: '20%', right: '7%', transform: `translateY(${scrollY * -0.06}px)` }}>
+              <div className="w-20 h-20 rounded-full"
+                   style={{
+                     background: 'radial-gradient(circle at 35% 35%, rgba(255,255,255,0.5) 0%, rgba(168,85,247,0.75) 45%, rgba(168,85,247,0.1) 100%)',
+                     boxShadow: '0 0 32px 8px rgba(168,85,247,0.35), inset 0 0 14px rgba(255,255,255,0.15)',
+                   }} />
+            </div>
+            {/* Ring / torus — rotating ring shape */}
+            <div className="absolute pointer-events-none rotate-slow"
+                 style={{ top: '55%', left: '3%', transform: `translateY(${scrollY * 0.05}px)` }}>
+              <div className="w-16 h-16 rounded-full border-4 opacity-60"
+                   style={{
+                     borderColor: 'rgba(16,185,129,0.8)',
+                     boxShadow: '0 0 20px 4px rgba(16,185,129,0.4)',
+                   }} />
+            </div>
+            {/* Small sphere 3 — pink */}
+            <div className="absolute pointer-events-none float-fast"
+                 style={{ bottom: '22%', right: '4%', transform: `translateY(${scrollY * -0.04}px)` }}>
+              <div className="w-14 h-14 rounded-full"
+                   style={{
+                     background: 'radial-gradient(circle at 35% 35%, rgba(255,255,255,0.5) 0%, rgba(244,63,94,0.75) 45%, rgba(244,63,94,0.1) 100%)',
+                     boxShadow: '0 0 24px 6px rgba(244,63,94,0.4)',
+                   }} />
+            </div>
+            {/* Abstract diamond / rotated square */}
+            <div className="absolute pointer-events-none spin-slow"
+                 style={{ bottom: '30%', left: '8%', transform: `translateY(${scrollY * 0.07}px)` }}>
+              <div className="w-10 h-10 opacity-50"
+                   style={{
+                     background: 'linear-gradient(135deg, rgba(251,191,36,0.9), rgba(245,158,11,0.4))',
+                     clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+                     boxShadow: '0 0 18px 4px rgba(251,191,36,0.35)',
+                   }} />
+            </div>
+            {/* Sphere 4 — small teal top-right deep */}
+            <div className="absolute pointer-events-none float-med"
+                 style={{ top: '8%', right: '18%', transform: `translateY(${scrollY * 0.04}px)` }}>
+              <div className="w-10 h-10 rounded-full"
+                   style={{
+                     background: 'radial-gradient(circle at 35% 35%, rgba(255,255,255,0.5) 0%, rgba(20,184,166,0.8) 45%, transparent 100%)',
+                     boxShadow: '0 0 16px 4px rgba(20,184,166,0.45)',
+                   }} />
+            </div>
+
+            <HeroSlideshow />
+            <div className="relative z-10 text-center px-6 max-w-7xl mx-auto">
+              <h1 className="text-5xl font-bold mb-6 text-white drop-shadow-lg">
+                Find Your Way Around Campus
+              </h1>
+              <p className="text-2xl md:text-3xl text-white/90 mb-12 max-w-4xl mx-auto leading-relaxed drop-shadow-md">
+                Never get lost again. Discover the smartest way to navigate your university.
+              </p>
+              <SearchBar />
+              <div className="flex justify-center space-x-6 mt-16">
+                <button className="group bg-white/20 backdrop-blur-sm border border-white/30 rounded-full p-4 hover:bg-white/30 transition-all duration-300 hover:scale-110">
+                  <MapPin className="w-6 h-6 text-white group-hover:text-blue-300" />
+                </button>
+                <button className="group bg-white/20 backdrop-blur-sm border border-white/30 rounded-full p-4 hover:bg-white/30 transition-all duration-300 hover:scale-110">
+                  <Navigation className="w-6 h-6 text-white group-hover:text-purple-300" />
+                </button>
+                <button className="group bg-white/20 backdrop-blur-sm border border-white/30 rounded-full p-4 hover:bg-white/30 transition-all duration-300 hover:scale-110">
+                  <Clock className="w-6 h-6 text-white group-hover:text-pink-300" />
+                </button>
+              </div>
+            </div>
+          </section>
+    
+          {/* ── Campus Zones Section ─────────────────────────────────────── */}
+          <section
+            id="campus-zones"
+            ref={(el) => sectionsRef.current['campus-zones'] = el}
+            className={`py-14 relative z-10 transition-all duration-1000 ${
+              visibleSections.has('campus-zones')
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-20'
+            }`}
+          >
+            <div className="container mx-auto px-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-[-80px]">
+                {campusZones.map((zone, index) => (
+                  <div
+                    key={index}
+                    className={`group relative overflow-hidden rounded-3xl bg-white dark:bg-[#151030] backdrop-blur-xl border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 transition-all duration-700 ${
+                      visibleSections.has('campus-zones')
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 translate-y-10'
+                    }`}
+                    style={{
+                      transitionDelay: visibleSections.has('campus-zones') ? `${index * 100}ms` : '0ms',
+                      transition: 'transform 0.15s ease, opacity 0.7s ease, translate 0.7s ease',
+                      willChange: 'transform',
+                    }}
+                    onMouseMove={(e) => {
+                      const el = e.currentTarget;
+                      const { left, top, width, height } = el.getBoundingClientRect();
+                      const x = (e.clientX - left) / width  - 0.5;
+                      const y = (e.clientY - top)  / height - 0.5;
+                      el.style.transform = `perspective(700px) rotateY(${x * 14}deg) rotateX(${-y * 14}deg) scale3d(1.04,1.04,1.04)`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'perspective(700px) rotateY(0deg) rotateX(0deg) scale3d(1,1,1)';
+                    }}
+                  >
+                    <div className={`absolute inset-0 bg-gradient-to-br ${zone.color} opacity-0 group-hover:opacity-20 transition-opacity duration-700`} />
+                    <div className="relative p-8">
+                      <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r ${zone.color} mb-6 group-hover:scale-110 transition-transform duration-500`}>
+                        <zone.icon className="w-8 h-8 text-white" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">{zone.name}</h3>
+                      <Link to={zone.path}>
+                        <div className="flex items-center text-cyan-600 dark:text-cyan-400 group-hover:text-cyan-700 dark:group-hover:text-white transition-colors duration-300">
+                          <span className="font-medium">Discover Zone</span>
+                          <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                        </div>
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+    
+          {/* ── Tutorial Section ──────────────────────────────────────── */}
+          <section
+            id="tutorial"
+            ref={(el) => sectionsRef.current['tutorial'] = el}
+            className={`py-32 relative z-10 transition-all duration-1000 delay-200 ${
+              visibleSections.has('tutorial') 
+                ? 'opacity-100 translate-y-0' 
+                : 'opacity-0 translate-y-20'
+            }`}
+          >
+            <div className="container mx-auto px-6">
+              <div className="max-w-6xl mx-auto">
+                <div className={`relative group transition-all duration-1000 delay-300 ${
+                  visibleSections.has('tutorial')
+                    ? 'opacity-100 scale-100'
+                    : 'opacity-0 scale-95'
+                }`}>
+                  {/* macOS Window Frame */}
+                  <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-[#1e1e2e] shadow-2xl border border-gray-200 dark:border-white/10">
+                    {/* macOS Title Bar */}
+                    <div className="bg-gradient-to-b from-gray-100 to-gray-200 dark:from-[#2a2a3e] dark:to-[#25253a] px-3 py-0.5 flex items-center justify-between border-b border-gray-300 dark:border-white/10">
+                      <div className="flex items-center space-x-1.5">
+                        <div className="w-2 h-2 rounded-full bg-red-500 hover:bg-red-600 transition-colors"></div>
+                        <div className="w-2 h-2 rounded-full bg-yellow-500 hover:bg-yellow-600 transition-colors"></div>
+                        <div className="w-2 h-2 rounded-full bg-green-500 hover:bg-green-600 transition-colors"></div>
+                      </div>
+                      <div className="flex-1 text-center">
+                        <span className="text-[10px] font-medium text-gray-700 dark:text-gray-300">Campus Guide Tutorial</span>
+                      </div>
+                      <div className="w-10"></div>
+                    </div>
+                    
+                    {/* Video Container */}
+                    <div className="relative bg-black overflow-hidden" style={{ aspectRatio: '16/9' }}>
+                      <div
+                        id="youtube-player"
+                        ref={videoRef}
+                        className="w-full h-full"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Decorative Elements */}
+                  <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 -z-10" />
+                </div>
+              </div>
+            </div>
+          </section>
+    
+          {/* ── Features Showcase — Horizontal Carousel ─────────────────── */}
+          <section
+            id="features"
+            ref={(el) => sectionsRef.current['features'] = el}
+            className={`py-32 relative z-10 transition-all duration-1000 ${
+              visibleSections.has('features')
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-20'
+            }`}
+          >
+            <div className="container mx-auto px-6">
+              <div className={`text-center mb-16 transition-all duration-1000 delay-100 ${
+                visibleSections.has('features')
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-10'
+              }`}>
+                <h2 className="text-6xl font-bold mb-6 bg-gradient-to-r from-cyan-600 via-purple-600 to-pink-600 dark:from-cyan-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
+                  Revolutionary Features
+                </h2>
+                <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                  Experience navigation like never before with cutting-edge technology that adapts to your needs.
+                </p>
+              </div>
+            </div>
+
+            {/* Full-bleed carousel */}
+            <div className="relative">
+              {/* Left arrow */}
+              <button
+                onClick={() => {
+                  const el = featuresCarouselRef.current;
+                  if (!el) return;
+                  const newIndex = Math.max(activeFeature - 1, 0);
+                  setActiveFeature(newIndex);
+                  el.scrollTo({ left: newIndex * el.offsetWidth, behavior: 'smooth' });
+                }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/80 dark:bg-white/10 backdrop-blur-sm border border-gray-200 dark:border-white/20 flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-200 disabled:opacity-30"
+                disabled={activeFeature === 0}
+              >
+                <ChevronRight className="w-5 h-5 rotate-180 text-gray-700 dark:text-white" />
+              </button>
+
+              {/* Right arrow */}
+              <button
+                onClick={() => {
+                  const el = featuresCarouselRef.current;
+                  if (!el) return;
+                  const newIndex = Math.min(activeFeature + 1, features.length - 1);
+                  setActiveFeature(newIndex);
+                  el.scrollTo({ left: newIndex * el.offsetWidth, behavior: 'smooth' });
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/80 dark:bg-white/10 backdrop-blur-sm border border-gray-200 dark:border-white/20 flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-200 disabled:opacity-30"
+                disabled={activeFeature === features.length - 1}
+              >
+                <ChevronRight className="w-5 h-5 text-gray-700 dark:text-white" />
+              </button>
+
+              {/* Scrollable track */}
+              <div
+                ref={featuresCarouselRef}
+                className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                onScroll={(e) => {
+                  const el = e.currentTarget;
+                  const idx = Math.round(el.scrollLeft / el.offsetWidth);
+                  setActiveFeature(idx);
+                }}
+              >
+                {features.map((feature, index) => (
+                  <div
+                    key={index}
+                    className="flex-shrink-0 w-full snap-center px-8 md:px-24 lg:px-40"
+                  >
+                    <Link to={feature.link}>
+                      <div
+                        className="group relative rounded-3xl overflow-hidden"
+                        style={{ willChange: 'transform', transition: 'transform 0.15s ease' }}
+                        onMouseMove={(e) => {
+                          const el = e.currentTarget;
+                          const { left, top, width, height } = el.getBoundingClientRect();
+                          const x = (e.clientX - left) / width  - 0.5;
+                          const y = (e.clientY - top)  / height - 0.5;
+                          el.style.transform = `perspective(700px) rotateY(${x * 10}deg) rotateX(${-y * 10}deg) scale3d(1.02,1.02,1.02)`;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'perspective(700px) rotateY(0deg) rotateX(0deg) scale3d(1,1,1)';
+                        }}
+                      >
+                        {/* Glow bloom */}
+                        <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-3xl blur-xl"
+                             style={{ background: `linear-gradient(to right, ${feature.color.split(' ')[1]}, ${feature.color.split(' ')[3]})` }} />
+
+                        <div className="relative bg-white dark:bg-[#151030] rounded-3xl border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 transition-all duration-700 overflow-hidden">
+                          {/* Large gradient accent strip */}
+                          <div className={`h-2 w-full bg-gradient-to-r ${feature.color}`} />
+
+                          <div className="flex flex-col md:flex-row items-center gap-10 p-10 md:p-14">
+                            {/* Icon — large */}
+                            <div className={`flex-shrink-0 flex items-center justify-center w-32 h-32 rounded-3xl bg-gradient-to-br ${feature.color} shadow-2xl group-hover:scale-110 transition-transform duration-500`}>
+                              <feature.icon className="w-16 h-16 text-white" />
+                            </div>
+
+                            {/* Text */}
+                            <div className="text-center md:text-left">
+                              <div className={`text-xs font-bold uppercase tracking-widest mb-3 bg-gradient-to-r ${feature.color} bg-clip-text text-transparent`}>
+                                Feature {index + 1} of {features.length}
+                              </div>
+                              <h3 className="text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">{feature.title}</h3>
+                              <p className="text-gray-600 dark:text-[#a09cb9] text-lg leading-relaxed max-w-xl">{feature.description}</p>
+                              <div className={`inline-flex items-center mt-6 font-semibold bg-gradient-to-r ${feature.color} bg-clip-text text-transparent group-hover:gap-2 transition-all duration-300`}>
+                                <span>Explore</span>
+                                <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform duration-300" style={{ color: 'currentColor' }} />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+
+              {/* Pagination dots */}
+              <div className="flex justify-center mt-8 space-x-2">
+                {features.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      const el = featuresCarouselRef.current;
+                      if (!el) return;
+                      setActiveFeature(index);
+                      el.scrollTo({ left: index * el.offsetWidth, behavior: 'smooth' });
+                    }}
+                    className={`rounded-full transition-all duration-300 ${
+                      index === activeFeature
+                        ? 'w-8 h-3 bg-gradient-to-r from-cyan-500 to-purple-500'
+                        : 'w-3 h-3 bg-gray-300 dark:bg-white/20 hover:bg-gray-400 dark:hover:bg-white/40'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+    
+          {/* ── Stats Section ───────────────────────────────────────── */}
+          <section
+            id="stats"
+            ref={(el) => sectionsRef.current['stats'] = el}
+            className={`py-32 relative z-10 overflow-hidden transition-all duration-1000 ${
+              visibleSections.has('stats') 
+                ? 'opacity-100 scale-100' 
+                : 'opacity-0 scale-95'
+            }`}
+          >
+            <div className="relative w-full">
+              <div className="flex animate-scrollLeft will-change-transform">
+                {/* First set of stats */}
+                {[
+                  { number: '95%', label: 'Navigation Accuracy', color: 'from-green-400 to-emerald-600' },
+                  { number: '30K+', label: 'Daily Users', color: 'from-blue-400 to-cyan-600' },
+                  { number: '2.5M', label: 'Directions Given', color: 'from-purple-400 to-pink-600' },
+                  { number: '4.9★', label: 'User Rating', color: 'from-yellow-400 to-orange-600' }
+                ].map((stat, index) => (
+                  <div key={`stat-1-${index}`} className="text-center group flex-shrink-0 px-12 mx-8 min-w-[280px]">
+                    <div className={`text-6xl md:text-7xl font-black mb-4 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-500 whitespace-nowrap`}>
+                      {stat.number}
+                    </div>
+                    <div className="text-gray-700 dark:text-gray-300 text-lg font-medium whitespace-nowrap">{stat.label}</div>
+                  </div>
+                ))}
+                {/* Second set for seamless loop */}
+                {[
+                  { number: '95%', label: 'Navigation Accuracy', color: 'from-green-400 to-emerald-600' },
+                  { number: '30K+', label: 'Daily Users', color: 'from-blue-400 to-cyan-600' },
+                  { number: '2.5M', label: 'Directions Given', color: 'from-purple-400 to-pink-600' },
+                  { number: '4.9★', label: 'User Rating', color: 'from-yellow-400 to-orange-600' }
+                ].map((stat, index) => (
+                  <div key={`stat-2-${index}`} className="text-center group flex-shrink-0 px-12 mx-8 min-w-[280px]">
+                    <div className={`text-6xl md:text-7xl font-black mb-4 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-500 whitespace-nowrap`}>
+                      {stat.number}
+                    </div>
+                    <div className="text-gray-700 dark:text-gray-300 text-lg font-medium whitespace-nowrap">{stat.label}</div>
+                  </div>
+                ))}
+                {/* Third set for seamless loop */}
+                {[
+                  { number: '95%', label: 'Navigation Accuracy', color: 'from-green-400 to-emerald-600' },
+                  { number: '30K+', label: 'Daily Users', color: 'from-blue-400 to-cyan-600' },
+                  { number: '2.5M', label: 'Directions Given', color: 'from-purple-400 to-pink-600' },
+                  { number: '4.9★', label: 'User Rating', color: 'from-yellow-400 to-orange-600' }
+                ].map((stat, index) => (
+                  <div key={`stat-3-${index}`} className="text-center group flex-shrink-0 px-12 mx-8 min-w-[280px]">
+                    <div className={`text-6xl md:text-7xl font-black mb-4 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-500 whitespace-nowrap`}>
+                      {stat.number}
+                    </div>
+                    <div className="text-gray-700 dark:text-gray-300 text-lg font-medium whitespace-nowrap">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+    
+          {/* ── Testimonials Carousel ──────────────────────────────── */}
+          <section
+            id="testimonials"
+            ref={(el) => sectionsRef.current['testimonials'] = el}
+            className={`py-32 relative z-10 transition-all duration-1000 ${
+              visibleSections.has('testimonials') 
+                ? 'opacity-100 translate-y-0' 
+                : 'opacity-0 translate-y-20'
+            }`}
+          >
+            <div className="container mx-auto px-6">
+              <div className={`text-center mb-20 transition-all duration-1000 delay-100 ${
+                visibleSections.has('testimonials')
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-10'
+              }`}>
+                <h2 className="text-6xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                  Student Stories
+                </h2>
+                <p className="text-xl text-gray-600 dark:text-gray-400">Real experiences from real students</p>
+              </div>
+    
+              <div className="relative max-w-4xl mx-auto">
+                <div className="bg-white dark:bg-[#151030] backdrop-blur-xl rounded-3xl p-12 border border-gray-200 dark:border-white/10">
+                  <div className="text-center">
+                  <img src={testimonials[currentSlide].image} alt={testimonials[currentSlide].name} className="w-24 h-24 rounded-full mx-auto mb-4" />
+                    <blockquote className="text-2xl text-gray-900 dark:text-white mb-8 font-medium italic">
+                      "{testimonials[currentSlide].text}"
+                    </blockquote>
+                    <div>
+                      <div className="text-xl font-bold text-gray-900 dark:text-white">{testimonials[currentSlide].name}</div>
+                      <div className="text-gray-600 dark:text-[#a09cb9]">{testimonials[currentSlide].role}</div>
+                    </div>
+                  </div>
+                </div>
+    
+                {/* Carousel Indicators */}
+                <div className="flex justify-center mt-8 space-x-3">
+                  {testimonials.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentSlide(index)}
+                      className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                        index === currentSlide ? 'bg-cyan-400 scale-125' : 'bg-white/30'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+    
+          {/* ── Final CTA ─────────────────────────────────────────────── */}
+          <section
+            id="cta"
+            ref={(el) => sectionsRef.current['cta'] = el}
+            className={`py-32 relative z-10 transition-all duration-1000 ${
+              visibleSections.has('cta') 
+                ? 'opacity-100 translate-y-0' 
+                : 'opacity-0 translate-y-20'
+            }`}
+          >
+            <div className="container mx-auto px-6 text-center">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 dark:from-cyan-500/10 dark:via-purple-500/10 dark:to-pink-500/10 blur-3xl rounded-full" />
+                <div className="relative">
+                  <h2 className={`text-7xl font-black mb-8 bg-gradient-to-r from-gray-900 via-cyan-700 to-purple-700 dark:from-white dark:via-cyan-200 dark:to-purple-200 bg-clip-text text-transparent transition-all duration-1000 delay-200 ${
+                    visibleSections.has('cta')
+                      ? 'opacity-100 translate-y-0'
+                      : 'opacity-0 translate-y-10'
+                  }`}>
+                    Start Your Journey
+                  </h2>
+                  <p className={`text-2xl text-gray-700 dark:text-gray-300 mb-12 max-w-3xl mx-auto transition-all duration-1000 delay-300 ${
+                    visibleSections.has('cta')
+                      ? 'opacity-100 translate-y-0'
+                      : 'opacity-0 translate-y-10'
+                  }`}>
+                    Join thousands of students who've transformed their campus experience. 
+                    Never be late, never be lost, never be confused again.
+                  </p>
+                  
+                  <div className={`flex flex-col sm:flex-row items-center justify-center gap-6 transition-all duration-1000 delay-500 ${
+                    visibleSections.has('cta')
+                      ? 'opacity-100 translate-y-0'
+                      : 'opacity-0 translate-y-10'
+                  }`}>
+                    <button className="group relative overflow-hidden bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 text-white px-16 py-6 rounded-2xl font-bold text-2xl shadow-2xl hover:shadow-purple-500/25 transition-all duration-500 hover:scale-105">
+                      <span className="relative z-10">Get Started Free</span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    </button>
+                    
+                    <a href="https://drive.google.com/file/d/1hqAPZ52JeJkFaZW_ehkQi7OFw4KnutFN/view?usp=drive_link" target="_blank" rel="noopener noreferrer">
+                      <button className="group text-gray-900 dark:text-white text-2xl font-semibold hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors duration-300 flex items-center">
+                        Download App
+                        <ChevronRight className="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                      </button>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+    
+          
+    
+          <style jsx>{`
+            /* ── Floating 3D object animations ───────────────────────────── */
+            @keyframes floatSlow {
+              0%, 100% { transform: translateY(0px) rotate(0deg); }
+              33%       { transform: translateY(-22px) rotate(4deg); }
+              66%       { transform: translateY(-10px) rotate(-3deg); }
+            }
+            @keyframes floatMed {
+              0%, 100% { transform: translateY(0px) rotate(0deg); }
+              50%       { transform: translateY(-18px) rotate(-5deg); }
+            }
+            @keyframes floatFast {
+              0%, 100% { transform: translateY(0px); }
+              50%       { transform: translateY(-12px); }
+            }
+            @keyframes rotateSlow {
+              from { transform: rotate(0deg); }
+              to   { transform: rotate(360deg); }
+            }
+            @keyframes spinSlow {
+              0%   { transform: rotate(0deg)   scale(1); }
+              50%  { transform: rotate(180deg) scale(1.1); }
+              100% { transform: rotate(360deg) scale(1); }
+            }
+
+            .float-slow  { animation: floatSlow  7s ease-in-out infinite; }
+            .float-med   { animation: floatMed   5s ease-in-out infinite; }
+            .float-fast  { animation: floatFast  3.5s ease-in-out infinite; }
+            .rotate-slow { animation: rotateSlow 12s linear infinite; }
+            .spin-slow   { animation: spinSlow   9s ease-in-out infinite; }
+
+            /* ── Aurora orb colour-shift animations ──────────────────────── */
+            @keyframes auroraShift1 {
+              0%, 100% { opacity: 0.8; }
+              50%       { opacity: 0.4; }
+            }
+            @keyframes auroraShift2 {
+              0%, 100% { opacity: 0.6; transform: translate(50%,-50%) scale(1); }
+              50%       { opacity: 1;   transform: translate(50%,-50%) scale(1.15); }
+            }
+            @keyframes auroraShift3 {
+              0%, 100% { opacity: 0.5; transform: translate(-50%,50%) scale(1); }
+              50%       { opacity: 0.9; transform: translate(-50%,50%) scale(1.1); }
+            }
+
+            .aurora-orb-1 { animation: auroraShift1 8s ease-in-out infinite; }
+            .aurora-orb-2 { animation: auroraShift2 11s ease-in-out infinite; }
+            .aurora-orb-3 { animation: auroraShift3 9s ease-in-out infinite; }
+            .aurora-orb-4 { animation: auroraShift1 14s ease-in-out infinite reverse; }
+
+            /* ── Scroll entrance animations ──────────────────────────────── */
+            @keyframes fadeInUp {
+              from { opacity: 0; transform: translateY(30px); }
+              to   { opacity: 1; transform: translateY(0);    }
+            }
+            @keyframes slideInLeft {
+              from { opacity: 0; transform: translateX(-50px); }
+              to   { opacity: 1; transform: translateX(0);     }
+            }
+            @keyframes fadeInScale {
+              from { opacity: 0; transform: scale(0.9); }
+              to   { opacity: 1; transform: scale(1);   }
+            }
+            @keyframes slideInRight {
+              from { opacity: 0; transform: translateX(50px); }
+              to   { opacity: 1; transform: translateX(0);    }
+            }
+
+            /* ── Ticker scroll ────────────────────────────────────────────── */
+            @keyframes scrollLeft {
+              0%   { transform: translateX(0); }
+              100% { transform: translateX(-33.333%); }
+            }
+            .animate-scrollLeft {
+              animation: scrollLeft 15s linear infinite;
+              display: flex;
+            }
+            .animate-scrollLeft:hover { animation-play-state: paused; }
+
+            /* ── Smooth scroll ────────────────────────────────────────────── */
+            html { scroll-behavior: smooth; }
+            section { transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+
+            /* ── Hide scrollbar on carousel ──────────────────────────────── */
+            .scrollbar-hide::-webkit-scrollbar { display: none; }
+          `}</style>
+        </div>
+  );
+};  

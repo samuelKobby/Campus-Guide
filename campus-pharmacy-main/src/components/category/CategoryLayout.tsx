@@ -112,7 +112,7 @@ export const CategoryLayout: React.FC<CategoryLayoutProps> = ({
 
         {/* Loading State */}
         {loading ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
               <div key={i} className="animate-pulse">
                 <div className={`h-[240px] rounded-xl mb-3 ${theme === 'dark' ? 'bg-[#0a0820]' : 'bg-gray-200'}`} />
@@ -127,7 +127,7 @@ export const CategoryLayout: React.FC<CategoryLayoutProps> = ({
         ) : (
           <>
             {/* Locations Grid */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredLocations.map((location) => (
                 <LocationCard key={location.id} location={location} theme={theme} />
               ))}

@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { FaSearch, FaFilter, FaMapMarkerAlt, FaClock, FaPhone } from 'react-icons/fa';
+import { useTheme } from '../context/ThemeContext';
 import placeholderImage from '../assets/placeholder.svg';
 
 interface Pharmacy {
@@ -15,115 +17,223 @@ interface Pharmacy {
   image: string;
 }
 
+/* ── Tilt card (mirrors LocationCard from CategoryLayout) ── */
+const PharmacyCard: React.FC<{ pharmacy: Pharmacy; theme: string }> = ({ pharmacy, theme }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    setMousePosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+
+  const getCardTransform = () => {
+    if (!isHovered || !cardRef.current) return '';
+    const rect = cardRef.current.getBoundingClientRect();
+    const rotateX = ((mousePosition.y - rect.height / 2) / (rect.height / 2)) * -5;
+    const rotateY = ((mousePosition.x - rect.width / 2) / (rect.width / 2)) * 5;
+    return `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+  };
+
+  const getShinePosition = () => {
+    if (!isHovered) return { opacity: 0 };
+    return {
+      opacity: 0.15,
+      background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(255,255,255,0.3), transparent 50%)`,
+    };
+  };
+
+  const directionsUrl = pharmacy.latitude && pharmacy.longitude
+    ? `https://www.google.com/maps/dir/?api=1&destination=${pharmacy.latitude},${pharmacy.longitude}&travelmode=walking`
+    : `https://www.google.com/maps/search/${encodeURIComponent(pharmacy.name + ' ' + pharmacy.location)}`;
+
+  return (
+    <motion.div
+      ref={cardRef}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => { setIsHovered(false); setMousePosition({ x: 0, y: 0 }); }}
+      style={{ transform: getCardTransform(), transition: 'transform 0.1s ease-out' }}
+      className="cursor-pointer group relative"
+    >
+      {/* Shine overlay */}
+      <div className="absolute inset-0 rounded-xl pointer-events-none z-10 transition-opacity duration-300" style={getShinePosition()} />
+
+      {/* Image */}
+      <div className="relative w-full h-[240px] overflow-hidden rounded-xl mb-3">
+        <motion.img
+          className="w-full h-full object-cover"
+          alt={pharmacy.name}
+          animate={{ scale: isHovered ? 1.05 : 1 }}
+          transition={{ duration: 0.3 }}
+        />
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: isHovered ? 1 : 0 }}
+          transition={{ duration: 0.3 }}
+        />
+        {/* Availability badge */}
+        <div className={`absolute top-2 left-2 px-2 py-0.5 rounded-full text-xs font-semibold ${
+          pharmacy.available ? 'bg-emerald-500/90 text-white' : 'bg-red-500/90 text-white'
+        }`}>
+          {pharmacy.available ? 'Open' : 'Closed'}
+        </div>
+        {/* Directions button */}
+        <motion.a
+          href={directionsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={e => e.stopPropagation()}
+          className="absolute bottom-2 right-2 w-10 h-10 bg-blue-600 text-white rounded-full hover:bg-blue-700 flex items-center justify-center shadow-lg"
+          whileHover={{ scale: 1.1, rotate: 5 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <FaMapMarkerAlt size={14} />
+        </motion.a>
+      </div>
+
+      {/* Text content */}
+      <motion.div
+        className="space-y-2"
+        animate={{ y: isHovered ? -2 : 0 }}
+        transition={{ duration: 0.2 }}
+      >
+        <h2 className={`text-sm font-semibold line-clamp-1 leading-tight transition-colors duration-200 ${
+          theme === 'dark' ? 'text-white' : 'text-gray-900'
+        } ${isHovered ? 'text-cyan-600 dark:text-cyan-400' : ''}`}>
+          {pharmacy.name}
+        </h2>
+
+        <div className={`text-xs space-y-1 ${theme === 'dark' ? 'text-[#a09cb9]' : 'text-gray-600'}`}>
+          <p className="flex items-center gap-1.5 line-clamp-1">
+            <FaMapMarkerAlt className="flex-shrink-0 opacity-60" size={11} />
+            {pharmacy.location}
+          </p>
+          <p className="flex items-center gap-1.5">
+            <FaClock className="flex-shrink-0 opacity-60" size={11} />
+            {pharmacy.hours}
+          </p>
+          <p className="flex items-center gap-1.5">
+            <FaPhone className="flex-shrink-0 opacity-60" size={11} />
+            {pharmacy.phone}
+          </p>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+/* ── Page ── */
 export const Pharmacies: React.FC = () => {
   const [pharmacies, setPharmacies] = useState<Pharmacy[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const navigate = useNavigate();
+  const [availableOnly, setAvailableOnly] = useState(false);
+  const { theme } = useTheme();
 
   useEffect(() => {
-    fetchPharmacies();
+    const fetch = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase.from('pharmacies').select('*').order('name');
+        if (error) throw error;
+        setPharmacies(data || []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch();
   }, []);
 
-  const fetchPharmacies = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('pharmacies')
-        .select('*')
-        .order('name');
+  const filtered = pharmacies.filter(p => {
+    const matchesSearch =
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.location.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesSearch && (!availableOnly || p.available);
+  });
 
-      if (error) throw error;
-
-      setPharmacies(data || []);
-    } catch (err) {
-      console.error('Error fetching pharmacies:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getDirectionsUrl = (pharmacy: Pharmacy) => {
-    const coordinates = `${pharmacy.latitude},${pharmacy.longitude}`;
-    const query = encodeURIComponent(`${pharmacy.name} ${pharmacy.location}`);
-    return `https://www.google.com/maps/search/${query}/@${coordinates},17z`;
-  };
-
-  const filteredPharmacies = pharmacies.filter(pharmacy =>
-    pharmacy.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    pharmacy.location.toLowerCase().includes(searchTerm.toLowerCase())
+  if (error) return (
+    <div className="container mx-auto px-4 py-8 mt-16 text-center text-red-500">{error}</div>
   );
 
-  if (loading) return <div className="container mx-auto px-4 py-8 mt-16 text-center">Loading...</div>;
-  if (error) return <div className="container mx-auto px-4 py-8 mt-16 text-center text-red-500">{error}</div>;
-
   return (
-    <div className="container mx-auto px-4 py-8 mt-16">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-4">Campus Pharmacies</h1>
-        <input
-          type="text"
-          placeholder="Search pharmacies by name or location..."
-          className="w-full md:w-96 p-2 border rounded-lg"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {filteredPharmacies.map((pharmacy) => (
-          <div
-            key={pharmacy.id}
-            className="bg-white rounded-lg shadow-md overflow-hidden"
-          >
-            <img
-              className="h-48 w-full object-cover"
-              src={pharmacy.image || placeholderImage}
-              alt={pharmacy.name}
+    <div className={`min-h-screen pt-24 pb-12 ${theme === 'dark' ? 'bg-[#050816]' : 'bg-gradient-to-b from-[#F2ECFD] to-white'}`}>
+      <div className="container mx-auto px-4">
+        {/* Search & Filter */}
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              placeholder="Search pharmacies by name or location..."
+              className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                theme === 'dark'
+                  ? 'bg-[#151030] border-gray-700 text-white placeholder-gray-400'
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
             />
-            <div className="p-4">
-              <h2 className="text-xl font-bold mb-2">{pharmacy.name}</h2>
-              <div className="space-y-2 text-gray-600">
-                <p className="flex items-center">
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  {pharmacy.location}
-                </p>
-                <p className="flex items-center">
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  {pharmacy.hours}
-                </p>
-                <p className="flex items-center">
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                  {pharmacy.phone}
+            <FaSearch className={`absolute left-3 top-1/2 -translate-y-1/2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
+          </div>
+          <div className="flex items-center gap-2">
+            <FaFilter className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} />
+            <button
+              onClick={() => setAvailableOnly(v => !v)}
+              className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                availableOnly
+                  ? 'bg-blue-600 text-white'
+                  : theme === 'dark'
+                    ? 'bg-[#151030] text-gray-200 hover:bg-[#1a1540]'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              Open Now
+            </button>
+          </div>
+        </div>
+
+        {/* Grid */}
+        {loading ? (
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[1,2,3,4,5,6].map(i => (
+              <div key={i} className="animate-pulse">
+                <div className={`h-[240px] rounded-xl mb-3 ${theme === 'dark' ? 'bg-[#0a0820]' : 'bg-gray-200'}`} />
+                <div className="space-y-2">
+                  <div className={`h-4 rounded w-5/6 ${theme === 'dark' ? 'bg-[#0a0820]' : 'bg-gray-200'}`} />
+                  <div className={`h-3 rounded w-4/6 ${theme === 'dark' ? 'bg-[#0a0820]' : 'bg-gray-200'}`} />
+                  <div className={`h-3 rounded w-3/6 ${theme === 'dark' ? 'bg-[#0a0820]' : 'bg-gray-200'}`} />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {filtered.map(pharmacy => (
+                <PharmacyCard key={pharmacy.id} pharmacy={pharmacy} theme={theme} />
+              ))}
+            </div>
+            {filtered.length === 0 && (
+              <div className="text-center py-12">
+                <p className={`text-lg ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                  No pharmacies found matching your search.
                 </p>
               </div>
-              <a
-                href={getDirectionsUrl(pharmacy)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 block w-full bg-blue-600 text-white text-center py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Get Directions
-              </a>
-            </div>
-          </div>
-        ))}
+            )}
+          </>
+        )}
       </div>
-
-      {filteredPharmacies.length === 0 && (
-        <div className="text-center py-8">
-          <p className="text-gray-600">No pharmacies found matching your search.</p>
-        </div>
-      )}
     </div>
   );
 };
+
+
