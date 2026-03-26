@@ -14,6 +14,7 @@ export const Navbar: React.FC = () => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const location = useLocation();
+  const isHomePage = location.pathname === '/';
   const isAboutPage = location.pathname === '/about';
   const isCategoryPage = location.pathname.startsWith('/category');
   const hasDarkHero = isCategoryPage;
@@ -21,9 +22,9 @@ export const Navbar: React.FC = () => {
   return (
     <>
       <nav className={navbarClass} data-page={isAboutPage ? 'about' : hasDarkHero ? 'dark-hero' : undefined}>
-        <div className="flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-8 h-16">
+        <div className="relative flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-8 h-16">
           {/* ── Logo with rings ── */}
-          <Link to="/" className="flex items-center gap-3 group">
+          <Link to="/" className="flex items-center gap-3 group z-10">
             <div className="relative flex items-center justify-center">
               <svg className="absolute w-14 h-14 animate-[spin_25s_linear_infinite] opacity-30" viewBox="0 0 56 56">
                 <circle cx="28" cy="28" r="26" fill="none" stroke={isDark ? 'rgba(6,182,212,0.35)' : 'rgba(37,99,235,0.3)'} strokeWidth="0.5" strokeDasharray="3 5" />
@@ -40,12 +41,20 @@ export const Navbar: React.FC = () => {
           </Link>
 
           {/* ── Center: Desktop Nav Links ── */}
-          <div className="hidden md:flex items-center justify-center flex-1">
+          <div className={`hidden md:flex items-center justify-center ${isHomePage ? 'flex-1' : 'absolute left-1/2 -translate-x-1/2'}`}>
             <DesktopNav />
           </div>
 
-          {/* ── Right: Theme toggle + mobile menu ── */}
-          <div className="flex items-center gap-3">
+              {/* ── Right: Install App link + Theme toggle + mobile menu ── */}
+          <div className="flex items-center gap-3 z-10">
+                <a
+                  href="https://drive.google.com/file/d/1hqAPZ52JeJkFaZW_ehkQi7OFw4KnutFN/view?usp=drive_link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-normal text-gray-400 hover:text-gray-300 transition-colors"
+                >
+                  Install App
+                </a>
             <ThemeToggle className="hud-theme-toggle" />
             <button
               className={`md:hidden p-2 rounded-lg transition-colors ${isDark ? 'text-cyan-400/60 hover:text-cyan-300 hover:bg-white/5' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'}`}

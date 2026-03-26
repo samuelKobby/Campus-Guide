@@ -9,7 +9,7 @@ interface MainLayoutProps {
 
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const location = useLocation();
-  const hideFooterPaths = ['/admin', '/admin/login', '/category', '/medicines'];
+  const hideFooterPaths = ['/admin', '/admin/login', '/category', '/medicines', '/medicine'];
   const shouldShowFooter = !hideFooterPaths.some(path => location.pathname.startsWith(path));
 
   return (

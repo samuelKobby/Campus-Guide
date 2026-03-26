@@ -90,7 +90,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
       to: '#',
       icon: <FaMapMarkedAlt />,
       subItems: [
-        { name: 'Academic Buildings', to: '/admin/locations/academic', icon: <FaUniversity /> },
+        { name: 'Academic Buildings & Hostels', to: '/admin/locations/academic', icon: <FaUniversity /> },
         { name: 'Libraries', to: '/admin/locations/libraries', icon: <FaBook /> },
         { name: 'Dining Halls', to: '/admin/locations/dining', icon: <FaUtensils /> },
         { name: 'Sports Facilities', to: '/admin/locations/sports', icon: <FaRunning /> },

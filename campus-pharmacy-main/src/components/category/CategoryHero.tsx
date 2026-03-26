@@ -39,11 +39,11 @@ export const CategoryHero: React.FC<CategoryHeroProps> = ({
           className="max-w-3xl"
         >
           {/* Icon and Title */}
-          <div className="flex items-center space-x-4 mb-4">
-            <div className="p-3 bg-white/10 rounded-lg backdrop-blur-sm">
-              <Icon className="text-white text-4xl" />
+          <div className="flex items-end space-x-4 mb-4">
+            <div className="p-3 bg-white/10 rounded-lg backdrop-blur-sm flex-shrink-0">
+              <Icon className="text-white text-4xl" style={{ fill: 'currentColor', stroke: 'currentColor', strokeWidth: 0 }} />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight">{title}</h1>
+            <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight leading-none" style={{ fontFamily: "'Playfair Display','Georgia',serif" }}>{title}</h1>
           </div>
 
           {/* Description */}
@@ -65,7 +65,7 @@ export const CategoryHero: React.FC<CategoryHeroProps> = ({
                   <div className="text-3xl font-bold text-white">
                     {stat.value}
                   </div>
-                  <div className="text-sm text-white/80">{stat.label}</div>
+                  <div className="text-sm text-white/80" style={{ fontFamily: "'Roboto','Inter',system-ui,sans-serif" }}>{stat.label}</div>
                 </div>
               ))}
             </motion.div>

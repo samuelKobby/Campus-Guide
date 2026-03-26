@@ -4,7 +4,7 @@ import { FaChevronDown, FaGraduationCap, FaBook, FaUtensils, FaDumbbell, FaCoffe
 import { useTheme } from '../../context/ThemeContext';
 
 const categories = [
-  { name: 'Academic Buildings', icon: FaGraduationCap, path: '/category/academic' },
+  { name: 'Academic Buildings & Hostels', icon: FaGraduationCap, path: '/category/academic' },
   { name: 'Libraries', icon: FaBook, path: '/category/libraries' },
   { name: 'Dining Halls', icon: FaUtensils, path: '/category/dining' },
   { name: 'Sports Facilities', icon: FaDumbbell, path: '/category/sports' },

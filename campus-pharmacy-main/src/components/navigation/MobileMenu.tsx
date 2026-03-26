@@ -5,7 +5,7 @@ import { FaChevronDown, FaGraduationCap, FaBook, FaUtensils, FaDumbbell, FaCoffe
 import { useTheme } from '../../context/ThemeContext';
 
 const categories = [
-  { name: 'Academic Buildings', icon: FaGraduationCap, path: '/category/academic',      gradient: 'from-emerald-400 to-teal-500' },
+  { name: 'Academic Buildings & Hostels', icon: FaGraduationCap, path: '/category/academic',      gradient: 'from-emerald-400 to-teal-500' },
   { name: 'Libraries',          icon: FaBook,           path: '/category/libraries',      gradient: 'from-amber-400 to-orange-500' },
   { name: 'Dining Halls',       icon: FaUtensils,       path: '/category/dining',         gradient: 'from-pink-400 to-rose-500' },
   { name: 'Sports Facilities',  icon: FaDumbbell,       path: '/category/sports',         gradient: 'from-sky-400 to-blue-500' },

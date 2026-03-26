@@ -6,7 +6,7 @@ import { useSmoothScroll } from '../../hooks/useSmoothScroll';
 
 export const MainLayout: React.FC = () => {
   const location = useLocation();
-  const hideFooterPaths = ['/admin', '/admin/login', '/category', '/medicines', '/pharmacies'];
+  const hideFooterPaths = ['/admin', '/admin/login', '/category', '/medicines', '/pharmacies', '/medicine'];
   const shouldShowFooter = !hideFooterPaths.some(path => location.pathname.startsWith(path));
   const isHomePage = location.pathname === '/';
 

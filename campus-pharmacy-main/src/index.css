@@ -1277,3 +1277,16 @@ html.light .search-hud-wrapper button:hover {
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/*  SCROLLBAR UTILITIES                                                      */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Hide scrollbar while maintaining scroll functionality */
+.scrollbar-hide {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, and Opera */
+}
+

@@ -103,6 +103,7 @@ export const CategoryLayout: React.FC<CategoryLayoutProps> = ({
                       ? 'bg-[#151030] text-gray-200 hover:bg-[#1a1540]'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
+                style={{ fontFamily: "'Roboto','Inter',system-ui,sans-serif" }}
               >
                 {tag}
               </button>
@@ -259,7 +260,7 @@ const LocationCard: React.FC<{ location: Location; theme: string }> = ({ locatio
         transition={{ duration: 0.2 }}
       >
         <div className="flex items-start justify-between gap-2">
-          <h2 className={`text-sm font-semibold line-clamp-1 leading-tight flex-1 transition-colors duration-200 ${theme === 'dark' ? 'text-white' : 'text-gray-900'} ${isHovered ? 'text-cyan-600 dark:text-cyan-400' : ''}`}>
+          <h2 className={`text-sm font-semibold line-clamp-1 leading-tight flex-1 transition-colors duration-200 ${theme === 'dark' ? 'text-white' : 'text-gray-900'} ${isHovered ? 'text-cyan-600 dark:text-cyan-400' : ''}`} style={{ fontFamily: "'Roboto','Inter',system-ui,sans-serif" }}>
             {location.name}
           </h2>
           {location.openingHours && (
@@ -289,6 +290,7 @@ const LocationCard: React.FC<{ location: Location; theme: string }> = ({ locatio
                     ? 'bg-[#0a0820] text-[#a09cb9]'
                     : 'bg-gray-100 text-gray-600'
                 } ${isHovered ? 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-400' : ''}`}
+                style={{ fontFamily: "'Roboto','Inter',system-ui,sans-serif" }}
                 whileHover={{ scale: 1.05 }}
               >
                 {tag}

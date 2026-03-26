@@ -83,7 +83,7 @@ export const Medicines: React.FC = () => {
     <div className={`min-h-screen pt-24 pb-12 ${theme === 'dark' ? 'bg-[#050816]' : 'bg-gradient-to-b from-[#F2ECFD] to-white'}`}>
       <div className="container mx-auto px-4">
         <div className="mb-8">
-          <h1 className={`text-3xl font-bold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Available Medicines</h1>
+          <h1 className={`text-3xl font-bold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`} style={{ fontFamily: "'Playfair Display','Georgia',serif" }}>Available Medicines</h1>
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <VoiceSearchInput
@@ -102,9 +102,13 @@ export const Medicines: React.FC = () => {
                 theme={theme}
               />
               <select
-                className={`p-2 border rounded-2xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 ${
-                  theme === 'dark' ? 'bg-[#151030] border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'
-                }`}
+                className={`
+                  px-4 py-2 rounded-full transition-all duration-300 focus:ring-2 focus:outline-none
+                  ${theme === 'dark'
+                    ? 'bg-black/20 backdrop-blur-sm border border-white/20 text-white focus:ring-cyan-400 shadow-xl'
+                    : 'bg-white bg-opacity-95 backdrop-blur-sm border border-white/20 text-gray-900 focus:ring-blue-400 shadow-xl'
+                  }
+                `}
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
               >
@@ -215,6 +219,7 @@ const MedicineCard: React.FC<{
       {/* Image Container */}
       <div className='relative w-full h-[240px] overflow-hidden rounded-xl mb-3'>
         <motion.img
+          src={medicine.image || placeholderImage}
           className="w-full h-full object-cover"
           alt={medicine.name}
           animate={{
@@ -245,18 +250,19 @@ const MedicineCard: React.FC<{
       </div>
 
       {/* Content Container */}
-      <motion.div 
+      <motion.div
         className="space-y-2"
         animate={{
           y: isHovered ? -2 : 0,
         }}
         transition={{ duration: 0.2 }}
       >
+        {/* First row - Name and Price */}
         <div className="flex items-start justify-between gap-2">
           <h2 className={`text-sm font-semibold line-clamp-1 leading-tight flex-1 transition-colors duration-200 ${theme === 'dark' ? 'text-white' : 'text-gray-900'} ${isHovered ? 'text-purple-600 dark:text-purple-400' : ''}`}>
             {medicine.name}
           </h2>
-          <motion.span 
+          <motion.span
             className={`text-xs whitespace-nowrap flex-shrink-0 font-semibold ${theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}`}
             animate={{
               scale: isHovered ? 1.05 : 1,
@@ -267,14 +273,13 @@ const MedicineCard: React.FC<{
           </motion.span>
         </div>
 
-        <div className={`text-xs ${theme === 'dark' ? 'text-[#a09cb9]' : 'text-gray-600'}`}>
-          <p className="line-clamp-2">{medicine.description}</p>
-        </div>
-
-        {/* Tags */}
-        <div className="flex flex-wrap gap-1">
-          <motion.span 
-            className={`px-2 py-0.5 text-xs rounded transition-colors duration-200 ${
+        {/* Second row - Description and Category */}
+        <div className="flex justify-between items-start gap-2">
+          <p className={`text-xs line-clamp-1 flex-1 ${theme === 'dark' ? 'text-[#a09cb9]' : 'text-gray-600'}`}>
+            {medicine.description}
+          </p>
+          <motion.span
+            className={`px-2 py-0.5 text-xs rounded transition-colors duration-200 flex-shrink-0 ml-2 ${
               theme === 'dark'
                 ? 'bg-cyan-500/20 text-cyan-300'
                 : 'bg-cyan-100 text-cyan-800'

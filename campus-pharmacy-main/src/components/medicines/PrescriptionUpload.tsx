@@ -260,13 +260,13 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(true)}
-        className={`flex items-center gap-2 px-4 py-2 rounded-2xl font-medium transition-all ${
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-full font-medium transition-all ${
           theme === 'dark'
             ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
             : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600'
         }`}
       >
-        <Camera className="w-5 h-5" />
+        <Camera className="w-4 h-4" />
         <span className="hidden sm:inline">Upload Prescription</span>
       </motion.button>
 

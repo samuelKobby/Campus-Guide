@@ -137,7 +137,7 @@ export const SearchResults: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 mt-16">
-      <h2 className="text-2xl font-bold mb-6">
+      <h2 className="text-2xl font-bold mb-6" style={{ fontFamily: "'Playfair Display','Georgia',serif" }}>
         Search Results for "{query}"
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -148,12 +148,12 @@ export const SearchResults: React.FC = () => {
               alt={pharmacy.name}
               className="w-full h-48 object-cover rounded-lg mb-4"
             />
-            <h3 className="text-xl font-semibold mb-2">{pharmacy.name}</h3>
+            <h3 className="text-xl font-semibold mb-2" style={{ fontFamily: "'Roboto','Inter',system-ui,sans-serif" }}>{pharmacy.name}</h3>
             <p className="text-gray-600 mb-2">{pharmacy.location}</p>
             <p className="text-gray-600 mb-2">Hours: {pharmacy.hours}</p>
             <p className="text-gray-600 mb-4">Phone: {pharmacy.phone}</p>
             <div className="border-t pt-4">
-              <h4 className="font-semibold mb-2">Available Medicines:</h4>
+              <h4 className="font-semibold mb-2" style={{ fontFamily: "'Roboto','Inter',system-ui,sans-serif" }}>Available Medicines:</h4>
               <ul className="space-y-2">
                 {medicines.map(medicine => (
                   <li key={medicine.id} className="flex justify-between">

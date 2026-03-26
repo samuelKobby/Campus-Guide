@@ -30,7 +30,7 @@ export const About: React.FC = () => {
                   {/* Text */}
                   <div>
                     <span className="inline-block text-xs font-bold tracking-[0.2em] uppercase text-indigo-500 mb-3">Our Story</span>
-                    <h2 className="text-4xl md:text-5xl font-extrabold mb-6 dark:text-white leading-tight">
+                    <h2 className="text-4xl md:text-5xl font-extrabold mb-6 dark:text-white leading-tight" style={{ fontFamily: "'Playfair Display','Georgia',serif" }}>
                       Born from a<br />
                       <span className="text-indigo-600 dark:text-indigo-400">Campus Struggle</span>
                     </h2>
@@ -70,7 +70,7 @@ export const About: React.FC = () => {
                 className="mb-20 bg-white dark:bg-[#151030] rounded-2xl p-8 md:p-12 shadow-sm"
               >
                 <div className="max-w-4xl mx-auto text-center">
-                  <h2 className="text-3xl font-bold mb-6 dark:text-white">Our Mission</h2>
+                  <h2 className="text-3xl font-bold mb-6 dark:text-white" style={{ fontFamily: "'Playfair Display','Georgia',serif" }}>Our Mission</h2>
                   <p className="text-lg text-gray-700 dark:text-[#a09cb9] mb-8">
                     We're dedicated to ensuring students have immediate access to accurate medication availability information, creating a seamless experience that eliminates the hassle of pharmacy searches.
                   </p>
@@ -104,7 +104,7 @@ export const About: React.FC = () => {
                     <span className="inline-flex items-center gap-2 text-xs font-bold tracking-[0.2em] uppercase text-indigo-500 mb-3">
                       <Zap className="w-4 h-4" /> Instant Access
                     </span>
-                    <h2 className="text-4xl font-extrabold mb-6 dark:text-white leading-tight">
+                    <h2 className="text-4xl font-extrabold mb-6 dark:text-white leading-tight" style={{ fontFamily: "'Playfair Display','Georgia',serif" }}>
                       Find What You Need,<br />
                       <span className="text-indigo-600 dark:text-indigo-400">Right Now</span>
                     </h2>
@@ -140,7 +140,7 @@ export const About: React.FC = () => {
                     <span className="inline-flex items-center gap-2 text-xs font-bold tracking-[0.2em] uppercase text-indigo-500 mb-3">
                       <Globe className="w-4 h-4" /> Navigation
                     </span>
-                    <h2 className="text-4xl font-extrabold mb-6 dark:text-white leading-tight">
+                    <h2 className="text-4xl font-extrabold mb-6 dark:text-white leading-tight" style={{ fontFamily: "'Playfair Display','Georgia',serif" }}>
                       Navigate Campus<br />
                       <span className="text-indigo-600 dark:text-indigo-400">Like a Pro</span>
                     </h2>
@@ -169,7 +169,7 @@ export const About: React.FC = () => {
             {/* ── How It Works ── */}
             <Parallax translateY={[20, -20]}>
               <section className="mb-20">
-                <h2 className="text-3xl font-bold mb-8 text-center dark:text-white">How It Works</h2>
+                <h2 className="text-3xl font-bold mb-8 text-center dark:text-white" style={{ fontFamily: "'Playfair Display','Georgia',serif" }}>How It Works</h2>
                 <div className="relative">
                   <div className="absolute h-full w-0.5 bg-gray-200 dark:bg-[#151030] left-1/2 transform -translate-x-1/2 hidden md:block" />
                   <div ref={stepsRef} className="grid md:grid-cols-4 gap-8">
@@ -183,7 +183,7 @@ export const About: React.FC = () => {
                         <div className="w-12 h-12 bg-indigo-600 dark:bg-indigo-500 text-white rounded-full flex items-center justify-center mb-4 text-lg font-bold z-10">
                           {item.step}
                         </div>
-                        <h3 className="text-xl font-semibold mb-2 dark:text-white">{item.title}</h3>
+                        <h3 className="text-xl font-semibold mb-2 dark:text-white" style={{ fontFamily: "'Roboto','Inter',system-ui,sans-serif" }}>{item.title}</h3>
                         <p className="text-gray-600 dark:text-[#a09cb9]">{item.description}</p>
                       </div>
                     ))}

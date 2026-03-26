@@ -144,8 +144,8 @@ export const AcademicBuildings = () => {
 
   return (
     <CategoryLayout
-      title="Academic Buildings"
-      description="Explore our modern academic facilities equipped with state-of-the-art technology and learning spaces."
+      title="Academic Buildings & Hostels"
+      description="Explore our modern academic facilities and residential hostels equipped with state-of-the-art technology and learning spaces."
       icon={FaUniversity}
       locations={locations}
       backgroundImage={heroBackgrounds.academicBuildings}

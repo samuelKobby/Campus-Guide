@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { FaSearch, FaFilter, FaMapMarkerAlt, FaClock, FaPhone } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
 import placeholderImage from '../assets/placeholder.svg';
+import { VoiceSearchInput } from '../components/search/VoiceSearchInput';
+import { useVoiceLanguages } from '../hooks/useVoiceLanguages';
 
 interface Pharmacy {
   id: string;
@@ -67,6 +69,7 @@ const PharmacyCard: React.FC<{ pharmacy: Pharmacy; theme: string }> = ({ pharmac
       {/* Image */}
       <div className="relative w-full h-[240px] overflow-hidden rounded-xl mb-3">
         <motion.img
+          src={pharmacy.image || placeholderImage}
           className="w-full h-full object-cover"
           alt={pharmacy.name}
           animate={{ scale: isHovered ? 1.05 : 1 }}
@@ -104,22 +107,26 @@ const PharmacyCard: React.FC<{ pharmacy: Pharmacy; theme: string }> = ({ pharmac
         animate={{ y: isHovered ? -2 : 0 }}
         transition={{ duration: 0.2 }}
       >
-        <h2 className={`text-sm font-semibold line-clamp-1 leading-tight transition-colors duration-200 ${
-          theme === 'dark' ? 'text-white' : 'text-gray-900'
-        } ${isHovered ? 'text-cyan-600 dark:text-cyan-400' : ''}`}>
-          {pharmacy.name}
-        </h2>
-
-        <div className={`text-xs space-y-1 ${theme === 'dark' ? 'text-[#a09cb9]' : 'text-gray-600'}`}>
-          <p className="flex items-center gap-1.5 line-clamp-1">
-            <FaMapMarkerAlt className="flex-shrink-0 opacity-60" size={11} />
-            {pharmacy.location}
-          </p>
-          <p className="flex items-center gap-1.5">
+        {/* First row - Name and Hours */}
+        <div className="flex justify-between items-center">
+          <h2 className={`text-sm font-semibold line-clamp-1 leading-tight transition-colors duration-200 ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          } ${isHovered ? 'text-cyan-600 dark:text-cyan-400' : ''}`}>
+            {pharmacy.name}
+          </h2>
+          <p className={`text-xs flex items-center gap-1.5 ${theme === 'dark' ? 'text-[#a09cb9]' : 'text-gray-600'}`}>
             <FaClock className="flex-shrink-0 opacity-60" size={11} />
             {pharmacy.hours}
           </p>
-          <p className="flex items-center gap-1.5">
+        </div>
+
+        {/* Second row - Location and Phone */}
+        <div className="flex justify-between items-start">
+          <p className={`text-xs flex items-center gap-1.5 line-clamp-1 ${theme === 'dark' ? 'text-[#a09cb9]' : 'text-gray-600'}`}>
+            <FaMapMarkerAlt className="flex-shrink-0 opacity-60" size={11} />
+            {pharmacy.location}
+          </p>
+          <p className={`text-xs flex items-center gap-1.5 ${theme === 'dark' ? 'text-[#a09cb9]' : 'text-gray-600'}`}>
             <FaPhone className="flex-shrink-0 opacity-60" size={11} />
             {pharmacy.phone}
           </p>
@@ -137,6 +144,10 @@ export const Pharmacies: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [availableOnly, setAvailableOnly] = useState(false);
   const { theme } = useTheme();
+
+  // Voice language support
+  const { languages } = useVoiceLanguages();
+  const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
 
   useEffect(() => {
     const fetch = async () => {
@@ -170,19 +181,16 @@ export const Pharmacies: React.FC = () => {
       <div className="container mx-auto px-4">
         {/* Search & Filter */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              placeholder="Search pharmacies by name or location..."
-              className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                theme === 'dark'
-                  ? 'bg-[#151030] border-gray-700 text-white placeholder-gray-400'
-                  : 'bg-white border-gray-300 text-gray-900'
-              }`}
+          <div className="flex-1">
+            <VoiceSearchInput
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
+              onChange={setSearchTerm}
+              placeholder="Search pharmacies by name or location..."
+              currentLanguage={currentLanguage}
+              onLanguageChange={setCurrentLanguage}
+              className="w-full"
+              theme={theme}
             />
-            <FaSearch className={`absolute left-3 top-1/2 -translate-y-1/2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
           </div>
           <div className="flex items-center gap-2">
             <FaFilter className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} />

@@ -26,7 +26,7 @@ export const useLocationSearch = () => {
 
     // Search through all category locations
     const allLocations = [
-      ...academicLocations.map(loc => ({ ...loc, category: 'Academic Buildings' })),
+      ...academicLocations.map(loc => ({ ...loc, category: 'Academic Buildings & Hostels' })),
       ...libraryLocations.map(loc => ({ ...loc, category: 'Libraries' })),
       ...diningLocations.map(loc => ({ ...loc, category: 'Dining Halls' })),
       ...sportsLocations.map(loc => ({ ...loc, category: 'Sports Facilities' })),

@@ -7,12 +7,16 @@ import { useTheme } from '../context/ThemeContext';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import {
-  BookOpen, Users, Target, Utensils, Hospital, MapPin, Navigation2,
+  MapPin, Navigation2,
   Wifi, Battery, Signal, Layers, Globe, Crosshair, LayoutGrid,
   Activity, Zap, Search, Antenna, ChevronRight, Menu, X, ChevronDown,
-  GraduationCap, Coffee, Dumbbell, HeartPulse, Info, Phone, Map as MapIcon, Play,
+  Info, Phone, Map as MapIcon,
   Pill, Building2,
 } from 'lucide-react';
+import {
+  FaBook, FaUtensils, FaBullseye, FaUsers, FaHospital,
+  FaGraduationCap, FaCoffee, FaDumbbell, FaHeartbeat, FaPlay
+} from 'react-icons/fa';
 
 /* ── Background slide images ──────────────────────────────────────────── */
 const bgSlides = [
@@ -24,12 +28,12 @@ const bgSlides = [
 
 /* ── Data ─────────────────────────────────────────────────────────────────── */
 const campusZones = [
-  { name: 'Academic', icon: BookOpen, path: '/category/academic', color: 'from-emerald-400 to-teal-600', angle: 300, distance: 1.12 },
-  { name: 'Libraries', icon: BookOpen, path: '/category/libraries', color: 'from-amber-400 to-orange-500', angle: 0, distance: 1 },
-  { name: 'Dining', icon: Utensils, path: '/category/dining', color: 'from-pink-400 to-rose-500', angle: 60, distance: 1.12 },
-  { name: 'Sports', icon: Target, path: '/category/sports', color: 'from-sky-400 to-blue-500', angle: 120, distance: 1.25 },
-  { name: 'Student Hub', icon: Users, path: '/category/student-centers', color: 'from-violet-400 to-purple-500', angle: 180, distance: 1.25 },
-  { name: 'Health', icon: Hospital, path: '/category/health', color: 'from-fuchsia-400 to-pink-500', angle: 240, distance: 1.25 },
+  { name: 'Academic Buildings & Hostels', icon: FaBook, path: '/category/academic', color: 'from-emerald-400 to-teal-600', angle: 300, distance: 1.12 },
+  { name: 'Libraries', icon: FaBook, path: '/category/libraries', color: 'from-amber-400 to-orange-500', angle: 0, distance: 1 },
+  { name: 'Dining', icon: FaUtensils, path: '/category/dining', color: 'from-pink-400 to-rose-500', angle: 60, distance: 1.12 },
+  { name: 'Sports', icon: FaBullseye, path: '/category/sports', color: 'from-sky-400 to-blue-500', angle: 120, distance: 1.25 },
+  { name: 'Student Hub', icon: FaUsers, path: '/category/student-centers', color: 'from-violet-400 to-purple-500', angle: 180, distance: 1.25 },
+  { name: 'Health', icon: FaHospital, path: '/category/health', color: 'from-fuchsia-400 to-pink-500', angle: 240, distance: 1.25 },
 ];
 
 const quickStats = [
@@ -63,12 +67,12 @@ function CountUpValue({ countTo, prefix = '', suffix = '', decimals = 0, duratio
 }
 
 const navCategories = [
-  { name: 'Academic', icon: GraduationCap, path: '/category/academic' },
-  { name: 'Libraries', icon: BookOpen, path: '/category/libraries' },
-  { name: 'Dining', icon: Utensils, path: '/category/dining' },
-  { name: 'Sports', icon: Dumbbell, path: '/category/sports' },
-  { name: 'Student Centers', icon: Coffee, path: '/category/student-centers' },
-  { name: 'Health', icon: HeartPulse, path: '/category/health' },
+  { name: 'Academic Buildings & Hostels', icon: FaGraduationCap, path: '/category/academic' },
+  { name: 'Libraries', icon: FaBook, path: '/category/libraries' },
+  { name: 'Dining', icon: FaUtensils, path: '/category/dining' },
+  { name: 'Sports', icon: FaDumbbell, path: '/category/sports' },
+  { name: 'Student Centers', icon: FaCoffee, path: '/category/student-centers' },
+  { name: 'Health', icon: FaHeartbeat, path: '/category/health' },
 ];
 
 /* ── Component ─────────────────────────────────────────────────────────────── */
@@ -260,7 +264,7 @@ export const Home: React.FC = () => {
               <img src="/images/1.png" alt="Campus Guide" className="h-9 w-9 relative z-10 drop-shadow-[0_0_6px_rgba(6,182,212,0.25)]" />
             </div>
             <span className={`font-bold text-lg tracking-tight ${isDark ? 'text-white drop-shadow-[0_0_8px_rgba(6,182,212,0.15)]' : ''}`}
-              style={{ fontFamily: "'Inter','SF Pro Display',system-ui,sans-serif", ...(!isDark ? { color: '#2d3340' } : {}) }}>
+              style={{ fontFamily: "'Roboto','Inter',system-ui,sans-serif", ...(!isDark ? { color: '#2d3340' } : {}) }}>
               CampusGuide
             </span>
           </Link>
@@ -286,8 +290,8 @@ export const Home: React.FC = () => {
           {/* ── Right: bare status items + theme toggle + mobile toggle ── */}
           <div className="flex items-center gap-3">
             {/* Demo button */}
-            <button ref={demoBtnRef} onClick={openDemo} className="hud-bare hidden sm:flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
-              <Play className={`w-3 h-3 ${isDark ? 'text-cyan-300/90' : 'text-blue-600/80'}`} />
+            <button ref={demoBtnRef} onClick={openDemo} className="hud-bare hidden sm:flex items-baseline gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
+              <FaPlay className={`w-3 h-3 ${isDark ? 'text-cyan-300/90' : 'text-blue-600/80'} translate-y-[2px]`} />
               <span className={`text-[10px] font-medium tracking-widest ${isDark ? 'text-cyan-300/90' : 'text-blue-700/90'}`}>Demo</span>
             </button>
             {/* Time */}
@@ -502,7 +506,7 @@ export const Home: React.FC = () => {
               transition={{ delay: 0.3, duration: 0.6 }}
             >
               <h1 className={`text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}
-                style={{ fontFamily: "'Inter','SF Pro Display',system-ui,sans-serif" }}>
+                style={{ fontFamily: "'Playfair Display','Georgia',serif" }}>
                 Find Your Way Around Campus
               </h1>
               <p className={`mt-3 text-base sm:text-lg lg:text-xl ${isDark ? 'text-cyan-100/80' : 'text-slate-500'}`}>
@@ -574,14 +578,14 @@ export const Home: React.FC = () => {
         className="absolute inset-0 z-40 flex flex-col justify-center gap-32 px-6 md:hidden pointer-events-none"
       >
         <h2 className={`font-bold tracking-tight text-left ${isDark ? 'text-white' : 'text-slate-900'}`}
-          style={{ fontFamily: "'Inter','SF Pro Display',system-ui,sans-serif", fontSize: 'clamp(2.8rem, 12vw, 4.5rem)', lineHeight: 1.05 }}>
+          style={{ fontFamily: "'Playfair Display','Georgia',serif", fontSize: 'clamp(2.8rem, 12vw, 4.5rem)', lineHeight: 1.05 }}>
           Find Your<br/>Way
         </h2>
         <div className="search-hud-wrapper search-hud-navbar w-full max-w-md mx-auto pointer-events-auto">
           <SearchBar />
         </div>
         <h2 className={`font-bold tracking-tight text-right ${isDark ? 'text-white' : 'text-slate-900'}`}
-          style={{ fontFamily: "'Inter','SF Pro Display',system-ui,sans-serif", fontSize: 'clamp(2.8rem, 12vw, 4.5rem)', lineHeight: 1.05 }}>
+          style={{ fontFamily: "'Playfair Display','Georgia',serif", fontSize: 'clamp(2.8rem, 12vw, 4.5rem)', lineHeight: 1.05 }}>
           Around<br/>Campus.
         </h2>
       </motion.div>
