@@ -11,12 +11,9 @@ import {
   Wifi, Battery, Signal, Layers, Globe, Crosshair, LayoutGrid,
   Activity, Zap, Search, Antenna, ChevronRight, Menu, X, ChevronDown,
   Info, Phone, Map as MapIcon,
-  Pill, Building2,
+  Pill, Building2, BookOpen, UtensilsCrossed, Target, Users, Hospital,
+  GraduationCap, Coffee, Dumbbell, Heart, Play,
 } from 'lucide-react';
-import {
-  FaBook, FaUtensils, FaBullseye, FaUsers, FaHospital,
-  FaGraduationCap, FaCoffee, FaDumbbell, FaHeartbeat, FaPlay
-} from 'react-icons/fa';
 
 /* ── Background slide images ──────────────────────────────────────────── */
 const bgSlides = [
@@ -28,12 +25,12 @@ const bgSlides = [
 
 /* ── Data ─────────────────────────────────────────────────────────────────── */
 const campusZones = [
-  { name: 'Academic Buildings & Hostels', icon: FaBook, path: '/category/academic', color: 'from-emerald-400 to-teal-600', angle: 300, distance: 1.12 },
-  { name: 'Libraries', icon: FaBook, path: '/category/libraries', color: 'from-amber-400 to-orange-500', angle: 0, distance: 1 },
-  { name: 'Dining', icon: FaUtensils, path: '/category/dining', color: 'from-pink-400 to-rose-500', angle: 60, distance: 1.12 },
-  { name: 'Sports', icon: FaBullseye, path: '/category/sports', color: 'from-sky-400 to-blue-500', angle: 120, distance: 1.25 },
-  { name: 'Student Hub', icon: FaUsers, path: '/category/student-centers', color: 'from-violet-400 to-purple-500', angle: 180, distance: 1.25 },
-  { name: 'Health', icon: FaHospital, path: '/category/health', color: 'from-fuchsia-400 to-pink-500', angle: 240, distance: 1.25 },
+  { name: 'Academic Buildings & Hostels', icon: BookOpen, path: '/category/academic', color: 'from-emerald-400 to-teal-600', angle: 300, distance: 1.12 },
+  { name: 'Libraries', icon: BookOpen, path: '/category/libraries', color: 'from-amber-400 to-orange-500', angle: 0, distance: 1 },
+  { name: 'Dining', icon: UtensilsCrossed, path: '/category/dining', color: 'from-pink-400 to-rose-500', angle: 60, distance: 1.12 },
+  { name: 'Sports', icon: Target, path: '/category/sports', color: 'from-sky-400 to-blue-500', angle: 120, distance: 1.25 },
+  { name: 'Student Hub', icon: Users, path: '/category/student-centers', color: 'from-violet-400 to-purple-500', angle: 180, distance: 1.25 },
+  { name: 'Health', icon: Hospital, path: '/category/health', color: 'from-fuchsia-400 to-pink-500', angle: 240, distance: 1.25 },
 ];
 
 const quickStats = [
@@ -67,12 +64,12 @@ function CountUpValue({ countTo, prefix = '', suffix = '', decimals = 0, duratio
 }
 
 const navCategories = [
-  { name: 'Academic Buildings & Hostels', icon: FaGraduationCap, path: '/category/academic' },
-  { name: 'Libraries', icon: FaBook, path: '/category/libraries' },
-  { name: 'Dining', icon: FaUtensils, path: '/category/dining' },
-  { name: 'Sports', icon: FaDumbbell, path: '/category/sports' },
-  { name: 'Student Centers', icon: FaCoffee, path: '/category/student-centers' },
-  { name: 'Health', icon: FaHeartbeat, path: '/category/health' },
+  { name: 'Academic Buildings & Hostels', icon: GraduationCap, path: '/category/academic' },
+  { name: 'Libraries', icon: BookOpen, path: '/category/libraries' },
+  { name: 'Dining', icon: UtensilsCrossed, path: '/category/dining' },
+  { name: 'Sports', icon: Dumbbell, path: '/category/sports' },
+  { name: 'Student Centers', icon: Coffee, path: '/category/student-centers' },
+  { name: 'Health', icon: Heart, path: '/category/health' },
 ];
 
 /* ── Component ─────────────────────────────────────────────────────────────── */
@@ -291,7 +288,7 @@ export const Home: React.FC = () => {
           <div className="flex items-center gap-3">
             {/* Demo button */}
             <button ref={demoBtnRef} onClick={openDemo} className="hud-bare hidden sm:flex items-baseline gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
-              <FaPlay className={`w-3 h-3 ${isDark ? 'text-cyan-300/90' : 'text-blue-600/80'} translate-y-[2px]`} />
+              <Play className={`w-3 h-3 ${isDark ? 'text-cyan-300/90' : 'text-blue-600/80'} translate-y-[2px]`} />
               <span className={`text-[10px] font-medium tracking-widest ${isDark ? 'text-cyan-300/90' : 'text-blue-700/90'}`}>Demo</span>
             </button>
             {/* Time */}
