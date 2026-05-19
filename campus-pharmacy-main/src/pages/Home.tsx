@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { SearchBar } from '../components/home/SearchBar';
 import { CompassNavigation } from '../components/home/CompassNavigation';
 import { CampusMarker } from '../components/home/CampusMarker';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
+import { HomeTutorial, TutorialStep } from '../components/home/HomeTutorial';
+import { HomeHelpWidget } from '../components/home/HomeHelpWidget';
 import { useTheme } from '../context/ThemeContext';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
@@ -106,6 +108,101 @@ export const Home: React.FC = () => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
 
+  const HOME_TUTORIAL_SEEN_KEY = 'campusGuide.homeTutorialSeen';
+  const tutorialInitRef = useRef(false);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [tutorialRunId, setTutorialRunId] = useState(0);
+
+  const tutorialSteps: TutorialStep[] = useMemo(() => ([
+    {
+      id: 'welcome',
+      title: 'Welcome to CampusGuide',
+      body: 'This quick tutorial will show you the key parts of the landing page.',
+      placement: 'center',
+    },
+    {
+      id: 'search',
+      title: 'Search for locations',
+      body: 'Type a building, service, or place name to find it quickly. You can also use voice search from the mic button.',
+      selector: '#home-search-centered, #home-search-mobile, #home-search-navbar',
+      placement: 'bottom',
+    },
+    {
+      id: 'medicines',
+      title: 'Medicines',
+      body: 'Open Medicines to browse medications and related info.',
+      selector: '#home-link-medicines, #home-link-medicines-mobile',
+      placement: 'right',
+    },
+    {
+      id: 'pharmacies',
+      title: 'Pharmacies',
+      body: 'Open Pharmacies to find nearby pharmacies and details.',
+      selector: '#home-link-pharmacies, #home-link-pharmacies-mobile',
+      placement: 'right',
+    },
+    {
+      id: 'categories',
+      title: 'Browse by category',
+      body: 'Open Categories to explore major campus zones like Academic, Libraries, Dining, Sports, Student Centers, and Health.',
+      selector: '#home-categories-toggle',
+      placement: 'right',
+    },
+    {
+      id: '3d-map',
+      title: '3D Map',
+      body: 'Use the 3D Map link to explore the campus in an external 3D view.',
+      selector: '#home-link-3dmap, #home-link-3dmap-mobile',
+      placement: 'left',
+    },
+    {
+      id: 'demo',
+      title: 'Demo video',
+      body: 'Tap Demo to open a quick walkthrough video on the landing page.',
+      selector: '#home-demo-button',
+      placement: 'bottom',
+    },
+    {
+      id: 'theme',
+      title: 'Switch theme',
+      body: 'Use the theme toggle to switch between light and dark mode.',
+      selector: '#home-theme-toggle',
+      placement: 'bottom',
+    },
+    {
+      id: 'voice-agent',
+      title: 'Voice assistant',
+      body: 'You can also use the voice assistant to interact with the system directly.',
+      selector: '#home-voice-agent',
+      placement: 'top',
+    },
+  ]), []);
+
+  const openTutorial = useCallback(() => {
+    setTutorialRunId((v) => v + 1);
+    setTutorialOpen(true);
+  }, []);
+
+  const closeTutorial = useCallback((markSeen: boolean) => {
+    if (markSeen) {
+      localStorage.setItem(HOME_TUTORIAL_SEEN_KEY, '1');
+    }
+    setTutorialOpen(false);
+  }, []);
+
+  useEffect(() => {
+    if (tutorialInitRef.current) return;
+    tutorialInitRef.current = true;
+
+    const seen = localStorage.getItem(HOME_TUTORIAL_SEEN_KEY);
+    if (!seen) {
+      const t = window.setTimeout(() => {
+        openTutorial();
+      }, 900);
+      return () => window.clearTimeout(t);
+    }
+  }, [openTutorial]);
+
   const openCompass = () => {
     if (categoriesBtnRef.current && containerRef.current) {
       const btnRect = categoriesBtnRef.current.getBoundingClientRect();
@@ -199,7 +296,6 @@ export const Home: React.FC = () => {
       />
 
       {/* Dark overlay behind search bar only — dark mode */}
-
       {/* Subtle noise texture */}
       <div className="absolute inset-0 opacity-[0.025] mix-blend-overlay"
         style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E")`, backgroundSize: '200px 200px' }} />
@@ -272,6 +368,7 @@ export const Home: React.FC = () => {
               {compassOpen && (
                 <motion.div
                   key="navbar-search"
+                  id="home-search-navbar"
                   className="search-hud-wrapper search-hud-navbar w-full"
                   initial={{ opacity: 0, y: -8, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -287,14 +384,16 @@ export const Home: React.FC = () => {
           {/* ── Right: bare status items + theme toggle + mobile toggle ── */}
           <div className="flex items-center gap-3">
             {/* Demo button */}
-            <button ref={demoBtnRef} onClick={openDemo} className="hud-bare hidden sm:flex items-baseline gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
+            <button id="home-demo-button" ref={demoBtnRef} onClick={openDemo} className="hud-bare hidden sm:flex items-baseline gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
               <Play className={`w-3 h-3 ${isDark ? 'text-cyan-300/90' : 'text-blue-600/80'} translate-y-[2px]`} />
               <span className={`text-[10px] font-medium tracking-widest ${isDark ? 'text-cyan-300/90' : 'text-blue-700/90'}`}>Demo</span>
             </button>
             {/* Time */}
             <span className={`hud-bare hidden sm:block font-semibold tabular-nums text-[11px] ${isDark ? 'text-cyan-100/95' : 'text-slate-800'}`}>{formattedTime}</span>
             {/* Theme toggle */}
-            <ThemeToggle className="hud-theme-toggle" />
+            <div id="home-theme-toggle">
+              <ThemeToggle className="hud-theme-toggle" />
+            </div>
             {/* Mobile menu button */}
             <button
               className={`md:hidden p-2 rounded-lg transition-colors ${isDark ? 'text-cyan-400/60 hover:text-cyan-300 hover:bg-white/5' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'}`}
@@ -364,6 +463,7 @@ export const Home: React.FC = () => {
                   ))}
                   <div className="my-2 border-t border-white/10" />
                   <Link
+                    id="home-link-medicines-mobile"
                     to="/medicines"
                     className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10"
                     onClick={() => setMobileMenuOpen(false)}
@@ -372,6 +472,7 @@ export const Home: React.FC = () => {
                     <span>Medicines</span>
                   </Link>
                   <Link
+                    id="home-link-pharmacies-mobile"
                     to="/pharmacies"
                     className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10"
                     onClick={() => setMobileMenuOpen(false)}
@@ -397,6 +498,7 @@ export const Home: React.FC = () => {
                     <span>Contact</span>
                   </Link>
                   <a
+                    id="home-link-3dmap-mobile"
                     href="https://earth.google.com/web/@5.65162219,-0.18694534,95.85505974a,152.56713881d,57.25032726y,91.66577259h,60t,0r/data=CgRCAggBMikKJwolCiExZUxIajdmX3V5QWZHQUYxbnZuRkhMWmFPMnhoa25JS0sgAToDCgEwQgIIAEoICIWEhuwEEAE"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -510,7 +612,7 @@ export const Home: React.FC = () => {
                 Search locations, pharmacies, services & more
               </p>
             </motion.div>
-            <div className="search-hud-wrapper search-hud-centered pointer-events-auto" style={{ width: 'min(860px, 92vw)', position: 'relative' }}>
+            <div id="home-search-centered" className="search-hud-wrapper search-hud-centered pointer-events-auto" style={{ width: 'min(860px, 92vw)', position: 'relative' }}>
               <div className="absolute inset-0 rounded-full pointer-events-none" style={{ background: isDark ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.55)', filter: 'blur(32px)', transform: 'scale(1.15)', zIndex: -1 }} />
               <SearchBar />
             </div>
@@ -578,7 +680,7 @@ export const Home: React.FC = () => {
           style={{ fontFamily: "'Playfair Display','Georgia',serif", fontSize: 'clamp(2.8rem, 12vw, 4.5rem)', lineHeight: 1.05 }}>
           Find Your<br/>Way
         </h2>
-        <div className="search-hud-wrapper search-hud-navbar w-full max-w-md mx-auto pointer-events-auto">
+        <div id="home-search-mobile" className="search-hud-wrapper search-hud-navbar w-full max-w-md mx-auto pointer-events-auto">
           <SearchBar />
         </div>
         <h2 className={`font-bold tracking-tight text-right ${isDark ? 'text-white' : 'text-slate-900'}`}
@@ -642,7 +744,7 @@ export const Home: React.FC = () => {
 
         {/* Categories — compass toggle */}
         <motion.div ref={categoriesBtnRef} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.9, duration: 0.5 }}>
-          <button onClick={openCompass} className="w-full text-left">
+          <button id="home-categories-toggle" onClick={openCompass} className="w-full text-left">
             <motion.div
               whileHover={{ scale: 1.05, x: 4 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
@@ -656,11 +758,11 @@ export const Home: React.FC = () => {
         </motion.div>
 
         {[
-          { icon: MapPin, label: 'Pharmacies', to: '/pharmacies', delay: 1.0 },
-          { icon: Search, label: 'Medicines', to: '/medicines', delay: 1.1 },
+          { id: 'home-link-pharmacies', icon: MapPin, label: 'Pharmacies', to: '/pharmacies', delay: 1.0 },
+          { id: 'home-link-medicines', icon: Search, label: 'Medicines', to: '/medicines', delay: 1.1 },
         ].map((item) => (
           <motion.div key={item.label} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: item.delay, duration: 0.5 }}>
-            <Link to={item.to}>
+            <Link id={item.id} to={item.to}>
               <motion.div whileHover={{ scale: 1.05, x: 4 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }} className="hud-side-item group">
                 <div className="hud-side-icon"><item.icon className="w-3.5 h-3.5" /></div>
                 <span>{item.label}</span>
@@ -670,14 +772,13 @@ export const Home: React.FC = () => {
           </motion.div>
         ))}
       </div>
-
       {/* ── Right side items ──────────────────────────────────────────── */}
       <div className="absolute right-5 sm:right-8 top-1/2 -translate-y-1/2 z-30 hidden lg:flex flex-col items-end gap-2">
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.8, duration: 0.5 }}>
           <div className="hud-side-label"><Navigation2 className="w-3 h-3" /><span>NAVIGATE</span></div>
         </motion.div>
         {[
-          { icon: Globe, label: '3D Map', href: 'https://earth.google.com/web/@5.65162219,-0.18694534,95.85505974a,152.56713881d,57.25032726y,91.66577259h,60t,0r/data=CgRCAggBMikKJwolCiExZUxIajdmX3V5QWZHQUYxbnZuRkhMWmFPMnhoa25JS0sgAToDCgEwQgIIAEoICIWEhuwEEAE', delay: 0.9 },
+          { id: 'home-link-3dmap', icon: Globe, label: '3D Map', href: 'https://earth.google.com/web/@5.65162219,-0.18694534,95.85505974a,152.56713881d,57.25032726y,91.66577259h,60t,0r/data=CgRCAggBMikKJwolCiExZUxIajdmX3V5QWZHQUYxbnZuRkhMWmFPMnhoa25JS0sgAToDCgEwQgIIAEoICIWEhuwEEAE', delay: 0.9 },
           { icon: Crosshair, label: 'About', to: '/about', delay: 1.0 },
           { icon: Activity, label: 'Contact', to: '/contact', delay: 1.1 },
         ].map((item) => {
@@ -691,7 +792,7 @@ export const Home: React.FC = () => {
           return (
             <motion.div key={item.label} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: item.delay, duration: 0.5 }}>
               {item.href ? (
-                <a href={item.href} target="_blank" rel="noopener noreferrer">{inner}</a>
+                <a id={(item as any).id} href={item.href} target="_blank" rel="noopener noreferrer">{inner}</a>
               ) : (
                 <Link to={item.to!}>{inner}</Link>
               )}
@@ -704,12 +805,25 @@ export const Home: React.FC = () => {
       <div className="absolute inset-0 pointer-events-none z-50 scanline-overlay" />
 
       {/* ── ElevenLabs Voice Agent ─────────────────────────────────────── */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div id="home-voice-agent" className="fixed bottom-6 right-6 z-50">
         <elevenlabs-convai
           agent-id="agent_01jx5fv1kbech895mwad5nx8wb"
           avatar-orb-style="icon"
         ></elevenlabs-convai>
       </div>
+
+      <HomeHelpWidget
+        isDark={isDark}
+        onStartTutorial={openTutorial}
+      />
+
+      <HomeTutorial
+        open={tutorialOpen}
+        isDark={isDark}
+        runId={tutorialRunId}
+        steps={tutorialSteps}
+        onClose={closeTutorial}
+      />
     </div>
   </LayoutGroup>
   );

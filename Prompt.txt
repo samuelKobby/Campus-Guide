@@ -1,0 +1,218 @@
+You are a senior front‑end designer and developer.
+
+I’m building a new web app and I want you to closely REPLICATE the *design language and interaction style* from my existing “Campus Guide” project, but WITHOUT copying any code or assets verbatim. Recreate the look, feel, and UX patterns, not the exact implementation.
+
+From the reference project, match the following:
+
+1. Scrolling style and motion system (everything about it)
+   - Recreate the same overall scrolling experience:
+     - This project uses TWO scroll modes:
+       - Home page HUD (`/`): a full-screen (100vh) interactive dashboard with `overflow: hidden` (no vertical page scroll — motion is ambient, not scroll-driven).
+       - All other pages: Lenis-powered smooth scrolling for a cinematic feel.
+     - Smooth scrolling implementation (match the feel):
+       - Use Lenis-style smoothing with these “feel” defaults:
+         - `duration ~ 1.2`
+         - Easing: exponential-out (similar to `t => min(1, 1.001 - 2^(-10t))`)
+         - `smoothWheel: true`, `wheelMultiplier: 1`, `touchMultiplier: 2`
+       - Keep smooth-scroll and scroll animations on the same rAF loop by driving Lenis from a GSAP-like ticker.
+       - Keep ScrollTrigger in sync by calling `ScrollTrigger.update` on Lenis scroll events.
+       - Disable lag smoothing (equivalent to `gsap.ticker.lagSmoothing(0)`) so animations track scroll precisely.
+     - Use a GSAP + ScrollTrigger reveal system (as used in this app):
+       - Easing: `power3.out`
+       - Default duration: `0.8s`
+       - Default start: `"top 85%"`
+       - Default behavior: `once: true` so elements animate only on first entry.
+     - Scrolling “feel” rules (important):
+       - Keep motion smooth and cinematic: avoid bouncy overshoot, avoid hard linear moves.
+       - Avoid making the page feel like a slideshow (no full-page snap sections).
+       - Preserve readability: motion should never move text so much that it’s hard to read while scrolling.
+       - Use subtle transform values (small y/x offsets) rather than large dramatic moves.
+     - Triggering and timing (concrete):
+       - Trigger reveals slightly before the element is fully visible, like `start: "top 85%"`.
+       - Standard reveal duration: ~0.8s.
+       - Staggered children: ~0.12s between items (cards/steps) by default.
+       - Use a short delay only for hero “intro” elements (e.g. 0.15–0.35s), not for every section.
+     - Responsiveness (scroll + motion):
+       - On mobile: reduce distances and durations slightly (e.g. y +24 instead of +40; duration ~0.65–0.75s).
+       - On large screens: slightly more depth is OK (but still subtle), especially for image cards.
+     - Reduced motion:
+       - Respect `prefers-reduced-motion`: disable Lenis smoothing, disable parallax and continuous micro‑motion; keep reveals as instant fades (or extremely short, ~150ms).
+       - Never block usability if motion is disabled.
+   - Section reveals:
+     - Implement variants equivalent to: `fadeUp` (opacity 0, y +40), `fadeIn` (opacity 0), `slideLeft` / `slideRight` (opacity 0, x ±60), and `scaleUp` (opacity 0, scale ~0.88).
+     - Provide both single-element reveal and staggered-child reveal so containers like “How It Works” steps or testimonial cards animate in sequence.
+     - Reveal defaults (match this codebase’s helper hook):
+       - `fadeUp`: `{ opacity: 0, y: 40 }`
+       - `fadeIn`: `{ opacity: 0 }`
+       - `slideLeft`: `{ opacity: 0, x: -60 }`
+       - `slideRight`: `{ opacity: 0, x: 60 }`
+       - `scaleUp`: `{ opacity: 0, scale: 0.88 }`
+       - Stagger helper animates direct children with `stagger: 0.12`.
+     - Reveal composition rules:
+       - Prefer transform + opacity only (no layout-affecting properties). Use `will-change: transform, opacity` for animated elements.
+       - Keep transforms GPU-friendly (translate/scale), avoid filter animations except very subtle blur/glow.
+       - Elements should end exactly at their natural layout position (no “floating” final states).
+     - Re-trigger behavior:
+       - Reveals should run once per session/visit (equivalent to `once: true`). Scrolling back up should not re-animate the same elements.
+   - Parallax and subtle depth:
+     - On pages like the About page, give key sections a gentle parallax effect (e.g. translateY ranges like [-20, 20] or scale from ~0.9 to 1 as you scroll).
+     - Maintain a soft, cinematic feeling: sections glide into place rather than snapping.
+     - Parallax rules (subtle):
+       - Parallax should be very light (typically 8–22px total travel). It should never look like the content is detaching from the page.
+       - Use parallax mainly for decorative/background layers and hero imagery; avoid parallax on body paragraphs.
+       - Tie parallax to scroll progress with easing (avoid raw linear mapping).
+   - Continuous micro‑motion:
+     - Use small, looping animations similar to: floating markers, radar sweep, soft glow pulses, and connector lines that gently fade in/out.
+     - These should be very subtle and primarily decorative, supporting the sci‑fi HUD feeling from the home “navigation dashboard”.
+     - Micro‑motion spec (concrete and subtle):
+       - Floating markers: y oscillation ~4–8px, 4–7s loop, ease-in-out, stagger phase offsets.
+       - Radar sweep: very low opacity (5–12%), slow rotation (6–10s), never distracting.
+       - Glow pulses: opacity shift within ~0.04–0.12 range, 3–6s loop.
+       - Connector lines: animate in once (fade-in + slight dash offset), then remain mostly static.
+     - Performance constraints:
+       - Do not animate dozens of elements simultaneously; batch or stagger.
+       - Avoid heavy `scroll` event handlers; prefer ScrollTrigger tied to the smooth-scroll rAF loop (Lenis + GSAP ticker style).
+       - Keep animations deterministic and stable (no jitter with quick scroll).
+
+2. Light and dark mode toggling, animation style, and color system
+   - Theme behavior:
+     - Implement a global light/dark theme with the theme stored in localStorage, falling back to system preference on first load.
+     - The theme should apply via a `light` / `dark` class on the root element, driving CSS variables for background, surface, text, border, and accent colors.
+   - Circular view‑transition toggle:
+     - Recreate the same View Transitions API style effect used in Campus Guide:
+       - When the theme toggle is clicked, capture the click position.
+       - Animate a circular clip-path expanding or shrinking from that point to reveal the new theme (“expanding dark circle” when entering dark mode, “shrinking dark circle” when returning to light).
+       - The animation feels like a soft, cinematic wipe (~0.8s) rather than a hard cut.
+   - Color palette and contrast:
+     - Light mode: soft pastel background gradients (e.g. from a lavender/off‑white tone similar to #F2ECFD into white), deep slate heading text (~#2d3340), and blue/indigo accents.
+     - Dark mode: deep navy/purple backgrounds (around #030810 / #050816) with darker cards (e.g. a rich indigo/purple card tone), bright cyan and indigo highlights (around #06b6d4, #2563eb, #6366f1), and high-contrast white/off‑white text.
+     - Ensure all key UI pieces (navbar, hero, about sections, category heroes, search HUD, side HUD items, testimonial cards) respond correctly to the theme with matching foreground and background colors.
+   - Glassmorphism and HUD styling:
+     - Use glassy panels (frosted backgrounds, blur, subtle borders) for navbars, search HUD, dropdowns, and side HUD elements, with stronger glow and cyan/indigo outlines in dark mode and softer, brighter whites in light mode.
+
+3. Font style on category hero pages
+   - Category hero typography:
+     - Use a prominent serif display font for main hero titles (similar in feel to “Playfair Display” with `font-weight` bold/extrabold, tight letter spacing, and `leading-none`).
+     - Combine this with a modern sans‑serif (like Inter/Roboto) for descriptions and stat labels to get the same serif + sans pairing.
+     - Title styling:
+       - Large font sizes (around 4xl–5xl on desktop) with very tight tracking and line height.
+       - Two-line headings where one line is neutral and the second line uses an accent color (indigo/cyan) to highlight key words.
+     - Supporting text:
+       - Descriptions set in a clear sans‑serif, around text-xl, with slightly softened color (white/90 in dark mode) and relaxed line height.
+       - Stats section under the hero: bold numeric values (e.g. 3xl) and smaller sans‑serif labels to echo the same structure as the reference project.
+
+4. Navbar style and navlink style
+   - Overall navbar layout:
+     - Fixed to the top, full‑width, with a height around 64px.
+     - Start transparent over hero sections, then morph into a glassmorphic bar after you scroll a small distance (~50px).
+     - After scrolling past most of the initial hero on the home page, the primary HUD-style navbar can slide away to make room for the home dashboard UI (mirroring the reference behavior).
+   - Background and borders:
+     - In dark mode when scrolled: semi‑transparent dark background (e.g. rgba(12,17,30,0.7)), strong blur (around 20px), subtle inner highlight, and a thin, low-opacity border + soft drop shadow.
+     - In light mode when scrolled: translucent white background with blur, very light borders, and a softer, brighter shadow.
+   - Branding:
+     - Brand on the left combines:
+       - A circular logo with concentric SVG rings that slowly rotate around it.
+       - The app name (e.g. “CampusGuide”) in a bold sans‑serif with tight tracking, white and glowing in dark/hero contexts and dark slate in standard light contexts.
+   - Nav links (HUD style):
+     - Centered on larger screens, feeling like part of a HUD strip rather than a typical website menu.
+     - Use a compact sans‑serif (Inter‑like), around 13px, medium weight, small letter‑spacing.
+     - Implement an animated underline:
+       - On hover, a thin line grows from the center outward to ~80% of the link width, using a gradient matching the current text color.
+       - Active links use cyan in dark contexts and blue in light contexts for both text and underline.
+     - Adapt nav link color based on context:
+       - On the About page with a light background, nav links are dark slate.
+       - On category hero pages with dark hero backgrounds, nav links stay white even in light theme.
+   - Mobile navigation:
+     - On small screens, use a slide‑in left drawer with a dark, semi-translucent, blurred background, subtle border, and soft shadows.
+     - Include the same nav items plus extra application shortcuts, all styled as HUD chips with icons, text, and hover states.
+
+5. About page section designs, image/text layouts, image styles/animations, and “What people say” cards
+   - “Our Story” section:
+     - Two-column layout: text on one side, 3D‑tilted image card on the other.
+     - Text:
+       - Small uppercase label chip (“Our Story”) in indigo, tight tracking.
+       - Large, multi-line serif heading, with a key phrase in accent color.
+       - Several paragraphs of body text in a clean sans‑serif with medium line-height and a soft gray color that adapts to dark theme.
+     - Image card:
+       - A portrait-style image inside a rounded 2D card.
+       - Apply perspective and transforms so the card is slightly rotated in 3D (e.g. rotateY and rotateX) with a strong drop shadow.
+       - On hover, reduce the tilt, slightly scale up (~1.03), and keep the motion smooth.
+       - Overlay a bottom-left caption stack (e.g. role + name) in white text with subtle shadow.
+   - Feature sections (Find Medicines / Navigate Campus):
+     - Alternating two-column sections where image and text swap sides between sections.
+     - Images:
+       - Similar 3D tilt and hover behavior, plus an angled gradient overlay from one corner using an indigo or cyan tint.
+     - Text:
+       - Serif heading with accent span.
+       - Supporting paragraphs plus bullet lists where bullets use small circular indigo indicators.
+   - Mission statement:
+     - A centered, card‑style block with:
+       - Serif section title.
+       - A short paragraph and an inner quote card that uses a slightly darker background and italicized text.
+     - The entire block should gently fade/scale into view on scroll.
+   - “How It Works” steps:
+     - A horizontal or grid layout of 4 steps, each with:
+       - A numbered circular badge in a strong indigo/cyan color, white text, medium size.
+       - A compact sans‑serif heading and a short description.
+     - On larger screens, a vertical “timeline” line through the middle of the grid connects these steps visually.
+     - Steps stagger in with a scale/fade‑up effect when scrolled into view.
+   - 3D image gallery:
+     - Three image cards arranged in a grid, each pre‑tilted differently with perspective to feel like a 3D scene.
+     - On hover, each card eases back toward flat and slightly scales up (hover “snap‑to‑front” effect).
+     - Add a dark gradient overlay from the bottom and overlay text (subtitle in small uppercase + bold label).
+   - “What Students Say” testimonial cards:
+     - Section header:
+       - Uppercase label, serif heading “What Students Say”, and a 5‑star rating row with a numeric score (e.g. 4.9 / 5 · 200+ reviews).
+     - Card design:
+       - Narrow, tall cards with rounded corners and subtle border, using a dark indigo/charcoal background in dark mode and white card in light mode.
+       - Inside: review text (small sans‑serif, relaxed line-height) and a small row with avatar + handle.
+     - Layout and animation:
+       - Two horizontal marquee rows:
+         - Row 1 scrolls left, row 2 scrolls right, both looping seamlessly.
+         - Edges are softly masked so cards fade in/out at the sides.
+         - Duplicate card sets to ensure seamless infinite scrolling.
+       - The marquee motion is slow and smooth, not distracting, and loops continuously.
+
+6. Search bar design (complete)
+   - Core component layout:
+     - Pill-shaped search field with:
+       - Left: a search icon inside the pill.
+       - Center: text input with larger font on desktop, smaller compact variant when embedded in the navbar.
+       - Right: voice search icon and a language selector pill showing a 2-letter code (e.g. EN), both inside the same pill boundary.
+     - In dark HUD contexts:
+       - Background: semi‑transparent dark glass with blur.
+       - Border: subtle cyan outline and soft cyan/teal glow.
+       - Text: light, with desaturated placeholder text.
+       - Icons: cyan-tinted.
+     - In light contexts:
+       - Background: bright, soft white with a slight inner highlight.
+       - Shadows: gentle drop shadow under the pill.
+       - Text: dark slate with slightly warmer placeholder color.
+   - Size and typography:
+     - Centered hero variant:
+       - Taller pill (around 56px), bigger font (~15–16px), strong glassy effect, and heavier glow.
+       - Paired with hero heading/subheading above that use the same serif/sans typographic system as the reference home page.
+     - Navbar variant:
+       - More compact pill (~38px tall), smaller font (~13px), tuned for use in the top bar.
+       - Same basic styling but with subtler glow and smaller icons.
+   - Dropdown and states:
+     - Results dropdown:
+       - Glassmorphic card underneath the input with rounded corners and blur.
+       - Each result row is a clickable area with hover highlight and clear name text.
+       - Border and glow match the cyan/indigo HUD aesthetic in dark mode, and light/blue aesthetic in light mode.
+     - Status messages:
+       - “Searching…”, “No locations found”, and error messages appear as separate notification-style blocks under the input with appropriate background colors (e.g. light gray/blue/yellow/red variants).
+       - Voice-search status:
+         - A small notification when voice is unsupported.
+         - A “Listening…” strip when the microphone is active, with blue accent and slight pulse.
+   - Placement and responsiveness:
+     - On desktop:
+       - When the compass/HUD is closed on the home page, the search bar appears centered in the hero with a glowing backdrop and subtle blur behind it.
+       - When the compass is open, the navbar-embedded search is used instead, keeping everything consistent.
+     - On mobile:
+       - Search bar appears in a vertical layout between two big “Find Your / Way Around Campus” headings, still using the pill-shaped design but scaled to fit narrower widths.
+
+General instructions:
+- Match the Campus Guide project’s *overall aesthetic*: a futuristic, HUD-like navigation dashboard with glassmorphism, cyan/indigo highlights, serif display headings, sans‑serif body text, and layered, parallax‑friendly sections.
+- Recreate the scrolling behavior, reveal animations, dark/light theme transitions, navbar behavior, category hero typography, About page section layouts, testimonial marquee, and search HUD exactly in spirit, but with your own implementation details.
+- Before finalizing, summarize how you’ve mapped each of these requirements (1–6) into concrete components, layouts, and CSS/animation primitives, so I can verify the design matches the reference project’s feel.

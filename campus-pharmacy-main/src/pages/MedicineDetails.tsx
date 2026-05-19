@@ -446,6 +446,7 @@ export const MedicineDetails = () => {
                 <div className="flex-1 relative">
                   <div
                     className="absolute top-0 left-0 right-0 bottom-0 overflow-y-scroll scrollbar-hide"
+                    data-lenis-prevent="true"
                   >
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pr-2 pb-4">
                       {pharmacies.map((pharmacy, index) => (
@@ -466,7 +467,7 @@ export const MedicineDetails = () => {
         </div>
 
         {/* Mobile Layout (below lg) */}
-        <div className="lg:hidden space-y-8 flex-1 overflow-y-auto">
+        <div className="lg:hidden space-y-8 flex-1 overflow-y-auto" data-lenis-prevent="true">
           {/* Mobile Medicine Details */}
           <motion.div
             ref={medicineCardRef}

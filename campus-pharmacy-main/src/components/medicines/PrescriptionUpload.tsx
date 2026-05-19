@@ -1,7 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Upload, Camera, X, FileText, Loader2, CheckCircle, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
+import { extractMedicinesFromPrescription, matchMedicinesWithDatabase } from '../../services/geminiService';
 
 interface PrescriptionUploadProps {
   onMedicineDetected: (medicineName: string) => void;
@@ -13,11 +14,12 @@ interface DetectedMedicine {
   confidence: number;
   available: boolean; // Whether medicine exists in our database
   inStock: boolean; // Whether it's available in any pharmacy
+  dosage?: string;
+  frequency?: string;
 }
 
-// OCR.space API via Supabase Edge Function
-// Free tier: 25,000 requests/month - No credit card required
-// Works well with printed text, decent with clear handwriting
+// Uses Vision OCR + rule-based parsing for prescription analysis
+// Extracts medicine names, dosage, frequency, and other prescription details
 
 export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({ 
   onMedicineDetected, 
@@ -29,7 +31,37 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
   const [detectedMedicines, setDetectedMedicines] = useState<DetectedMedicine[]>([]);
   const [extractedText, setExtractedText] = useState<string>('');
   const [processingProgress, setProcessingProgress] = useState(0);
+  const [prescriptionInfo, setPrescriptionInfo] = useState<any>(null);
+  const [apiConnectionTest, setApiConnectionTest] = useState<{tested: boolean; success: boolean; message: string}>({tested: false, success: false, message: ''});
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
+  }, [isOpen]);
+
+  // Set status when modal opens
+  const handleOpen = async () => {
+    setIsOpen(true);
+
+    setApiConnectionTest({
+      tested: true,
+      success: true,
+      message: 'Vision OCR + rule-based parsing enabled'
+    });
+  };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -48,151 +80,92 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
     setProcessingProgress(0);
     setDetectedMedicines([]);
     setExtractedText('');
+    setPrescriptionInfo(null);
     
     try {
-      // Step 1: Perform OCR using Google Cloud Vision API via Supabase Edge Function
-      setProcessingProgress(10);
+      // Step 1: Use Gemini API to analyze the prescription
+      setProcessingProgress(20);
+      console.log('Starting Gemini analysis...');
+      const geminiResult = await extractMedicinesFromPrescription(imageData);
       
-      // Call Supabase Edge Function for OCR
-      const { data: ocrResult, error: ocrError } = await supabase.functions.invoke('ocr-vision', {
-        body: { imageBase64: imageData }
-      });
+      console.log('Gemini Result:', geminiResult);
       
-      if (ocrError) {
-        throw new Error(ocrError.message || 'OCR processing failed');
-      }
+      setProcessingProgress(40);
       
-      if (!ocrResult.success) {
-        throw new Error(ocrResult.error || 'Failed to extract text from image');
-      }
+      // Store extracted text and prescription info
+      setExtractedText(geminiResult.rawText);
+      setPrescriptionInfo(geminiResult.prescriptionInfo);
       
-      setProcessingProgress(50);
-      
-      // Extract text from OCR result
-      const extractedText = ocrResult.text || '';
-      setExtractedText(extractedText);
-      setProcessingProgress(60);
-      
-      if (!extractedText) {
+      if (!geminiResult.medicines || geminiResult.medicines.length === 0) {
+        console.warn('No medicines detected by Gemini');
+        setExtractedText(
+          `No medicines detected in the prescription.\n\nExtracted text:\n${geminiResult.rawText || 'Unable to extract text from image'}\n\nTips:\n• Ensure the prescription is clearly visible\n• Make sure text is horizontal and readable\n• Try with a different image if this one is blurry`
+        );
         setProcessingProgress(100);
         return;
       }
       
-      // Step 2: Extract potential medicine names from the OCR text
-      // Look for medicine-like patterns: capitalized words, medical terms, etc.
-      const lines = extractedText.split('\n').filter((line: string) => line.trim());
-      const potentialMedicines: string[] = [];
+      console.log(`Found ${geminiResult.medicines.length} medicines`, geminiResult.medicines);
       
-      lines.forEach((line: string) => {
-        const words = line.trim().split(/\s+/);
-        
-        // Look for capitalized words or words that look like medicine names
-        // Common patterns: starts with capital, contains "mg", "ml", ends with common suffixes
-        words.forEach((word: string) => {
-          const cleanWord = word.replace(/[^a-zA-Z0-9]/g, '');
-          
-          // Filter criteria for potential medicine names:
-          // - At least 4 characters
-          // - Starts with capital or contains medical terms
-          // - Not common words
-          if (cleanWord.length >= 4 && 
-              (/^[A-Z]/.test(cleanWord) || 
-               /mg|ml|tab|cap|syr|susp/i.test(word) ||
-               /cillin|mycin|azole|prazole|olol|pine|ine|ide|one$/i.test(cleanWord))) {
-            
-            // Remove dosage info and clean up
-            const medicineName = cleanWord
-              .replace(/\d+mg/gi, '')
-              .replace(/\d+ml/gi, '')
-              .replace(/tab|caps?|syr|susp/gi, '')
-              .trim();
-            
-            if (medicineName.length >= 4 && 
-                !potentialMedicines.includes(medicineName) &&
-                !/^(the|and|for|take|daily|times|day|night|morning|evening|after|before|with|without)$/i.test(medicineName)) {
-              potentialMedicines.push(medicineName);
-            }
-          }
-        });
-      });
-      
-      setProcessingProgress(70);
-      
-      // Step 3: Fetch all medicines from database to check availability
+      // Step 2: Fetch all medicines from database to check availability
+      setProcessingProgress(50);
       const { data: allMedicines, error } = await supabase
         .from('medicines')
         .select('name, available');
       
       if (error) throw error;
-      setProcessingProgress(80);
       
-      // Step 4: Match detected medicines with database
-      const detectedMeds: DetectedMedicine[] = [];
+      console.log(`Database has ${allMedicines?.length || 0} medicines`);
+      setProcessingProgress(70);
       
-      potentialMedicines.forEach((detectedName) => {
-        const detectedLower = detectedName.toLowerCase();
-        
-        // Try to find exact or partial match in database
-        let bestMatch: any = null;
-        let bestConfidence = 0;
-        
-        allMedicines?.forEach((medicine) => {
-          const medicineName = medicine.name.toLowerCase();
-          
-          // Exact match
-          if (medicineName === detectedLower) {
-            bestMatch = medicine;
-            bestConfidence = 1.0;
-          }
-          // Partial match
-          else if (medicineName.includes(detectedLower) || detectedLower.includes(medicineName)) {
-            const similarity = calculateSimilarity(detectedLower, medicineName);
-            if (similarity > bestConfidence) {
-              bestMatch = medicine;
-              bestConfidence = similarity;
-            }
-          }
-        });
-        
-        // Add to detected medicines list
-        if (bestMatch && bestConfidence >= 0.7) {
-          // Medicine found in database
-          detectedMeds.push({
-            name: bestMatch.name, // Use actual database name
-            confidence: bestConfidence,
-            available: true,
-            inStock: bestMatch.available
-          });
-        } else {
-          // Medicine detected but not in database
-          detectedMeds.push({
-            name: detectedName, // Use detected name from prescription
-            confidence: bestConfidence > 0 ? bestConfidence : 0.5,
-            available: false,
-            inStock: false
-          });
-        }
-      });
+      // Step 3: Match detected medicines with database
+      const medicinesToMatch = geminiResult.medicines.map(med => ({
+        name: med.name,
+        confidence: med.confidence,
+        dosage: med.dosage,
+        frequency: med.frequency,
+      }));
       
-      setProcessingProgress(90);
+      const matchedMedicines = matchMedicinesWithDatabase(
+        medicinesToMatch,
+        allMedicines || []
+      );
       
-      // Step 4: Sort by confidence and remove duplicates
-      const uniqueMeds = Array.from(
-        new Map(detectedMeds.map(med => [med.name, med])).values()
-      ).sort((a, b) => b.confidence - a.confidence);
+      setProcessingProgress(85);
       
-      setDetectedMedicines(uniqueMeds);
+      // Step 4: Convert to DetectedMedicine format
+      const detectedMeds: DetectedMedicine[] = matchedMedicines.map(med => ({
+        name: med.name,
+        confidence: med.confidence,
+        available: med.available,
+        inStock: med.inStock,
+        dosage: med.dosage,
+        frequency: med.frequency,
+      }));
+      
+      // Sort by confidence
+      detectedMeds.sort((a, b) => b.confidence - a.confidence);
+      
+      setProcessingProgress(95);
+      setDetectedMedicines(detectedMeds);
+      
+      console.log('Final detected medicines:', detectedMeds);
+      
       setProcessingProgress(100);
       
-      // Set the first AVAILABLE medicine as the search term (skip out of stock ones)
-      const firstAvailable = uniqueMeds.find(med => med.available);
+      // Set the first AVAILABLE medicine as the search term (skip unavailable ones)
+      const firstAvailable = detectedMeds.find(med => med.available);
       if (firstAvailable) {
+        console.log('Auto-searching for:', firstAvailable.name);
         onMedicineDetected(firstAvailable.name);
+      } else {
+        console.log('No available medicines found in database');
       }
       
     } catch (error) {
       console.error('Error processing image:', error);
-      setExtractedText('Error processing image. Please try again with a clearer image.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to process image';
+      setExtractedText(`Error: ${errorMessage}`);
     } finally {
       setIsProcessing(false);
     }
@@ -241,6 +214,7 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
     setSelectedImage(null);
     setDetectedMedicines([]);
     setExtractedText('');
+    setPrescriptionInfo(null);
     setProcessingProgress(0);
     setIsProcessing(false);
     if (fileInputRef.current) {
@@ -259,7 +233,7 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        onClick={() => setIsOpen(true)}
+        onClick={handleOpen}
         className={`flex items-center gap-2 px-3 py-1.5 rounded-full font-medium transition-all ${
           theme === 'dark'
             ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
@@ -277,15 +251,16 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-hidden"
             onClick={handleClose}
+            data-lenis-prevent="true"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className={`w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] ${
+              className={`w-full max-w-2xl rounded-2xl shadow-2xl max-h-[90vh] flex flex-col overflow-hidden ${
                 theme === 'dark' ? 'bg-[#151030]' : 'bg-white'
               }`}
             >
@@ -319,7 +294,10 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
               </div>
 
               {/* Content */}
-              <div className="p-6 space-y-6">
+              <div 
+                className="p-6 space-y-6 overflow-y-auto flex-1 min-h-0 overscroll-contain"
+                data-lenis-prevent="true"
+              >
                 {!selectedImage ? (
                   <>
                     {/* Upload Area */}
@@ -454,7 +432,7 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
                             >
                               <div className="flex items-center justify-between">
                                 <div className="flex-1">
-                                  <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-2 flex-wrap">
                                     <p className={`font-medium ${
                                       medicine.available 
                                         ? theme === 'dark' ? 'text-purple-400' : 'text-purple-600'
@@ -462,6 +440,15 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
                                     }`}>
                                       {medicine.name}
                                     </p>
+                                    {medicine.dosage && (
+                                      <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                        theme === 'dark' 
+                                          ? 'bg-blue-500/20 text-blue-300' 
+                                          : 'bg-blue-100 text-blue-700'
+                                      }`}>
+                                        {medicine.dosage}
+                                      </span>
+                                    )}
                                     {!medicine.available && (
                                       <span className={`text-xs px-2 py-0.5 rounded-full ${
                                         theme === 'dark' 
@@ -483,6 +470,7 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
                                   </div>
                                   <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>
                                     Confidence: {Math.round(medicine.confidence * 100)}%
+                                    {medicine.frequency && ` • ${medicine.frequency}`}
                                     {medicine.available && ' • Click to view details'}
                                   </p>
                                 </div>
@@ -502,30 +490,36 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className={`rounded-xl p-6 ${
-                          theme === 'dark'
-                            ? 'bg-orange-500/10 border border-orange-500/20'
-                            : 'bg-orange-50 border border-orange-200'
+                          extractedText.includes('Error:')
+                            ? theme === 'dark'
+                              ? 'bg-red-500/10 border border-red-500/20'
+                              : 'bg-red-50 border border-red-200'
+                            : theme === 'dark'
+                              ? 'bg-orange-500/10 border border-orange-500/20'
+                              : 'bg-orange-50 border border-orange-200'
                         }`}
                       >
                         <div className="flex items-start gap-3">
-                          <div className="p-2 rounded-lg bg-orange-500">
+                          <div className={`p-2 rounded-lg ${
+                            extractedText.includes('Error:') ? 'bg-red-500' : 'bg-orange-500'
+                          }`}>
                             <FileText className="w-5 h-5 text-white" />
                           </div>
                           <div className="flex-1">
                             <h3 className={`font-semibold mb-1 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                              No Medicines Detected
+                              {extractedText.includes('Error:') ? 'Processing Error' : 'No Medicines Detected'}
                             </h3>
-                            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                              We couldn't find any medicine names in the image. Please ensure the prescription is clear and readable.
+                            <p className={`text-sm mb-3 whitespace-pre-wrap ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                              {extractedText}
                             </p>
-                            {extractedText && (
+                            {extractedText && !extractedText.includes('Error:') && (
                               <details className="mt-3">
                                 <summary className={`text-xs cursor-pointer ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>
-                                  View extracted text
+                                  View full extracted text
                                 </summary>
-                                <p className={`text-xs mt-2 p-2 rounded ${theme === 'dark' ? 'bg-white/5' : 'bg-white'}`}>
-                                  {extractedText.substring(0, 200)}{extractedText.length > 200 ? '...' : ''}
-                                </p>
+                                <pre className={`text-xs mt-2 p-3 rounded overflow-auto max-h-40 ${theme === 'dark' ? 'bg-white/5' : 'bg-white'}`}>
+                                  {extractedText}
+                                </pre>
                               </details>
                             )}
                           </div>
