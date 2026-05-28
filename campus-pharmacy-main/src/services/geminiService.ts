@@ -313,6 +313,7 @@ export function matchMedicinesWithDatabase(
     // Try partial match and substring match
     let bestSimilarity = 0;
     let bestPartialMatch: DatabaseMedicine | null = null;
+    let bestPartialInStock = false;
 
     allMedicines.forEach((med) => {
       const dbName = med.name.toLowerCase();
@@ -324,6 +325,7 @@ export function matchMedicinesWithDatabase(
         if (similarity > bestSimilarity) {
           bestSimilarity = similarity;
           bestPartialMatch = med;
+          bestPartialInStock = med.available;
         }
       } else {
         // Fallback to strict spelling similarity
@@ -331,6 +333,7 @@ export function matchMedicinesWithDatabase(
         if (similarity > bestSimilarity && similarity >= 0.7) {
           bestSimilarity = similarity;
           bestPartialMatch = med;
+          bestPartialInStock = med.available;
         }
       }
     });
@@ -339,7 +342,7 @@ export function matchMedicinesWithDatabase(
       return {
         ...detected,
         available: true,
-        inStock: bestPartialMatch.available,
+        inStock: bestPartialInStock,
         matchType: 'partial' as const,
         similarity: bestSimilarity,
       };
