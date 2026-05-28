@@ -71,6 +71,22 @@ export const AcademicBuildings = () => {
     return '7:00 AM - 10:00 PM';
   };
 
+  const normalizeFacilities = (facilities: unknown): string[] => {
+    if (!Array.isArray(facilities)) return [];
+
+    return facilities
+      .map((facility) => {
+        if (typeof facility === 'string') return facility;
+        if (facility && typeof facility === 'object') {
+          const record = facility as Record<string, unknown>;
+          const label = record.name ?? record.label ?? record.title;
+          if (typeof label === 'string') return label;
+        }
+        return null;
+      })
+      .filter((facility): facility is string => Boolean(facility && facility.trim()));
+  };
+
   useEffect(() => {
     fetchAcademicBuildings();
   }, []);
@@ -100,7 +116,7 @@ export const AcademicBuildings = () => {
           floor: `${building.academic_buildings?.floor_count || 1} Floor${building.academic_buildings?.floor_count !== 1 ? 's' : ''}`,
           openingHours: formatOpeningHours(building.academic_buildings?.opening_hours || null),
           image: building.image, // Use the image column from the database for academic buildings
-          tags: building.academic_buildings?.facilities || [],
+          tags: normalizeFacilities(building.academic_buildings?.facilities),
           getDirections: building.latitude && building.longitude ? () => {
             const url = getDirectionsUrl(building.latitude, building.longitude);
             window.open(url, '_blank');
