@@ -17,13 +17,7 @@ import {
   GraduationCap, Coffee, Dumbbell, Heart, Play,
 } from 'lucide-react';
 
-/* ── Background slide images ──────────────────────────────────────────── */
-const bgSlides = [
-  '/images/3d1.png',
-  '/images/3d4.png',
-  '/images/3d5.png',
-  '/images/campus-illustration.png',
-];
+let introVideoPlayedOnce = false;
 
 /* ── Data ─────────────────────────────────────────────────────────────────── */
 const campusZones = [
@@ -75,7 +69,11 @@ const navCategories = [
 ];
 
 /* ── Component ─────────────────────────────────────────────────────────────── */
-export const Home: React.FC = () => {
+type HomeProps = {
+  splashComplete?: boolean;
+};
+
+export const Home: React.FC<HomeProps> = ({ splashComplete = true }) => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [time, setTime] = useState(new Date());
   const containerRef = useRef<HTMLDivElement>(null);
@@ -84,29 +82,49 @@ export const Home: React.FC = () => {
   const [catDropdownOpen, setCatDropdownOpen] = useState(false);
   const [compassOpen, setCompassOpen] = useState(false);
   const [demoOpen, setDemoOpen] = useState(false);
-  const [slideIndex, setSlideIndex] = useState(0);
-  const [prevSlideIndex, setPrevSlideIndex] = useState<number | null>(null);
-  const [slideAnimating, setSlideAnimating] = useState(false);
+  const [introVideoDone, setIntroVideoDone] = useState(introVideoPlayedOnce);
+  const [introStarted, setIntroStarted] = useState(false);
+  const introFallbackRef = useRef<number | null>(null);
+  const introVideoRef = useRef<HTMLVideoElement>(null);
+  const markIntroDone = useCallback(() => {
+    if (!introVideoPlayedOnce) {
+      introVideoPlayedOnce = true;
+    }
+    setIntroVideoDone(true);
+  }, []);
+  const scheduleIntroFallback = useCallback((video: HTMLVideoElement) => {
+    const durationMs = video.duration * 1000;
+    if (Number.isFinite(durationMs) && durationMs > 0) {
+      if (introFallbackRef.current) {
+        window.clearTimeout(introFallbackRef.current);
+      }
+      introFallbackRef.current = window.setTimeout(() => {
+        markIntroDone();
+      }, durationMs + 150);
+    }
+  }, [markIntroDone]);
 
-  // Rotate slides every 5 seconds — right-to-left slide
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPrevSlideIndex(si => si === null ? slideIndex : si);
-      setSlideIndex(i => (i + 1) % bgSlides.length);
-      setSlideAnimating(true);
-      setTimeout(() => {
-        setPrevSlideIndex(null);
-        setSlideAnimating(false);
-      }, 900);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [slideIndex]);
   const [compassOrigin, setCompassOrigin] = useState('50% 50%');
   const [demoOrigin, setDemoOrigin] = useState('50% 50%');
   const categoriesBtnRef = useRef<HTMLDivElement>(null);
   const demoBtnRef = useRef<HTMLButtonElement>(null);
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const entranceReady = splashComplete;
+  const entranceSpeed = entranceReady ? 1.5 : 1;
+  const entranceDelay = entranceReady ? 0.2 : 0;
+  const entranceEase: [number, number, number, number] = [0.22, 1, 0.36, 1];
+  const entranceTransition = (duration: number, delay = 0, ease = entranceEase) => ({
+    duration: duration * entranceSpeed,
+    delay: entranceDelay + delay * entranceSpeed,
+    ease,
+  });
+  const entranceSpring = (stiffness: number, damping: number, delay = 0) => ({
+    type: 'spring' as const,
+    stiffness: entranceReady ? Math.round(stiffness * 0.7) : stiffness,
+    damping: entranceReady ? damping + 6 : damping,
+    delay: entranceDelay + delay * entranceSpeed,
+  });
 
   const HOME_TUTORIAL_SEEN_KEY = 'campusGuide.homeTutorialSeen';
   const tutorialInitRef = useRef(false);
@@ -243,6 +261,35 @@ export const Home: React.FC = () => {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (introFallbackRef.current) {
+        window.clearTimeout(introFallbackRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!splashComplete || introVideoDone || introStarted) return;
+    const video = introVideoRef.current;
+    if (!video) return;
+
+    if (video.currentTime > 0) {
+      video.currentTime = 0;
+    }
+    setIntroStarted(true);
+
+    if (video.readyState >= 1) {
+      scheduleIntroFallback(video);
+    }
+
+    const playPromise = video.play();
+    playPromise?.catch((err) => {
+      console.warn('Video autoplay failed:', err);
+      markIntroDone();
+    });
+  }, [introVideoDone, introStarted, markIntroDone, scheduleIntroFallback, splashComplete]);
+
   const getMarkerRadius = useCallback(() => {
     const base = Math.min(vpSize.w, vpSize.h);
     if (vpSize.w < 640) return base * 0.28;
@@ -266,86 +313,55 @@ export const Home: React.FC = () => {
   return (
   <LayoutGroup id="home-layout">
     <div ref={containerRef} className="home-dashboard">
-      {/* ── Background layers ──────────────────────────────────────────── */}
-      {/* Base colour */}
-      <div className={`absolute inset-0 ${isDark ? 'bg-[#030810]' : 'bg-[#eef2fd]'}`} />
-
-      {/* Slide images — right-to-left slide */}
-      {prevSlideIndex !== null && (
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: `url(${bgSlides[prevSlideIndex]})`,
-            backgroundSize: 'contain',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            animation: slideAnimating ? 'bg-slide-out 0.9s cubic-bezier(0.76,0,0.24,1) forwards' : 'none',
-          }}
-        />
-      )}
-      <div
-        key={slideIndex}
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `url(${bgSlides[slideIndex]})`,
-          backgroundSize: 'contain',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          animation: slideAnimating ? 'bg-slide-in 0.9s cubic-bezier(0.76,0,0.24,1) forwards' : 'none',
-        }}
-      />
-
-      {/* Dark overlay behind search bar only — dark mode */}
-      {/* Subtle noise texture */}
-      <div className="absolute inset-0 opacity-[0.025] mix-blend-overlay"
-        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E")`, backgroundSize: '200px 200px' }} />
-
-      {/* Grid overlay — finer, more technical */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
-        style={{
-          backgroundImage: isDark
-            ? `linear-gradient(rgba(6,182,212,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.4) 1px, transparent 1px)`
-            : `linear-gradient(rgba(37,99,235,0.35) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,0.35) 1px, transparent 1px)`,
-          backgroundSize: '48px 48px',
-        }}
-      />
-
-      {/* Radial vignette */}
-      <div className={`absolute inset-0 ${isDark ? 'bg-[radial-gradient(ellipse_at_center,transparent_20%,rgba(3,8,16,0.85)_100%)]' : 'bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(220,230,255,0.55)_100%)]'}`} />
-
-      {/* Ambient orbs with mouse parallax */}
-      <div className="absolute w-[800px] h-[800px] rounded-full blur-[220px] pointer-events-none opacity-60"
-        style={{
-          background: isDark
-            ? 'radial-gradient(circle, rgba(6,182,212,0.1) 0%, transparent 65%)'
-            : 'radial-gradient(circle, rgba(37,99,235,0.07) 0%, transparent 65%)',
-          top: '15%',
-          left: `${38 + (mousePos.x / vpSize.w) * 12}%`,
-          transform: 'translate(-50%, -50%)',
-          transition: 'left 1.2s cubic-bezier(0.22,1,0.36,1)',
-        }}
-      />
-      <div className="absolute w-[600px] h-[600px] rounded-full blur-[200px] pointer-events-none opacity-40"
-        style={{
-          background: isDark
-            ? 'radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 65%)'
-            : 'radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 65%)',
-          bottom: '5%',
-          right: `${15 + (mousePos.y / vpSize.h) * 8}%`,
-          transition: 'right 1.2s cubic-bezier(0.22,1,0.36,1)',
-        }}
-      />
+      {/* Video background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {!introVideoDone && (
+          <video
+            ref={introVideoRef}
+            className="absolute inset-0 h-full w-full object-cover lg:object-fill"
+            muted
+            playsInline
+            onEnded={markIntroDone}
+            onLoadedMetadata={(event) => {
+              if (!introStarted) return;
+              scheduleIntroFallback(event.currentTarget);
+            }}
+            onTimeUpdate={(event) => {
+              if (!introStarted) return;
+              if (event.currentTarget.duration > 0 && event.currentTarget.currentTime >= event.currentTarget.duration - 0.1) {
+                markIntroDone();
+              }
+            }}
+            onError={(event) => {
+              console.error('Video error:', event);
+              markIntroDone();
+            }}
+          >
+            <source src="/images/vid1.mp4" type="video/mp4" />
+          </video>
+        )}
+        <video
+          className="absolute inset-0 h-full w-full object-cover lg:object-fill"
+          autoPlay
+          loop
+          muted
+          playsInline
+          style={{ opacity: introVideoDone ? 1 : 0 }}
+        >
+          <source src="/images/vid2.mp4" type="video/mp4" />
+        </video>
+      </div>
 
       {/* ── Integrated HUD Navbar ─────────────────────────────────────── */}
       <motion.nav
         initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        animate={entranceReady ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
+        transition={entranceTransition(0.7)}
         className="absolute top-0 left-0 right-0 z-50 hud-navbar"
       >
         <div className="flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-8 h-16">
           {/* ── Logo with rings ── */}
-          <Link to="/" className="flex items-center gap-3 group">
+          <Link to="/" className="flex items-center gap-0 group">
             <div className="relative flex items-center justify-center">
               {/* Concentric rings around logo */}
               <svg className="absolute w-14 h-14 animate-[spin_25s_linear_infinite] opacity-30" viewBox="0 0 56 56">
@@ -354,10 +370,15 @@ export const Home: React.FC = () => {
               <svg className="absolute w-[4.5rem] h-[4.5rem] animate-[spin_40s_linear_infinite_reverse] opacity-20" viewBox="0 0 72 72">
                 <circle cx="36" cy="36" r="34" fill="none" stroke={isDark ? 'rgba(6,182,212,0.25)' : 'rgba(37,99,235,0.2)'} strokeWidth="0.5" strokeDasharray="1.5 6" />
               </svg>
-              <img src="/images/1.png" alt="Campus Guide" className="h-9 w-9 relative z-10 drop-shadow-[0_0_6px_rgba(6,182,212,0.25)]" />
+              <img
+                src="/images/Untitled_design-removebg-preview.png"
+                alt="Campus Guide logo"
+                className="relative z-10"
+                style={{ width: 64, height: 96, objectFit: 'cover', marginLeft: -26, marginTop: -8 }}
+              />
             </div>
             <span className={`font-bold text-lg tracking-tight ${isDark ? 'text-white drop-shadow-[0_0_8px_rgba(6,182,212,0.15)]' : ''}`}
-              style={{ fontFamily: "'Roboto','Inter',system-ui,sans-serif", ...(!isDark ? { color: '#2d3340' } : {}) }}>
+              style={{ fontFamily: "'Playfair Display','Georgia',serif", marginLeft: -10, ...(!isDark ? { color: '#2d3340' } : {}) }}>
               CampusGuide
             </span>
           </Link>
@@ -593,16 +614,16 @@ export const Home: React.FC = () => {
             key="center-search"
             className="absolute inset-0 z-40 hidden md:flex flex-col items-center justify-center pointer-events-none" style={{ paddingTop: '0px' }}
             initial={{ y: -240, opacity: 0, scale: 0.92 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
+            animate={entranceReady ? { y: 0, opacity: 1, scale: 1 } : { y: -240, opacity: 0, scale: 0.92 }}
             exit={{ y: -240, opacity: 0, scale: 0.92 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 26 }}
+            transition={entranceSpring(300, 26)}
           >
             {/* Hero text */}
             <motion.div
               className="text-center mb-6 pointer-events-none"
               initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
+              animate={entranceReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+              transition={entranceTransition(0.6, 0.3)}
             >
               <h1 className={`text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}
                 style={{ fontFamily: "'Playfair Display','Georgia',serif" }}>
@@ -613,7 +634,6 @@ export const Home: React.FC = () => {
               </p>
             </motion.div>
             <div id="home-search-centered" className="search-hud-wrapper search-hud-centered pointer-events-auto" style={{ width: 'min(860px, 92vw)', position: 'relative' }}>
-              <div className="absolute inset-0 rounded-full pointer-events-none" style={{ background: isDark ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.55)', filter: 'blur(32px)', transform: 'scale(1.15)', zIndex: -1 }} />
               <SearchBar />
             </div>
           </motion.div>
@@ -672,8 +692,8 @@ export const Home: React.FC = () => {
       {/* ── Mobile search bar (below navbar on small screens) ──────── */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.7 }}
+        animate={entranceReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+        transition={entranceTransition(0.7, 0.5)}
         className="absolute inset-0 z-40 flex flex-col justify-center gap-32 px-6 md:hidden pointer-events-none"
       >
         <h2 className={`font-bold tracking-tight text-left ${isDark ? 'text-white' : 'text-slate-900'}`}
@@ -692,8 +712,8 @@ export const Home: React.FC = () => {
       {/* ── Bottom stats bar ───────────────────────────────────────────── */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.1, duration: 0.8 }}
+        animate={entranceReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+        transition={entranceTransition(0.8, 1.1)}
         className="absolute bottom-0 left-0 right-0 z-30 flex justify-center"
       >
         {/* Left outward corner notch */}
@@ -738,12 +758,21 @@ export const Home: React.FC = () => {
 
       {/* ── Left side items ───────────────────────────────────────────── */}
       <div className="absolute left-5 sm:left-8 top-1/2 -translate-y-1/2 z-30 hidden lg:flex flex-col gap-2">
-        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.8, duration: 0.5 }}>
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={entranceReady ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+          transition={entranceTransition(0.5, 0.8)}
+        >
           <div className="hud-side-label"><Layers className="w-3 h-3" /><span>EXPLORE</span></div>
         </motion.div>
 
         {/* Categories — compass toggle */}
-        <motion.div ref={categoriesBtnRef} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.9, duration: 0.5 }}>
+        <motion.div
+          ref={categoriesBtnRef}
+          initial={{ opacity: 0, x: -16 }}
+          animate={entranceReady ? { opacity: 1, x: 0 } : { opacity: 0, x: -16 }}
+          transition={entranceTransition(0.5, 0.9)}
+        >
           <button id="home-categories-toggle" onClick={openCompass} className="w-full text-left">
             <motion.div
               whileHover={{ scale: 1.05, x: 4 }}
@@ -761,7 +790,12 @@ export const Home: React.FC = () => {
           { id: 'home-link-pharmacies', icon: MapPin, label: 'Pharmacies', to: '/pharmacies', delay: 1.0 },
           { id: 'home-link-medicines', icon: Search, label: 'Medicines', to: '/medicines', delay: 1.1 },
         ].map((item) => (
-          <motion.div key={item.label} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: item.delay, duration: 0.5 }}>
+          <motion.div
+            key={item.label}
+            initial={{ opacity: 0, x: -16 }}
+            animate={entranceReady ? { opacity: 1, x: 0 } : { opacity: 0, x: -16 }}
+            transition={entranceTransition(0.5, item.delay)}
+          >
             <Link id={item.id} to={item.to}>
               <motion.div whileHover={{ scale: 1.05, x: 4 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }} className="hud-side-item group">
                 <div className="hud-side-icon"><item.icon className="w-3.5 h-3.5" /></div>
@@ -774,7 +808,11 @@ export const Home: React.FC = () => {
       </div>
       {/* ── Right side items ──────────────────────────────────────────── */}
       <div className="absolute right-5 sm:right-8 top-1/2 -translate-y-1/2 z-30 hidden lg:flex flex-col items-end gap-2">
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.8, duration: 0.5 }}>
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={entranceReady ? { opacity: 1, x: 0 } : { opacity: 0, x: 20 }}
+          transition={entranceTransition(0.5, 0.8)}
+        >
           <div className="hud-side-label"><Navigation2 className="w-3 h-3" /><span>NAVIGATE</span></div>
         </motion.div>
         {[
@@ -790,7 +828,12 @@ export const Home: React.FC = () => {
             </motion.div>
           );
           return (
-            <motion.div key={item.label} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: item.delay, duration: 0.5 }}>
+            <motion.div
+              key={item.label}
+              initial={{ opacity: 0, x: 16 }}
+              animate={entranceReady ? { opacity: 1, x: 0 } : { opacity: 0, x: 16 }}
+              transition={entranceTransition(0.5, item.delay)}
+            >
               {item.href ? (
                 <a id={(item as any).id} href={item.href} target="_blank" rel="noopener noreferrer">{inner}</a>
               ) : (

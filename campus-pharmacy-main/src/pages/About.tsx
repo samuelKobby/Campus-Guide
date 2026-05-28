@@ -2,10 +2,15 @@ import React from 'react';
 import { Star, Quote, Zap, Globe } from 'lucide-react';
 import { ParallaxProvider, Parallax } from 'react-scroll-parallax';
 import { useScrollReveal, useStaggerReveal } from '../hooks/useScrollReveal';
+import {
+  ContainerAnimated,
+  ContainerInset,
+  ContainerScroll,
+  ContainerStagger,
+} from '../components/blocks/hero-video';
 
 export const About: React.FC = () => {
   const missionRef      = useScrollReveal<HTMLElement>({ type: 'fadeIn', duration: 1 });
-  const stepsRef        = useStaggerReveal<HTMLDivElement>({ type: 'scaleUp', stagger: 0.15 });
   const testimonialsRef = useStaggerReveal<HTMLDivElement>({ type: 'fadeUp', stagger: 0.2 });
 
   return (
@@ -95,7 +100,7 @@ export const About: React.FC = () => {
                       onMouseEnter={e => (e.currentTarget.style.transform = 'rotateY(2deg) rotateX(-1deg) scale(1.03)')}
                       onMouseLeave={e => (e.currentTarget.style.transform = 'rotateY(10deg) rotateX(-3deg)')}
                     >
-                      <img src="/images/2.png" alt="Find Medicines" className="w-full h-[360px] object-cover" />
+                      <img src="/images/3d1.png" alt="Find Medicines" className="w-full h-[360px] object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/30 to-transparent" />
                     </div>
                   </div>
@@ -166,29 +171,61 @@ export const About: React.FC = () => {
               </section>
             </Parallax>
 
-            {/* ── How It Works ── */}
-            <Parallax translateY={[20, -20]}>
+            {/* ── Scroll-Reveal Video ── */}
+            <Parallax translateY={[-8, 8]}>
               <section className="mb-20">
-                <h2 className="text-3xl font-bold mb-8 text-center dark:text-white" style={{ fontFamily: "'Playfair Display','Georgia',serif" }}>How It Works</h2>
-                <div className="relative">
-                  <div className="absolute h-full w-0.5 bg-gray-200 dark:bg-[#151030] left-1/2 transform -translate-x-1/2 hidden md:block" />
-                  <div ref={stepsRef} className="grid md:grid-cols-4 gap-8">
-                    {[
-                      { step: 1, title: 'Search', description: 'Search for your location or a medication' },
-                      { step: 2, title: 'Locate', description: 'See your location or your medications' },
-                      { step: 3, title: 'Navigate', description: 'Get directions to your location or the available pharmacies' },
-                      { step: 4, title: 'Purchase', description: 'Get your medication without the runaround' },
-                    ].map((item) => (
-                      <div key={item.step} className="flex flex-col items-center text-center relative">
-                        <div className="w-12 h-12 bg-indigo-600 dark:bg-indigo-500 text-white rounded-full flex items-center justify-center mb-4 text-lg font-bold z-10">
-                          {item.step}
+                <ContainerScroll className="bg-[#F2ECFD] dark:bg-[#050816] text-center rounded-2xl overflow-hidden">
+                  <ContainerStagger viewport={{ once: false }}>
+                    <ContainerAnimated animation="top">
+                      <h2
+                        className="text-3xl font-bold leading-tight text-center dark:text-white"
+                        style={{ fontFamily: "'Playfair Display','Georgia',serif" }}
+                      >
+                        How It Works
+                      </h2>
+                    </ContainerAnimated>
+                    <ContainerAnimated animation="bottom" className="mt-6">
+                      <div className="relative px-6">
+                        <div className="absolute h-full w-0.5 bg-gray-200 dark:bg-[#151030] left-1/2 transform -translate-x-1/2 hidden md:block" />
+                        <div className="grid md:grid-cols-4 gap-8">
+                          {[
+                            { step: 1, title: 'Search', description: 'Search for your location or a medication' },
+                            { step: 2, title: 'Locate', description: 'See your location or your medications' },
+                            { step: 3, title: 'Navigate', description: 'Get directions to your location or the available pharmacies' },
+                            { step: 4, title: 'Purchase', description: 'Get your medication without the runaround' },
+                          ].map((item) => (
+                            <div key={item.step} className="flex flex-col items-center text-center relative">
+                              <div className="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center mb-4 text-lg font-bold z-10">
+                                {item.step}
+                              </div>
+                              <h3
+                                className="text-xl font-semibold mb-2 dark:text-white"
+                                style={{ fontFamily: "'Roboto','Inter',system-ui,sans-serif" }}
+                              >
+                                {item.title}
+                              </h3>
+                              <p className="text-gray-600 dark:text-[#a09cb9]">{item.description}</p>
+                            </div>
+                          ))}
                         </div>
-                        <h3 className="text-xl font-semibold mb-2 dark:text-white" style={{ fontFamily: "'Roboto','Inter',system-ui,sans-serif" }}>{item.title}</h3>
-                        <p className="text-gray-600 dark:text-[#a09cb9]">{item.description}</p>
                       </div>
-                    ))}
-                  </div>
-                </div>
+                    </ContainerAnimated>
+                  </ContainerStagger>
+
+                  <ContainerInset className="mx-8 mt-6 mb-10">
+                    <video
+                      width="100%"
+                      height="100%"
+                      loop
+                      playsInline
+                      autoPlay
+                      muted
+                      className="relative z-10 block h-auto max-h-full max-w-full object-contain align-middle"
+                    >
+                      <source src="/images/vid.mp4" type="video/mp4" />
+                    </video>
+                  </ContainerInset>
+                </ContainerScroll>
               </section>
             </Parallax>
 

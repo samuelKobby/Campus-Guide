@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from './context/ThemeContext';
@@ -24,6 +24,7 @@ import { Privacy } from './pages/Privacy';
 import { PharmacyAuthProvider, RequirePharmacyAuth } from './contexts/PharmacyAuthContext';
 import { LocationProvider } from './context/LocationContext';
 import { LocationLoader } from './components/LocationLoader';
+import { SplashScreen } from './components/SplashScreen';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -37,9 +38,34 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 function App() {
+  const [showSplash, setShowSplash] = useState(true);
+  const forceSplash = new URLSearchParams(window.location.search).has('splash')
+    || localStorage.getItem('campusGuide.forceSplash') === '1';
+  const showSplashActive = forceSplash || showSplash;
+
+  useEffect(() => {
+    if (!showSplashActive) {
+      document.body.style.overflow = '';
+      return;
+    }
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showSplashActive]);
+
+  const handleSplashComplete = () => {
+    if (forceSplash) return;
+    setShowSplash(false);
+  };
+
   return (
     <ThemeProvider>
       <Router>
+        {showSplashActive && (
+          <SplashScreen holdOnComplete={forceSplash} onSplashComplete={handleSplashComplete} />
+        )}
         <Toaster position="top-right" />
         <LocationProvider>
           <LocationLoader />
@@ -63,7 +89,7 @@ function App() {
 
             {/* Main Layout Routes */}
             <Route path="/" element={<MainLayout />}>
-              <Route index element={<Home />} />
+              <Route index element={<Home splashComplete={!showSplashActive} />} />
               
               {/* Category Routes */}
               <Route path="category">
