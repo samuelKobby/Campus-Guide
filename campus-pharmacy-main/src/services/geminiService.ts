@@ -123,7 +123,23 @@ export async function extractTextWithVisionAPI(imageBase64: string): Promise<str
     );
 
     if (!response.ok) {
-      throw new Error(`Vision API error: ${response.status} ${response.statusText}`);
+      let errorDetail = '';
+      try {
+        const errorBody = await response.json();
+        if (errorBody?.error?.message) {
+          errorDetail = errorBody.error.message;
+        } else {
+          errorDetail = JSON.stringify(errorBody);
+        }
+      } catch {
+        try {
+          errorDetail = await response.text();
+        } catch {
+          errorDetail = '';
+        }
+      }
+      const suffix = errorDetail ? ` - ${errorDetail}` : '';
+      throw new Error(`Vision API error: ${response.status} ${response.statusText}${suffix}`);
     }
 
     const result = await response.json();
