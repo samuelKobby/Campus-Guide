@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import gsap from 'gsap';
 
 type SplashScreenProps = {
@@ -63,7 +63,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onSplashComplete, ho
     const progressState = { loaded: 0, displayed: 0 };
     const loadingManager = new THREE.LoadingManager();
 
-    loadingManager.onProgress = (_item, loaded, total) => {
+    loadingManager.onProgress = (_item: string, loaded: number, total: number) => {
       if (total > 0) {
         progressState.loaded = Math.max(progressState.loaded, (loaded / total) * 100);
       }
@@ -78,12 +78,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onSplashComplete, ho
 
     loader.load(
       '/models/logo.gltf',
-      (gltf) => {
+      (gltf: GLTF) => {
         if (disposed) return;
 
         const model = gltf.scene;
 
-        model.traverse((child) => {
+        model.traverse((child: THREE.Object3D) => {
           if ((child as THREE.Mesh).isMesh) {
             const mesh = child as THREE.Mesh;
             const material = new THREE.MeshStandardMaterial({
@@ -126,7 +126,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onSplashComplete, ho
           }
         );
       },
-      (event) => {
+      (event: ProgressEvent<EventTarget>) => {
         if (event.total) {
           progressState.loaded = Math.max(progressState.loaded, (event.loaded / event.total) * 100);
         }
@@ -185,12 +185,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onSplashComplete, ho
       cancelAnimationFrame(frameId);
       renderer.dispose();
 
-      scene.traverse((child) => {
+      scene.traverse((child: THREE.Object3D) => {
         if ((child as THREE.Mesh).isMesh) {
           const mesh = child as THREE.Mesh;
           mesh.geometry.dispose();
           if (Array.isArray(mesh.material)) {
-            mesh.material.forEach((material) => material.dispose());
+            mesh.material.forEach((material: THREE.Material) => material.dispose());
           } else if (mesh.material) {
             mesh.material.dispose();
           }

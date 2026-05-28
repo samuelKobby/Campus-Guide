@@ -1,5 +1,30 @@
 const VISION_API_KEY = import.meta.env.VITE_GOOGLE_VISION_API_KEY;
 
+type ExtractedMedicine = {
+  name: string;
+  confidence: number;
+  dosage?: string;
+  frequency?: string;
+};
+
+type DatabaseMedicine = {
+  name: string;
+  available: boolean;
+};
+
+type MatchedMedicine = ExtractedMedicine & {
+  available: boolean;
+  inStock: boolean;
+  matchType: 'exact' | 'partial' | 'notfound';
+  similarity?: number;
+};
+
+export type MedicineExtractionResult = {
+  medicines: ExtractedMedicine[];
+  rawText: string;
+  prescriptionInfo: Record<string, string | number | boolean>;
+};
+
 const MEDICINE_STOPWORDS = new Set([
   'sig',
   'take',
@@ -265,10 +290,10 @@ export async function extractMedicinesFromPrescription(
  * @returns Matched medicines with availability info
  */
 export function matchMedicinesWithDatabase(
-  medicineNames: Array<{ name: string; confidence: number; dosage?: string; frequency?: string }>,
-  allMedicines: Array<{ name: string; available: boolean }>
-) {
-  const matched = medicineNames.map(detected => {
+  medicineNames: ExtractedMedicine[],
+  allMedicines: DatabaseMedicine[]
+): MatchedMedicine[] {
+  const matched = medicineNames.map<MatchedMedicine>((detected) => {
     const detectedLower = detected.name.toLowerCase();
     
     // Try exact match first
@@ -287,9 +312,9 @@ export function matchMedicinesWithDatabase(
 
     // Try partial match and substring match
     let bestSimilarity = 0;
-    let bestPartialMatch = null;
+    let bestPartialMatch: DatabaseMedicine | null = null;
 
-    allMedicines.forEach(med => {
+    allMedicines.forEach((med) => {
       const dbName = med.name.toLowerCase();
       
       // Check for Substring match (e.g., detected "Amoxicillin Clavulanic" contains DB "Amoxicillin")
@@ -330,7 +355,7 @@ export function matchMedicinesWithDatabase(
   });
 
   // Strict Rule Option 2: If a medicine is NOT in the database, ONLY allow it if a dosage was detected alongside it.
-  return matched.filter(med => {
+  return matched.filter((med) => {
     if (med.matchType === 'notfound') {
       return !!med.dosage;
     }

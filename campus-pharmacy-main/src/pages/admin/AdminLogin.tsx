@@ -197,9 +197,9 @@ const ShaderMaterial = ({
   const { size } = useThree();
   const ref = useRef<THREE.Mesh>(null);
   
-  useFrame(({ clock }) => {
+  useFrame((state) => {
     if (!ref.current) return;
-    const timestamp = clock.getElapsedTime();
+    const timestamp = state.clock.getElapsedTime();
     const material: any = ref.current.material;
     const timeLocation = material.uniforms.u_time;
     timeLocation.value = timestamp;
