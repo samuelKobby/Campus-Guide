@@ -229,6 +229,7 @@ export const Home: React.FC<HomeProps> = ({ splashComplete = true }) => {
       const oy = btnRect.top + btnRect.height / 2 - containerRect.top;
       setCompassOrigin(`${ox}px ${oy}px`);
     }
+    if (demoOpen) setDemoOpen(false);
     setCompassOpen(v => !v);
   };
 
@@ -616,7 +617,7 @@ export const Home: React.FC<HomeProps> = ({ splashComplete = true }) => {
             initial={{ y: -240, opacity: 0, scale: 0.92 }}
             animate={entranceReady ? { y: 0, opacity: 1, scale: 1 } : { y: -240, opacity: 0, scale: 0.92 }}
             exit={{ y: -240, opacity: 0, scale: 0.92 }}
-            transition={entranceSpring(300, 26)}
+            transition={entranceSpring(500, 20, 0.1)}
           >
             {/* Hero text */}
             <motion.div

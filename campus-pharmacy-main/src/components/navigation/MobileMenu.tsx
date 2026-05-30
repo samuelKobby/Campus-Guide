@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaChevronDown, FaGraduationCap, FaBook, FaUtensils, FaDumbbell, FaCoffee, FaBriefcaseMedical, FaTimes, FaPills, FaBuilding } from 'react-icons/fa';
+import { QrCode } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
 const categories = [
@@ -16,9 +17,10 @@ const categories = [
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  onInstallClick?: () => void;
 }
 
-export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
+export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, onInstallClick }) => {
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const { theme } = useTheme();
 
@@ -95,6 +97,16 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
 
             {/* Menu Items */}
             <div className="p-6 space-y-2">
+              <button
+                onClick={onInstallClick}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all duration-200 text-cyan-400/80 hover:text-cyan-300 hover:bg-white/10"
+              >
+                <QrCode size={14} />
+                Install App
+              </button>
+
+              <div className="my-1 border-t border-white/10" />
+
               <Link
                 to="/map"
                 className="block px-4 py-3 rounded-lg font-medium transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10"

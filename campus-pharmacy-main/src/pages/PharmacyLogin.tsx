@@ -102,7 +102,7 @@ export const PharmacyLogin: React.FC = () => {
           <div className="pharm-login-copy">
             <p className="pharm-login-overline">Pharmacy Access</p>
             <h1 className="pharm-login-title">Secure staff sign-in</h1>
-            <p className="pharm-login-subtitle">Authenticate to manage inventory, requests, and patient support.</p>
+            <p className="pharm-login-subtitle">Authenticate to manage inventory.</p>
           </div>
 
           <form className="pharm-login-form" onSubmit={handleSubmit}>

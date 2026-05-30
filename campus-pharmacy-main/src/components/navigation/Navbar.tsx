@@ -4,12 +4,14 @@ import { MobileMenu } from './MobileMenu';
 import { DesktopNav } from './DesktopNav';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { MenuButton } from './MenuButton';
+import { InstallQrModal } from './InstallQrModal';
 import { useNavbarStyle } from '../../hooks/useNavbarStyle';
 import { useTheme } from '../../context/ThemeContext';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, QrCode } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const { navbarClass } = useNavbarStyle(isMenuOpen);
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -18,6 +20,8 @@ export const Navbar: React.FC = () => {
   const isAboutPage = location.pathname === '/about';
   const isCategoryPage = location.pathname.startsWith('/category');
   const hasDarkHero = isCategoryPage;
+
+  const downloadUrl = 'https://drive.google.com/file/d/1hqAPZ52JeJkFaZW_ehkQi7OFw4KnutFN/view?usp=drive_link';
 
   return (
     <>
@@ -54,14 +58,14 @@ export const Navbar: React.FC = () => {
 
               {/* ── Right: Install App link + Theme toggle + mobile menu ── */}
           <div className="flex items-center gap-3 z-10">
-                <a
-                  href="https://drive.google.com/file/d/1hqAPZ52JeJkFaZW_ehkQi7OFw4KnutFN/view?usp=drive_link"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs font-normal text-gray-400 hover:text-gray-300 transition-colors"
-                >
-                  Install App
-                </a>
+            <button
+              onClick={() => setIsQrModalOpen(true)}
+              className="flex items-center gap-2 text-xs font-normal text-gray-400 hover:text-gray-300 transition-colors group"
+              title="Show QR code to install app"
+            >
+              <QrCode className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              <span className="hidden sm:inline">Install App</span>
+            </button>
             <ThemeToggle className="hud-theme-toggle" />
             <button
               className={`md:hidden p-2 rounded-lg transition-colors ${isDark ? 'text-cyan-400/60 hover:text-cyan-300 hover:bg-white/5' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'}`}
@@ -74,7 +78,21 @@ export const Navbar: React.FC = () => {
       </nav>
       
       {/* Mobile Menu Drawer */}
-      <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      <MobileMenu 
+        isOpen={isMenuOpen} 
+        onClose={() => setIsMenuOpen(false)}
+        onInstallClick={() => {
+          setIsQrModalOpen(true);
+          setIsMenuOpen(false);
+        }}
+      />
+
+      {/* QR Code Modal */}
+      <InstallQrModal
+        isOpen={isQrModalOpen}
+        onClose={() => setIsQrModalOpen(false)}
+        downloadUrl={downloadUrl}
+      />
     </>
   );
 };
