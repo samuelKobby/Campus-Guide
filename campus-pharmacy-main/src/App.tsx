@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from './context/ThemeContext';
 import { MainLayout } from './components/layouts/MainLayout';
@@ -37,11 +37,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-function App() {
+function AppShell() {
+  const location = useLocation();
   const [showSplash, setShowSplash] = useState(true);
-  const forceSplash = new URLSearchParams(window.location.search).has('splash')
+  const forceSplash = new URLSearchParams(location.search).has('splash')
     || localStorage.getItem('campusGuide.forceSplash') === '1';
-  const showSplashActive = forceSplash || showSplash;
+  const suppressSplash = location.pathname === '/admin/login'
+    || location.pathname === '/pharmacy/login';
+  const showSplashActive = !suppressSplash && (forceSplash || showSplash);
 
   useEffect(() => {
     if (!showSplashActive) {
@@ -61,58 +64,66 @@ function App() {
   };
 
   return (
+    <>
+      {showSplashActive && (
+        <SplashScreen holdOnComplete={forceSplash} onSplashComplete={handleSplashComplete} />
+      )}
+      <Toaster position="top-right" />
+      <LocationProvider>
+        <LocationLoader />
+        <Routes>
+          {/* Auth Routes - Outside MainLayout */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/signup" element={<AdminSignup />} />
+          <Route path="/admin/*" element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/pharmacy/login" element={<PharmacyLogin />} />
+          <Route path="/pharmacy/*" element={
+            <PharmacyAuthProvider>
+              <RequirePharmacyAuth>
+                <PharmacyDashboard />
+              </RequirePharmacyAuth>
+            </PharmacyAuthProvider>
+          } />
+
+          {/* Main Layout Routes */}
+          <Route path="/" element={<MainLayout />}>
+            <Route index element={<Home splashComplete={!showSplashActive} />} />
+            
+            {/* Category Routes */}
+            <Route path="category">
+              <Route path="academic" element={<AcademicBuildings />} />
+              <Route path="libraries" element={<Libraries />} />
+              <Route path="dining" element={<DiningHalls />} />
+              <Route path="sports" element={<SportsFacilities />} />
+              <Route path="student-centers" element={<StudentCenters />} />
+              <Route path="health" element={<HealthServices />} />
+            </Route>
+
+            {/* Medicine Routes */}
+            <Route path="medicines" element={<Medicines />} />
+            <Route path="medicine/:id" element={<MedicineDetails />} />
+            <Route path="pharmacies" element={<Pharmacies />} />
+
+            {/* Other Routes */}
+            <Route path="about" element={<About />} />
+            <Route path="contact" element={<Contact />} />
+            <Route path="privacy" element={<Privacy />} />
+          </Route>
+        </Routes>
+      </LocationProvider>
+    </>
+  );
+}
+
+function App() {
+  return (
     <ThemeProvider>
       <Router>
-        {showSplashActive && (
-          <SplashScreen holdOnComplete={forceSplash} onSplashComplete={handleSplashComplete} />
-        )}
-        <Toaster position="top-right" />
-        <LocationProvider>
-          <LocationLoader />
-          <Routes>
-            {/* Auth Routes - Outside MainLayout */}
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin/signup" element={<AdminSignup />} />
-            <Route path="/admin/*" element={
-              <ProtectedRoute>
-                <AdminDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/pharmacy/login" element={<PharmacyLogin />} />
-            <Route path="/pharmacy/*" element={
-              <PharmacyAuthProvider>
-                <RequirePharmacyAuth>
-                  <PharmacyDashboard />
-                </RequirePharmacyAuth>
-              </PharmacyAuthProvider>
-            } />
-
-            {/* Main Layout Routes */}
-            <Route path="/" element={<MainLayout />}>
-              <Route index element={<Home splashComplete={!showSplashActive} />} />
-              
-              {/* Category Routes */}
-              <Route path="category">
-                <Route path="academic" element={<AcademicBuildings />} />
-                <Route path="libraries" element={<Libraries />} />
-                <Route path="dining" element={<DiningHalls />} />
-                <Route path="sports" element={<SportsFacilities />} />
-                <Route path="student-centers" element={<StudentCenters />} />
-                <Route path="health" element={<HealthServices />} />
-              </Route>
-
-              {/* Medicine Routes */}
-              <Route path="medicines" element={<Medicines />} />
-              <Route path="medicine/:id" element={<MedicineDetails />} />
-              <Route path="pharmacies" element={<Pharmacies />} />
-
-              {/* Other Routes */}
-              <Route path="about" element={<About />} />
-              <Route path="contact" element={<Contact />} />
-              <Route path="privacy" element={<Privacy />} />
-            </Route>
-          </Routes>
-        </LocationProvider>
+        <AppShell />
       </Router>
     </ThemeProvider>
   );
