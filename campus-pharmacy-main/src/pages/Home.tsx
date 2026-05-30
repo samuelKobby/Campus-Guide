@@ -210,16 +210,17 @@ export const Home: React.FC<HomeProps> = ({ splashComplete = true }) => {
 
   useEffect(() => {
     if (tutorialInitRef.current) return;
+    if (!splashComplete) return;
     tutorialInitRef.current = true;
 
     const seen = localStorage.getItem(HOME_TUTORIAL_SEEN_KEY);
     if (!seen) {
       const t = window.setTimeout(() => {
         openTutorial();
-      }, 900);
+      }, 30000);
       return () => window.clearTimeout(t);
     }
-  }, [openTutorial]);
+  }, [openTutorial, splashComplete]);
 
   const openCompass = () => {
     if (categoriesBtnRef.current && containerRef.current) {
