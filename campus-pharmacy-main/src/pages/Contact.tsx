@@ -182,7 +182,7 @@ export const Contact: FC = () => {
                 {/* A — large image card */}
                 <div className="md:col-span-2 relative rounded-3xl overflow-hidden group cursor-pointer">
                   <img
-                    src="https://images.unsplash.com/photo-1573497620053-ea5300f94f21?auto=format&fit=crop&w=1200&q=80"
+                    src="https://res.cloudinary.com/da9uls7pe/image/upload/v1782185546/Gemini_Generated_Image_im1hnbim1hnbim1h_pc7uqp.png"
                     alt="Support"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
@@ -241,7 +241,7 @@ export const Contact: FC = () => {
         <div className="relative h-[460px] overflow-hidden">
           <Parallax translateY={[-20, 20]} className="absolute inset-0">
             <img
-              src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1600&q=80"
+              src="https://res.cloudinary.com/da9uls7pe/image/upload/v1782184799/Gemini_Generated_Image_br9p7jbr9p7jbr9p_s6lwws.png"
               alt="Campus community"
               className="w-full h-[520px] object-cover object-center"
             />
@@ -275,7 +275,7 @@ export const Contact: FC = () => {
                   </blockquote>
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-indigo-500">
-                      <img src="https://i.pravatar.cc/150?img=33" alt="Founder" className="w-full h-full object-cover" />
+                      <img src="/images/9.png" alt="Founder" className="w-full h-full object-cover" />
                     </div>
                     <div>
                       <p className="font-bold text-white text-sm">Samuel G. Fordjour</p>
@@ -300,7 +300,7 @@ export const Contact: FC = () => {
                 {/* Image */}
                 <div className="relative rounded-3xl overflow-hidden h-[420px]">
                   <img
-                    src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=900&q=80"
+                    src="https://res.cloudinary.com/da9uls7pe/image/upload/v1782185772/Gemini_Generated_Image_ewc366ewc366ewc3_2_cwscw6.png"
                     alt="Student connected"
                     className="w-full h-full object-cover"
                   />
