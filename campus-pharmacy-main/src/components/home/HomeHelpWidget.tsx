@@ -10,7 +10,7 @@ export const HomeHelpWidget: React.FC<HomeHelpWidgetProps> = ({ isDark, onStartT
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="fixed bottom-6 left-6 z-[60]">
+    <div className="fixed bottom-14  sm:bottom-6 left-2 z-[60]">
       {open && (
         <div
           className={
