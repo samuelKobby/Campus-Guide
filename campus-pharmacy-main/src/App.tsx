@@ -25,6 +25,7 @@ import { PharmacyAuthProvider, RequirePharmacyAuth } from './contexts/PharmacyAu
 import { LocationProvider } from './context/LocationContext';
 import { LocationLoader } from './components/LocationLoader';
 import { SplashScreen } from './components/SplashScreen';
+import { PWAInstallProvider } from './context/PWAInstallContext';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -122,9 +123,11 @@ function AppShell() {
 function App() {
   return (
     <ThemeProvider>
-      <Router>
-        <AppShell />
-      </Router>
+      <PWAInstallProvider>
+        <Router>
+          <AppShell />
+        </Router>
+      </PWAInstallProvider>
     </ThemeProvider>
   );
 }

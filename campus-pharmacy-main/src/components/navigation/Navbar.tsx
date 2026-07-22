@@ -4,14 +4,14 @@ import { MobileMenu } from './MobileMenu';
 import { DesktopNav } from './DesktopNav';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { MenuButton } from './MenuButton';
-import { InstallQrModal } from './InstallQrModal';
 import { useNavbarStyle } from '../../hooks/useNavbarStyle';
 import { useTheme } from '../../context/ThemeContext';
-import { Menu, X, QrCode } from 'lucide-react';
+import { usePWAInstallContext } from '../../context/PWAInstallContext';
+import { Menu, X, QrCode, Check } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+  const { showInstall, isInstalled } = usePWAInstallContext();
   const { navbarClass } = useNavbarStyle(isMenuOpen);
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -59,12 +59,23 @@ export const Navbar: React.FC = () => {
               {/* ── Right: Install App link + Theme toggle + mobile menu ── */}
           <div className="flex items-center gap-3 z-10">
             <button
-              onClick={() => setIsQrModalOpen(true)}
-              className="flex items-center gap-2 text-xs font-normal text-gray-400 hover:text-gray-300 transition-colors group"
-              title="Show QR code to install app"
+              onClick={showInstall}
+              disabled={isInstalled}
+              className={`flex items-center gap-2 text-xs font-normal transition-colors group ${
+                isInstalled 
+                  ? 'text-green-500 opacity-80 cursor-default' 
+                  : 'text-gray-400 hover:text-gray-300'
+              }`}
+              title={isInstalled ? "App is installed" : "Install app"}
             >
-              <QrCode className="w-4 h-4 group-hover:scale-110 transition-transform" />
-              <span className="hidden sm:inline">Install App</span>
+              {isInstalled ? (
+                <Check className="w-4 h-4" />
+              ) : (
+                <QrCode className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              )}
+              <span className="hidden sm:inline">
+                {isInstalled ? "Installed" : "Install App"}
+              </span>
             </button>
             <ThemeToggle className="hud-theme-toggle" />
             <button
@@ -82,16 +93,9 @@ export const Navbar: React.FC = () => {
         isOpen={isMenuOpen} 
         onClose={() => setIsMenuOpen(false)}
         onInstallClick={() => {
-          setIsQrModalOpen(true);
+          showInstall();
           setIsMenuOpen(false);
         }}
-      />
-
-      {/* QR Code Modal */}
-      <InstallQrModal
-        isOpen={isQrModalOpen}
-        onClose={() => setIsQrModalOpen(false)}
-        downloadUrl={downloadUrl}
       />
     </>
   );

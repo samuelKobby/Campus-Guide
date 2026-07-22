@@ -53,7 +53,7 @@ export const PharmacyDetails: React.FC = () => {
           <img
             src={pharmacy.image}
             alt={pharmacy.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-fill"
           />
         </div>
         

@@ -41,7 +41,7 @@ export const PharmacyList: React.FC = () => {
             <img
               src={pharmacy.image}
               alt={pharmacy.name}
-              className="w-full h-48 object-cover"
+              className="w-full h-48 object-fill"
             />
             <div className="p-4">
               <h3 className="text-xl font-semibold mb-2">{pharmacy.name}</h3>

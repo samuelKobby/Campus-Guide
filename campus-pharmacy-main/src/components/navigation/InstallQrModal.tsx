@@ -1,19 +1,60 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Download } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 
 interface InstallQrModalProps {
   isOpen: boolean;
   onClose: () => void;
-  downloadUrl: string;
 }
 
 export const InstallQrModal: React.FC<InstallQrModalProps> = ({
   isOpen,
   onClose,
-  downloadUrl
 }) => {
   const qrRef = React.useRef<HTMLDivElement>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [installed, setInstalled] = useState(false);
+
+  const siteUrl = "https://camp-guide.netlify.app";
+
+  useEffect(() => {
+    // Check if prompt was already captured globally
+    if ((window as any).deferredInstallPrompt) {
+      setDeferredPrompt((window as any).deferredInstallPrompt);
+    }
+
+    const handler = (e: Event) => {
+      e.preventDefault();
+      (window as any).deferredInstallPrompt = e;
+      setDeferredPrompt(e);
+    };
+
+    const installedHandler = () => setInstalled(true);
+
+    window.addEventListener('beforeinstallprompt', handler);
+    window.addEventListener('appinstalled', installedHandler);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('appinstalled', installedHandler);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    const prompt = deferredPrompt || (window as any).deferredInstallPrompt;
+    if (!prompt) {
+      // Fallback: tell user to use Chrome menu
+      alert('To install: click the Chrome menu (⋮) → Cast, save and share → Install page as app');
+      return;
+    }
+    prompt.prompt();
+    const { outcome } = await prompt.userChoice;
+    if (outcome === 'accepted') {
+      setInstalled(true);
+    }
+    (window as any).deferredInstallPrompt = null;
+    setDeferredPrompt(null);
+  };
 
   const downloadQrCode = () => {
     if (qrRef.current) {
@@ -51,17 +92,26 @@ export const InstallQrModal: React.FC<InstallQrModalProps> = ({
         {/* Content */}
         <div className="flex flex-col items-center gap-6">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white text-center">
-            Scan to Install Campus Guide
+            Install Campus Guide
           </h2>
 
+          {/* Installed confirmation */}
+          {installed && (
+            <div className="w-full bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 text-center">
+              <p className="text-sm text-green-700 dark:text-green-300 font-medium">
+                ✓ App installed successfully!
+              </p>
+            </div>
+          )}
+
           {/* QR Code */}
-          <div 
+          <div
             ref={qrRef}
             className="bg-white p-4 rounded-lg border-2 border-gray-200"
           >
             <QRCodeCanvas
-              value={downloadUrl}
-              size={256}
+              value={siteUrl}
+              size={200}
               level="H"
               includeMargin={true}
               fgColor="#000000"
@@ -69,21 +119,21 @@ export const InstallQrModal: React.FC<InstallQrModalProps> = ({
             />
           </div>
 
-          {/* Instructions */}
           <p className="text-sm text-gray-600 dark:text-gray-400 text-center max-w-xs">
-            Use your phone camera or QR code scanner to download and install the Campus Guide app instantly.
+            Scan with your phone camera to install on mobile, or click Download below to install on this device.
           </p>
 
           {/* Action Buttons */}
           <div className="flex gap-3 w-full">
-            <a
-              href={downloadUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors text-center"
+            <button
+              onClick={handleInstallClick}
+              disabled={installed}
+              className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
             >
-              Download
-            </a>
+              <Download className="w-4 h-4" />
+              {installed ? 'Installed' : 'Download'}
+            </button>
+
             <button
               onClick={downloadQrCode}
               className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg font-medium transition-colors"

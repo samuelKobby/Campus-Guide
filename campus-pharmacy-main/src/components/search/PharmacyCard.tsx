@@ -49,7 +49,11 @@ export const PharmacyCard: React.FC<PharmacyCardProps> = ({ pharmacy, medicines 
           <div className="space-y-2 text-gray-600 dark:text-[#a09cb9] mb-4">
             <p> {pharmacy.location}</p>
             <p> {pharmacy.hours}</p>
-            <p> {pharmacy.phone}</p>
+            <p>
+              <a href={`tel:${pharmacy.phone}`} className="hover:text-blue-500 hover:underline transition-colors">
+                {pharmacy.phone}
+              </a>
+            </p>
           </div>
 
           {/* Medicines List */}

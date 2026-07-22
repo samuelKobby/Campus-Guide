@@ -70,7 +70,7 @@ const PharmacyCard: React.FC<{ pharmacy: Pharmacy; theme: string }> = ({ pharmac
       <div className="relative w-full h-[240px] overflow-hidden rounded-xl mb-3">
         <motion.img
           src={pharmacy.image || placeholderImage}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-fill"
           alt={pharmacy.name}
           animate={{ scale: isHovered ? 1.05 : 1 }}
           transition={{ duration: 0.3 }}
@@ -128,7 +128,13 @@ const PharmacyCard: React.FC<{ pharmacy: Pharmacy; theme: string }> = ({ pharmac
           </p>
           <p className={`text-xs flex items-center gap-1.5 ${theme === 'dark' ? 'text-[#a09cb9]' : 'text-gray-600'}`}>
             <FaPhone className="flex-shrink-0 opacity-60" size={11} />
-            {pharmacy.phone}
+            <a 
+              href={`tel:${pharmacy.phone}`} 
+              onClick={(e) => e.stopPropagation()}
+              className="hover:text-cyan-500 hover:underline transition-colors"
+            >
+              {pharmacy.phone}
+            </a>
           </p>
         </div>
       </motion.div>

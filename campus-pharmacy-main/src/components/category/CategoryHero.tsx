@@ -55,12 +55,14 @@ export const CategoryHero: React.FC<CategoryHeroProps> = ({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="grid grid-cols-2 md:grid-cols-3 gap-6 mt-8"
+              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-8"
             >
               {stats.map((stat, index) => (
                 <div
                   key={index}
-                  className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/10"
+                  // Hide cards 2 and 3 on extra-small/mobile to avoid layout overflow.
+                  // This keeps the text/content intact; it only toggles visibility via CSS.
+                  className={`bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/10 ${index >= 1 ? 'hidden sm:block' : ''}`}
                 >
                   <div className="text-3xl font-bold text-white">
                     {stat.value}

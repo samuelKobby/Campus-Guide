@@ -5,6 +5,7 @@ import { CampusMarker } from '../components/home/CampusMarker';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { HomeTutorial, TutorialStep } from '../components/home/HomeTutorial';
 import { HomeHelpWidget } from '../components/home/HomeHelpWidget';
+import VoiceAgent from '../components/VoiceAgent';
 import { useTheme } from '../context/ThemeContext';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
@@ -850,12 +851,7 @@ export const Home: React.FC<HomeProps> = ({ splashComplete = true }) => {
       <div className="absolute inset-0 pointer-events-none z-50 scanline-overlay" />
 
       {/* ── ElevenLabs Voice Agent ─────────────────────────────────────── */}
-      <div id="home-voice-agent" className="fixed bottom-6 right-6 z-50">
-        <elevenlabs-convai
-          agent-id="agent_01jx5fv1kbech895mwad5nx8wb"
-          avatar-orb-style="icon"
-        ></elevenlabs-convai>
-      </div>
+      <VoiceAgent />
 
       <HomeHelpWidget
         isDark={isDark}

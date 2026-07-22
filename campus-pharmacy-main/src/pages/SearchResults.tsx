@@ -146,12 +146,17 @@ export const SearchResults: React.FC = () => {
             <img
               src={pharmacy.image}
               alt={pharmacy.name}
-              className="w-full h-48 object-cover rounded-lg mb-4"
+              className="w-full h-48 object-fill rounded-lg mb-4"
             />
             <h3 className="text-xl font-semibold mb-2" style={{ fontFamily: "'Roboto','Inter',system-ui,sans-serif" }}>{pharmacy.name}</h3>
             <p className="text-gray-600 mb-2">{pharmacy.location}</p>
             <p className="text-gray-600 mb-2">Hours: {pharmacy.hours}</p>
-            <p className="text-gray-600 mb-4">Phone: {pharmacy.phone}</p>
+            <p className="text-gray-600 mb-4">
+              Phone:{' '}
+              <a href={`tel:${pharmacy.phone}`} className="hover:text-blue-500 hover:underline transition-colors text-blue-600">
+                {pharmacy.phone}
+              </a>
+            </p>
             <div className="border-t pt-4">
               <h4 className="font-semibold mb-2" style={{ fontFamily: "'Roboto','Inter',system-ui,sans-serif" }}>Available Medicines:</h4>
               <ul className="space-y-2">

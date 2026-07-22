@@ -747,7 +747,11 @@ const PharmacyCard: React.FC<{
 
               <div className={`flex items-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm`}>
                 <Phone className="h-4 w-4 mr-1 flex-shrink-0" />
-                <p>{pharmacy.phone}</p>
+                <p>
+                  <a href={`tel:${pharmacy.phone}`} className="hover:text-blue-500 hover:underline transition-colors">
+                    {pharmacy.phone}
+                  </a>
+                </p>
               </div>
             </div>
           </div>
@@ -812,7 +816,11 @@ const PharmacyCard: React.FC<{
               </div>
               <div className={`flex items-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                 <Phone className="h-3 w-3 mr-1" />
-                <p className="text-xs">{pharmacy.phone}</p>
+                <p className="text-xs">
+                  <a href={`tel:${pharmacy.phone}`} className="hover:text-blue-500 hover:underline transition-colors">
+                    {pharmacy.phone}
+                  </a>
+                </p>
               </div>
             </div>
 
@@ -996,7 +1004,15 @@ const MedicineStylePharmacyCard: React.FC<{
 
             <div className={`flex items-center ${theme === 'dark' ? 'text-[#a09cb9]' : 'text-gray-600'} text-xs`}>
               <Phone className="h-3 w-3 mr-1 flex-shrink-0" />
-              <p className="line-clamp-1">{pharmacy.phone}</p>
+              <p className="line-clamp-1">
+                <a 
+                  href={`tel:${pharmacy.phone}`} 
+                  onClick={(e) => e.stopPropagation()}
+                  className="hover:text-cyan-500 hover:underline transition-colors"
+                >
+                  {pharmacy.phone}
+                </a>
+              </p>
             </div>
           </div>
 
