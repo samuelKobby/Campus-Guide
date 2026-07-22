@@ -15,15 +15,15 @@
       "type": "image/png"
     },
     {
-      "src": "/images/black_circle_360x360.png",
-      "sizes": "360x360",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "src": "/images/1.png",
+      "sizes": "512x512",
+      "type": "image/png"
     },
     {
       "src": "/images/1.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
