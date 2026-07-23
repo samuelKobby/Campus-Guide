@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { ThemeProvider } from './context/ThemeContext';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { MainLayout } from './components/layouts/MainLayout';
 import { Home } from './pages/Home';
 import { About } from './pages/About';
@@ -40,12 +40,41 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 function AppShell() {
   const location = useLocation();
+  const { theme } = useTheme();
   const [showSplash, setShowSplash] = useState(true);
   const forceSplash = new URLSearchParams(location.search).has('splash')
     || localStorage.getItem('campusGuide.forceSplash') === '1';
   const suppressSplash = location.pathname === '/admin/login'
     || location.pathname === '/pharmacy/login';
   const showSplashActive = !suppressSplash && (forceSplash || showSplash);
+
+  // Dynamic Theme Color effect
+  useEffect(() => {
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      let color = '#ffffff'; // Default light theme
+      const isDark = theme === 'dark';
+      const path = location.pathname;
+
+      if (isDark) {
+        if (path.startsWith('/category')) {
+          color = '#050816'; // Dark category view bg
+        } else {
+          color = '#0b0f1e'; // General dark mode bg
+        }
+      } else {
+        if (path.startsWith('/category')) {
+          color = '#F2ECFD'; // Light category top lavender gradient
+        } else if (path === '/' || path === '/about' || path === '/contact') {
+          color = '#ffffff'; // Pristine white
+        } else {
+          color = '#f8fafc'; // Default light slate bg for listings, dashboard etc.
+        }
+      }
+      
+      metaThemeColor.setAttribute('content', color);
+    }
+  }, [location.pathname, theme]);
 
   useEffect(() => {
     if (!showSplashActive) {

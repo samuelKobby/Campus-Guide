@@ -25,7 +25,7 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <nav className={navbarClass} data-page={isAboutPage ? 'about' : hasDarkHero ? 'dark-hero' : undefined}>
+      <nav className={`pt-[env(safe-area-inset-top)] ${navbarClass}`} data-page={isAboutPage ? 'about' : hasDarkHero ? 'dark-hero' : undefined}>
         <div className="relative flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-8 h-16">
           {/* ── Logo with rings ── */}
           <Link to="/" className="flex items-center gap-0 group z-10">
