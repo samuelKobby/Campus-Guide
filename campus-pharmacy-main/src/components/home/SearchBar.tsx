@@ -115,10 +115,10 @@ export const SearchBar: React.FC = () => {
 
   return (
     <div ref={searchContainerRef} className="relative" style={{ zIndex: 9999 }}>
-      <div className="h-[48px] mb-4">
-        <form onSubmit={handleSearch} className="max-w-4xl mx-auto">
-          <div className="relative flex items-center">
-            <div className="relative flex items-center w-full">
+      <div className="h-[100px] sm:h-[48px] mb-4">
+        <form onSubmit={handleSearch} className="max-w-4xl mx-auto h-full">
+          <div className="relative flex items-center h-full">
+            <div className="relative flex items-center w-full h-full">
               <div className="absolute left-4 text-blue-600 z-10">
                 <FaSearch size={20} />
               </div>
@@ -135,7 +135,7 @@ export const SearchBar: React.FC = () => {
                   handleSearch(e as any);
                 }}
                 placeholder="Search for a location..."
-                className="w-full pl-12 pr-24 py-3 text-lg text-gray-900 bg-white bg-opacity-95 backdrop-blur-sm rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-xl border border-white/20 placeholder:text-gray-500"
+                className="w-full h-full pl-12 pr-24 py-4 sm:py-3 text-xl sm:text-lg text-gray-900 bg-white bg-opacity-95 backdrop-blur-sm rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-xl border border-white/20 placeholder:text-gray-500"
               />
               <div className="absolute right-4 flex items-center gap-2">
                 <button

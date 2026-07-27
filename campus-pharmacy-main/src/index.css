@@ -823,10 +823,10 @@ html.light .hud-side-item-active {
   box-shadow: none !important;
   font-family: 'Inter', system-ui, sans-serif !important;
   font-weight: 500;
-  font-size: 15px !important;
+  font-size: 15px;
   letter-spacing: 0.01em;
   transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-  height: 52px !important;
+  height: auto;
 }
 
 /* Centered page variant — larger, more prominent */
