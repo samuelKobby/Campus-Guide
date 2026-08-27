@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { MapPin, Clock, Phone, Package, Navigation, ArrowLeft } from 'lucide-react';
+import { MapPin, Clock, Phone, Package, Navigation, ArrowLeft, Tag } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { locationImages } from '../utils/imageUrls';
@@ -302,13 +302,13 @@ export const MedicineDetails = () => {
   }
 
   return (
-    <div className={`h-screen flex flex-col overflow-hidden ${theme === 'dark' ? 'bg-[#050816]' : 'bg-gradient-to-b from-[#F2ECFD] to-white'}`}>
-      <div className="container mx-auto px-4 max-w-7xl flex-1 flex flex-col pt-20 pb-4 overflow-hidden">
+    <div className={`min-h-screen lg:h-screen lg:overflow-hidden flex flex-col ${theme === 'dark' ? 'bg-[#050816]' : 'bg-gradient-to-b from-[#F2ECFD] to-white'}`}>
+      <div className="hidden lg:flex container mx-auto px-4 max-w-7xl flex-1 flex-col pt-20 pb-4 overflow-hidden">
         {/* Navigation Header */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="mb-6 flex-shrink-0"
+          className="mb-6 flex-shrink-0 hidden lg:block"
         >
           <motion.button
             onClick={() => navigate('/medicines')}
@@ -465,122 +465,102 @@ export const MedicineDetails = () => {
             </motion.div>
           </div>
         </div>
+        </div>
 
-        {/* Mobile Layout (below lg) */}
-        <div className="lg:hidden space-y-8 flex-1 overflow-y-auto" data-lenis-prevent="true">
+        {/* Mobile Layout (below lg) - page-level scroll, hero full-bleed at top like category pages */}
+        <div className="lg:hidden flex flex-col">
           {/* Mobile Medicine Details */}
-          <motion.div
-            ref={medicineCardRef}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, type: 'spring', stiffness: 100 }}
-            onMouseMove={handleMouseMove}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            style={{
-              transform: getCardTransform(),
-              transition: 'transform 0.1s ease-out',
-            }}
-            className={`
-              ${theme === 'dark'
-                ? 'bg-black/20 backdrop-blur-md border border-white/10'
-                : 'bg-white/60 backdrop-blur-md border border-black/5'
-              }
-              rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 relative overflow-hidden
-            `}
-          >
+          <div ref={medicineCardRef} className="relative">
             {/* Shine Effect Overlay */}
             <div
               className="absolute inset-0 rounded-2xl pointer-events-none z-10 transition-opacity duration-300"
               style={getShinePosition()}
             />
 
-            <div className="p-6 space-y-6">
-              {/* Mobile Medicine Image */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="relative overflow-hidden rounded-xl"
+            {/* Mobile Medicine Image - full-bleed hero at top of screen */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="relative h-[500px] overflow-hidden"
+            >
+              <motion.button
+                onClick={() => navigate('/medicines')}
+                whileTap={{ scale: 0.95 }}
+                className={`
+                  absolute top-24 left-4 z-20 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300
+                  ${theme === 'dark'
+                    ? 'bg-black/40 backdrop-blur-md border border-white/20 text-white hover:bg-black/50'
+                    : 'bg-white/80 backdrop-blur-md border border-black/10 text-gray-900 hover:bg-white'
+                  }
+                  shadow-lg
+                `}
+                aria-label="Back to medicines"
               >
-                <img
-                  className="w-full h-64 object-cover rounded-xl"
-                  src={medicine.image || locationImages.pharmacy}
-                  alt={medicine.name}
-                />
-              </motion.div>
+                <ArrowLeft className="h-5 w-5" />
+              </motion.button>
+              <img
+                className="w-full h-full object-cover object-center"
+                src={medicine.image || locationImages.pharmacy}
+                alt={medicine.name}
+              />
+            </motion.div>
 
-              {/* Mobile Medicine Information */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-                className="space-y-4"
+            {/* Mobile Medicine Information - overlapping e-commerce style (full width) */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className={`
+                relative -mt-5 rounded-t-3xl shadow-xl px-6 pt-8 pb-10
+                ${theme === 'dark'
+                  ? 'bg-[#050816] border border-white/10'
+                  : 'bg-white border border-black/5'
+                }
+              `}
+            >
+              {/* Category pill + unit chip */}
+              <div className="flex items-center justify-between">
+                <span className={`
+                  inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-medium text-xs tracking-wide
+                  ${theme === 'dark'
+                    ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/25'
+                    : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  }
+                `}>
+                  <Tag className="w-3.5 h-3.5" />
+                  {medicine.category}
+                </span>
+                <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                  per {medicine.unit}
+                </span>
+              </div>
+
+              {/* Medicine Name */}
+              <h1
+                className={`mt-5 text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} leading-tight`}
+                style={{ fontFamily: "'Playfair Display','Georgia',serif" }}
               >
-                <h1
-                  className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} leading-tight`}
-                  style={{ fontFamily: "'Playfair Display','Georgia',serif" }}
-                >
-                  {medicine.name}
-                </h1>
+                {medicine.name}
+              </h1>
 
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div
-                    className={`
-                      flex-1 ${theme === 'dark'
-                        ? 'bg-cyan-500/10 border border-cyan-500/20'
-                        : 'bg-purple-500/10 border border-purple-500/20'
-                      }
-                      rounded-xl p-4
-                    `}
-                  >
-                    <p className={`text-xs font-medium ${theme === 'dark' ? 'text-cyan-400' : 'text-purple-600'} mb-1`}>
-                      Category
-                    </p>
-                    <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                      {medicine.category}
-                    </p>
-                  </div>
+              {/* Divider */}
+              <div className={`mt-6 mb-6 h-px bg-gradient-to-r ${theme === 'dark' ? 'from-white/10 via-white/5 to-transparent' : 'from-gray-200 via-gray-100 to-transparent'}`} />
 
-                  <div
-                    className={`
-                      flex-1 ${theme === 'dark'
-                        ? 'bg-emerald-500/10 border border-emerald-500/20'
-                        : 'bg-emerald-500/10 border border-emerald-500/20'
-                      }
-                      rounded-xl p-4
-                    `}
-                  >
-                    <p className={`text-xs font-medium ${theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'} mb-1`}>
-                      Price per {medicine.unit}
-                    </p>
-                    <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                      GH₵{medicine.price.toFixed(2)}
-                    </p>
-                  </div>
-                </div>
-
-                <div
-                  className={`
-                    ${theme === 'dark'
-                      ? 'bg-gray-800/30 border border-gray-700/50'
-                      : 'bg-gray-50/60 border border-gray-200/50'
-                    }
-                    rounded-xl p-4
-                  `}
-                >
-                  <p className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} mb-2`}>
-                    Description
-                  </p>
-                  <p className={`text-sm leading-relaxed ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>
-                    {medicine.description}
-                  </p>
-                </div>
-              </motion.div>
-            </div>
-          </motion.div>
+              {/* Description */}
+              <div>
+                <p className={`text-xs font-semibold tracking-widest uppercase mb-3 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                  About this medicine
+                </p>
+                <p className={`text-[15px] leading-relaxed ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
+                  {medicine.description}
+                </p>
+              </div>
+            </motion.div>
+          </div>
 
           {/* Mobile Pharmacies */}
+          <div className="container mx-auto px-4 pt-6 pb-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -622,8 +602,8 @@ export const MedicineDetails = () => {
               </div>
             )}
           </motion.div>
+          </div>
         </div>
-      </div>
     </div>
   );
 };

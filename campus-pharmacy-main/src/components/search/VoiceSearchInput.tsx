@@ -90,13 +90,13 @@ export const VoiceSearchInput: React.FC<VoiceSearchInputProps> = ({
         onClick={startListening}
         disabled={isListening}
         className={`
-          absolute right-8 p-1.5 rounded-full transition-all duration-300
+          absolute right-8 top-1/2 -translate-y-1/2 p-1.5 rounded-full transition-all duration-300
           ${theme === 'dark'
             ? 'text-white hover:text-gray-300'
             : 'text-blue-600 hover:text-blue-800'
           }
           ${isListening ? 'animate-pulse text-red-400' : ''}
-          border border-white/20
+          ${theme === 'dark' ? 'border border-transparent' : 'border border-white/20'}
         `}
         title={isListening ? 'Listening...' : 'Click to search by voice'}
       >
@@ -108,13 +108,13 @@ export const VoiceSearchInput: React.FC<VoiceSearchInputProps> = ({
         <button
           onClick={() => setShowLangSelector(prev => !prev)}
           className={`
-            absolute right-2 px-2 py-1.5 rounded-full transition-all duration-300
+            absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1.5 rounded-full transition-all duration-300
             ${theme === 'dark'
               ? 'text-white hover:text-gray-300'
               : 'text-blue-600 hover:text-blue-800'
             }
             ${isListening ? 'animate-pulse' : ''}
-            border border-white/20
+            ${theme === 'dark' ? 'border border-transparent' : 'border border-white/20'}
           `}
           aria-label="Select language"
           title="Select language for voice recognition"
