@@ -1842,4 +1842,34 @@ elevenlabs-convai {
   }
 }
 
+/* Mobile search bar — restore component sizing (height, icon sizes, placeholder) */
+@media (max-width: 639px) {
+  .search-hud-navbar input[type="text"] {
+    height: 100% !important;
+    font-size: 20px !important;
+    padding-left: 56px !important;
+    padding-right: 112px !important;
+    padding-top: 20px !important;
+    padding-bottom: 20px !important;
+  }
+  .search-hud-navbar input[type="text"]::placeholder {
+    font-size: 16px !important;
+  }
+  .search-hud-navbar .absolute.left-4 svg {
+    width: 22px !important;
+    height: 22px !important;
+  }
+  .search-hud-navbar .absolute.right-4 {
+    gap: 0 !important;
+  }
+  .search-hud-navbar .absolute.right-4 button {
+    padding: 12px !important;
+  }
+  .search-hud-navbar .absolute.right-4 button svg,
+  .search-hud-navbar .absolute.right-4 svg {
+    width: 22px !important;
+    height: 22px !important;
+  }
+}
+
 

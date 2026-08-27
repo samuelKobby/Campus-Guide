@@ -115,12 +115,13 @@ export const SearchBar: React.FC = () => {
 
   return (
     <div ref={searchContainerRef} className="relative" style={{ zIndex: 9999 }}>
-      <div className="h-[100px] sm:h-[48px] mb-4">
+      <div className="h-[56px] sm:h-[48px] mb-4">
         <form onSubmit={handleSearch} className="max-w-4xl mx-auto h-full">
           <div className="relative flex items-center h-full">
             <div className="relative flex items-center w-full h-full">
-              <div className="absolute left-4 text-blue-600 z-10">
-                <FaSearch size={20} />
+              <div className="absolute top-1/2 -translate-y-1/2 sm:top-auto sm:translate-y-0 text-blue-600 z-10 pt-5 pb-5 pl-6 pr-4 sm:left-4 sm:pt-0 sm:pb-0 sm:pl-0 sm:pr-0">
+                <FaSearch size={22} className="sm:hidden" />
+                <FaSearch size={20} className="hidden sm:block" />
               </div>
               <input
                 type="text"
@@ -135,31 +136,32 @@ export const SearchBar: React.FC = () => {
                   handleSearch(e as any);
                 }}
                 placeholder="Search for a location..."
-                className="w-full h-full pl-12 pr-24 py-4 sm:py-3 text-xl sm:text-lg text-gray-900 bg-white bg-opacity-95 backdrop-blur-sm rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-xl border border-white/20 placeholder:text-gray-500"
+                className="w-full h-full pl-14 sm:pl-12 pr-28 sm:pr-24 py-5 sm:py-3 text-xl sm:text-lg text-gray-900 bg-white bg-opacity-95 backdrop-blur-sm rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-xl border border-white/20 placeholder:text-gray-500 placeholder:text-base"
               />
               <div className="absolute right-4 flex items-center gap-2">
                 <button
                   type="button"
                   onClick={startListening}
                   disabled={!isSupported || isListening}
-                  className={`p-2 rounded-full transition-colors flex items-center gap-1 ${isListening
+                  className={`p-3 sm:p-2 rounded-full bg-transparent transition-colors flex items-center gap-1 ${isListening
                     ? 'text-red-500 animate-pulse'
                     : 'text-blue-600 hover:text-blue-800'}`}
                   aria-label={isListening ? 'Listening...' : 'Search with voice'}
                   title={isSupported ? 'Search with voice' : 'Voice search not supported'}
                 >
-                  {isListening ? <FaMicrophone size={20} /> : <FaMicrophoneSlash size={20} />}
+                  {isListening ? <FaMicrophone size={22} className="sm:hidden" /> : <FaMicrophoneSlash size={22} className="sm:hidden" />}
+                  {isListening ? <FaMicrophone size={20} className="hidden sm:block" /> : <FaMicrophoneSlash size={20} className="hidden sm:block" />}
                 </button>
 
                 <div className="relative">
                   <button
                     type="button"
                     onClick={() => isSupported ? setShowLangSelector(prev => !prev) : setShowVoiceUnsupported(true)}
-                    className={`p-2 transition-colors ${isListening
+                    className={`p-3 sm:p-2 bg-transparent transition-colors ${isListening
                       ? 'text-red-500 animate-pulse'
                       : 'text-blue-600 hover:text-blue-800'}`}
                   >
-                    <span className="text-xs font-medium">{currentLang.code.split('-')[0].toUpperCase()}</span>
+                    <span className="text-sm sm:text-xs font-semibold sm:font-medium">{currentLang.code.split('-')[0].toUpperCase()}</span>
                   </button>
 
                   {showLangSelector && (

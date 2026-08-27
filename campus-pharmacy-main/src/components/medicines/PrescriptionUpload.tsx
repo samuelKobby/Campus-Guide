@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Upload, Camera, X, FileText, Loader2, CheckCircle, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
-import { extractMedicinesFromPrescription, matchMedicinesWithDatabase } from '../../services/geminiService';
+import { extractMedicinesFromPrescription, matchMedicinesWithDatabase, fuzzyExtractFromText } from '../../services/geminiService';
 
 interface PrescriptionUploadProps {
   onMedicineDetected: (medicineName: string) => void;
@@ -18,7 +18,7 @@ interface DetectedMedicine {
   frequency?: string;
 }
 
-// Uses Vision OCR + rule-based parsing for prescription analysis
+// Uses local OCR + rule-based parsing for prescription analysis
 // Extracts medicine names, dosage, frequency, and other prescription details
 
 export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({ 
@@ -59,7 +59,7 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
     setApiConnectionTest({
       tested: true,
       success: true,
-      message: 'Vision OCR + rule-based parsing enabled'
+      message: 'Local OCR + rule-based parsing enabled'
     });
   };
 
@@ -83,12 +83,12 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
     setPrescriptionInfo(null);
     
     try {
-      // Step 1: Use Gemini API to analyze the prescription
+      // Step 1: Use local OCR to analyze the prescription
       setProcessingProgress(20);
-      console.log('Starting Gemini analysis...');
+      console.log('Starting local OCR analysis...');
       const geminiResult = await extractMedicinesFromPrescription(imageData);
       
-      console.log('Gemini Result:', geminiResult);
+      console.log('OCR Result:', geminiResult);
       
       setProcessingProgress(40);
       
@@ -97,7 +97,7 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
       setPrescriptionInfo(geminiResult.prescriptionInfo);
       
       if (!geminiResult.medicines || geminiResult.medicines.length === 0) {
-        console.warn('No medicines detected by Gemini');
+        console.warn('No medicines detected by OCR');
         setExtractedText(
           `No medicines detected in the prescription.\n\nExtracted text:\n${geminiResult.rawText || 'Unable to extract text from image'}\n\nTips:\n• Ensure the prescription is clearly visible\n• Make sure text is horizontal and readable\n• Try with a different image if this one is blurry`
         );
@@ -118,13 +118,24 @@ export const PrescriptionUpload: React.FC<PrescriptionUploadProps> = ({
       console.log(`Database has ${allMedicines?.length || 0} medicines`);
       setProcessingProgress(70);
       
-      // Step 3: Match detected medicines with database
-      const medicinesToMatch = geminiResult.medicines.map(med => ({
-        name: med.name,
-        confidence: med.confidence,
-        dosage: med.dosage,
-        frequency: med.frequency,
-      }));
+      // Step 3: Use fuzzy matching on raw text to recover medicines missed by OCR
+      const fuzzyMatches = fuzzyExtractFromText(geminiResult.rawText || '', allMedicines || []);
+
+      // Merge OCR-detected medicines with fuzzy matches (keep highest confidence)
+      const mergedMap = new Map<string, { name: string; confidence: number; dosage?: string; frequency?: string }>();
+
+      const addOrUpdate = (m: { name: string; confidence: number; dosage?: string; frequency?: string }) => {
+        const key = m.name.toLowerCase();
+        const existing = mergedMap.get(key);
+        if (!existing || existing.confidence < m.confidence) {
+          mergedMap.set(key, m);
+        }
+      };
+
+      (geminiResult.medicines || []).forEach(m => addOrUpdate({ name: m.name, confidence: m.confidence, dosage: m.dosage, frequency: m.frequency }));
+      fuzzyMatches.forEach(m => addOrUpdate({ name: m.name, confidence: m.confidence, dosage: m.dosage, frequency: m.frequency }));
+
+      const medicinesToMatch = Array.from(mergedMap.values());
       
       const matchedMedicines = matchMedicinesWithDatabase(
         medicinesToMatch,

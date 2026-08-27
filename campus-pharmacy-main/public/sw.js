@@ -1,4 +1,4 @@
-const CACHE_NAME = 'campus-guide-cache-v1';
+const CACHE_NAME = 'campus-guide-cache-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -33,6 +33,22 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // Let the browser handle standard non-GET requests, API requests or chrome-extension URLs
   if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin)) {
+    return;
+  }
+
+  // Network-first for page navigations so new builds are always picked up
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+          return response;
+        })
+        .catch(() => caches.match(event.request).then((r) => r || caches.match('/')))
+    );
     return;
   }
 

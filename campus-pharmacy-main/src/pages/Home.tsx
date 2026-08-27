@@ -697,13 +697,13 @@ export const Home: React.FC<HomeProps> = ({ splashComplete = true }) => {
         initial={{ opacity: 0, y: 16 }}
         animate={entranceReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
         transition={entranceTransition(0.7, 0.5)}
-        className="absolute inset-0 z-40 flex flex-col justify-center gap-32 px-3 md:hidden pointer-events-none"
+        className="absolute inset-0 z-40 flex flex-col justify-center gap-32 px-1.5 md:hidden pointer-events-none"
       >
         <h2 className={`font-bold tracking-tight text-left ${isDark ? 'text-white' : 'text-slate-900'}`}
           style={{ fontFamily: "'Playfair Display','Georgia',serif", fontSize: 'clamp(2.8rem, 12vw, 4.5rem)', lineHeight: 1.05 }}>
           Find Your<br/>Way
         </h2>
-        <div id="home-search-mobile" className="search-hud-wrapper search-hud-navbar w-full max-w-full px-2 mx-auto pointer-events-auto">
+        <div id="home-search-mobile" className="search-hud-wrapper search-hud-navbar w-full max-w-full px-0 mx-auto pointer-events-auto">
           <SearchBar />
         </div>
         <h2 className={`font-bold tracking-tight text-right ${isDark ? 'text-white' : 'text-slate-900'}`}
