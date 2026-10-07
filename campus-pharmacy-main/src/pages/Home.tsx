@@ -680,7 +680,7 @@ export const Home: React.FC<HomeProps> = ({ splashComplete = true }) => {
                 <div className="relative bg-black overflow-hidden" style={{ aspectRatio: '16/9' }}>
                   <iframe
                     className="absolute inset-0 w-full h-full"
-                    src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&rel=0"
+                    src="https://www.youtube.com/embed/vKVCdHd0rK8?autoplay=0&rel=0"
                     title="Campus Guide Demo"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
