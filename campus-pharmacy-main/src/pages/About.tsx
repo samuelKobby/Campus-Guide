@@ -222,7 +222,7 @@ export const About: React.FC = () => {
                       muted
                       className="relative z-10 block h-auto max-h-full max-w-full object-contain align-middle"
                     >
-                      <source src="/images/vid.mp4" type="video/mp4" />
+                      <source src="https://www.youtube.com/embed/vKVCdHd0rK8?autoplay=0&rel=0" />
                     </video>
                   </ContainerInset>
                 </ContainerScroll>
